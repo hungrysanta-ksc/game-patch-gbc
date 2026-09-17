@@ -1,6 +1,6 @@
 # 패치 설치 안내
 
-공개 버전 **v0.8.0** / 내부 빌드 **v137** 기준입니다. 일반판(normal)과 디버그판(debug)을 함께 배포합니다.
+공개 버전 **v0.8.1** / 내부 빌드 **v140** 기준입니다. 일반판(normal)과 디버그판(debug)을 함께 배포합니다.
 
 ## 준비물
 
@@ -37,7 +37,7 @@ Get-FileHash -LiteralPath 'C:\Games\original.gbc' -Algorithm SHA256
 2. 릴리스 첨부파일을 받아 압축을 풉니다. 일반 플레이에는 `normal`로 표시된 BPS를 선택합니다.
 3. Floating IPS를 실행하고 **Apply Patch**를 선택합니다.
 4. 적용할 `.bps` 파일을 선택한 다음, 수정되지 않은 원본 ROM을 선택합니다.
-5. 결과 파일을 원본과 다른 이름으로 저장합니다. 예: `HP_COS_KO_v0.8.0_normal.gbc` 또는 `HP_COS_KO_v0.8.0_debug.gbc`.
+5. 결과 파일을 원본과 다른 이름으로 저장합니다. 예: `HP_COS_KO_v0.8.1_normal.gbc` 또는 `HP_COS_KO_v0.8.1_debug.gbc`.
 6. 아래 표와 결과 파일의 크기·SHA-256이 일치하는지 확인합니다.
 7. 결과 파일을 실행합니다. 별도의 언어 선택 없이 한국어로 시작합니다.
 
@@ -49,10 +49,14 @@ Get-FileHash -LiteralPath 'C:\Games\original.gbc' -Algorithm SHA256
 
 | 종류 | 적용 후 ROM의 SHA-256 |
 |---|---|
-| 일반판 | `2578a865df49c11a7ea19565f31e44df530714e4715c6f65554fad9d33f1f372` |
-| 디버그판 | `2e4f4a81eaaef41120b2f042656c0f76ecbc7b48f294532b037145165b3b87a1` |
+| 일반판 | `4831a6b99c7a631b374221b3206be711f8a79d5e643fb8170098293e1600a370` |
+| 디버그판 | `b2581ff5b455de219861b51144253ef7a0cb5ccda8573d0379b7c35bc21e1bcf` |
 
 위 값은 BPS나 ZIP이 아닌 **적용 후 ROM 파일**의 해시입니다.
+
+## v0.8.1 업데이트
+
+서점 NPC 오류를 수정한 버전입니다. 이전 강제 저장에는 잘못된 NPC 상태가 포함될 수 있으므로 게임을 새로 부팅하고 게임 내 이어하기를 사용하세요.
 
 ## 기존 세이브 사용
 

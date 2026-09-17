@@ -8,7 +8,7 @@
 
 | 게임 | 공개 버전 | 다운로드 | 안내 |
 |---|---|---|---|
-| 해리 포터와 비밀의 방 | v0.8.0 · 사전 공개 | [일반판·디버그판](https://github.com/hungrysanta-ksc/game-patch-gbc/releases/tag/hp-cos-gbc-v0.8.0) | [소개](games/harry-potter-chamber-of-secrets/README.md) · [설치](games/harry-potter-chamber-of-secrets/INSTALL.md) |
+| 해리 포터와 비밀의 방 | v0.8.1 · 사전 공개 | [일반판·디버그판](https://github.com/hungrysanta-ksc/game-patch-gbc/releases/tag/hp-cos-gbc-v0.8.1) | [소개](games/harry-potter-chamber-of-secrets/README.md) · [설치](games/harry-potter-chamber-of-secrets/INSTALL.md) |
 
 ## 다운로드와 설치
 
@@ -35,7 +35,7 @@ games/
 
 ## 버전 관리
 
-공개 버전은 게임별로 독립적으로 관리하며, 내부 빌드 번호와 구분합니다. 릴리스 태그에는 게임 식별자를 포함합니다. 예: `hp-cos-gbc-v0.8.0`.
+공개 버전은 게임별로 독립적으로 관리하며, 내부 빌드 번호와 구분합니다. 릴리스 태그에는 게임 식별자를 포함합니다. 예: `hp-cos-gbc-v0.8.1`.
 
 각 게임의 현재 버전과 향후 계획은 해당 게임의 소개 문서를 참고하세요.
 
