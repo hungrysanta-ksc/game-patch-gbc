@@ -68,3 +68,5 @@
 - 패치 적용 도구: [Floating IPS](https://github.com/Sir-Walrus/Flips)
 
 폰트·도구의 출처와 이용 조건은 [제3자 고지](THIRD-PARTY-NOTICES.md)를 참고하세요.
+
+[유지보수 소스](maintenance/) · [후속 GBC 프로젝트 검수 기록](../../guides/gbc-hp2-qa.md)
