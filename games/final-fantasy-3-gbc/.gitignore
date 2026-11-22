@@ -6,6 +6,9 @@ local.json
 *.gbc
 *.gb
 *.nsf
+*.vgm
+*.vgz
+*.zip
 *.wav
 *.sav
 *.mss

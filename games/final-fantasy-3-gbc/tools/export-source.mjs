@@ -2,12 +2,12 @@
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
  '.gitattributes','.gitignore','README.md','THIRD-PARTY-NOTICES.md','local.example.json','package.json',
- 'docs/port-plan.md','docs/audio-design.md','docs/audio-validation.md',
+ 'docs/port-plan.md','docs/audio-design.md','docs/audio-validation.md','docs/vgz-assessment.md',
  'spec/source.json','spec/toolchain.json','spec/port-policy.json',
- 'src/audio-player.c','tests/audio.test.mjs',
+ 'src/audio-player.c','tests/audio.test.mjs','tests/vgm.test.mjs',
  'tools/source.mjs','tools/driver6502.mjs','tools/extract-audio.mjs','tools/gb-audio.mjs',
  'tools/nes-harness.mjs','tools/build-audio.mjs','tools/build-capture.mjs','tools/capture-audio.mjs',
- 'tools/wav.mjs','tools/make-comparison.mjs','tools/export-source.mjs',
+ 'tools/wav.mjs','tools/make-comparison.mjs','tools/export-source.mjs','tools/vgm.mjs','tools/audit-vgm.mjs',
  'tools/Capture/Capture.csproj','tools/Capture/NuGet.Config','tools/Capture/Program.cs'
 ];
 const entries=[];for(const path of files){const b=await fs.readFile(ROOT+'/'+path);entries.push({path,bytes:b.length,sha256:hash(b),basis:'Project-authored code, specification or documentation; no extracted assets'});}

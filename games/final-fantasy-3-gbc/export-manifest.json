@@ -10,14 +10,14 @@
     },
     {
       "path": ".gitignore",
-      "bytes": 87,
-      "sha256": "45c69a7c6504c709ce7a8fead338e3f7a97bd5985386bd57e6e01db10a76c1bb",
+      "bytes": 105,
+      "sha256": "0eabde24281480646f75603dd97a29775dad8f2dfa648375624e639b2e7963bf",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "README.md",
-      "bytes": 5505,
-      "sha256": "2c3e30f83c3a5aaab8b0777347a890ca044dbc6ea4959f85d51bdb1fde677fd5",
+      "bytes": 5896,
+      "sha256": "3561259a554db27a037e0235f4fdf2ffe2c66afcd4daace45236f41449ea8e62",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -34,8 +34,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 186,
-      "sha256": "16ec08558221eb674321fd98821634dbe988828b40a6b7cfa0d9b5427c50eb14",
+      "bytes": 249,
+      "sha256": "f94041a66451498ef4c1ac77a89299ae5261decd33059ae2cc407f8bbd7e8781",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -54,6 +54,12 @@
       "path": "docs/audio-validation.md",
       "bytes": 5109,
       "sha256": "2a5bc362c1affd5f751da8a63cad21196b8fbea64cff632807d6c43752c1a642",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/vgz-assessment.md",
+      "bytes": 5460,
+      "sha256": "3f11d55e0a7e9dfd62b8509b16f3b687e4a273dec1a4b5db2b10c11c0b213b33",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -84,6 +90,12 @@
       "path": "tests/audio.test.mjs",
       "bytes": 2596,
       "sha256": "5fe6c62148e03d769f4a8ac5504e3c15f6ead73e2b4ceaf046c5022e739b673a",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/vgm.test.mjs",
+      "bytes": 1729,
+      "sha256": "64b84262936bee585f786322a7dfb30857b2016da4c4ebbe9a40a6f129df7476",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -148,8 +160,20 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 1499,
-      "sha256": "48f267c9c03741868a4c9444cf4eb28af400397a86b6d021e221457ae751037a",
+      "bytes": 1583,
+      "sha256": "df8e9873435649f0f3b963fadaa1a36b28ca372a05dafd8782cba63911fe5978",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/vgm.mjs",
+      "bytes": 4873,
+      "sha256": "ab5f5a8c56730ebd44935cf0696f6db15180de60aad240ff4af7655c8f51fbb7",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/audit-vgm.mjs",
+      "bytes": 2143,
+      "sha256": "9e97beddaf6c084cdeb23230ef211f6750afdbde86f3d4e70bb05becfef9f399",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

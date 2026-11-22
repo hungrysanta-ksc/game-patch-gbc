@@ -1,1 +1,1 @@
-{"name":"ff3-gbc-source-audio","private":true,"type":"module","scripts":{"build:audio":"node tools/build-audio.mjs","test":"node --test tests/audio.test.mjs"},"engines":{"node":">=20"}}
+{"name":"ff3-gbc-source-audio","private":true,"type":"module","scripts":{"build:audio":"node tools/build-audio.mjs","test":"node --test tests/audio.test.mjs tests/vgm.test.mjs","test:vgm":"node --test tests/vgm.test.mjs"},"engines":{"node":">=20"}}
