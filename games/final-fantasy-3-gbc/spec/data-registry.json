@@ -1,0 +1,3405 @@
+{
+  "schema": 1,
+  "addressConvention": "File offsets include 16-byte iNES header; end is exclusive; PRG banks are 8 KiB.",
+  "reference": {
+    "repository": "https://github.com/everything8215/ff3",
+    "commit": "1acef8117120ff891003de249b1a74bc8d94d674",
+    "file": "rom-map.txt",
+    "sha256": "a4739b350d83c054efa86e277387249c2076365ade975927784258eafa33e3ec"
+  },
+  "regions": [
+    {
+      "id": "region-000010",
+      "label": "common world map tilesets",
+      "begin": 16,
+      "end": 272,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 24,
+        "cpuBegin": "008000",
+        "cpuEnd": "0080FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-000110",
+      "label": "world map tilesets",
+      "begin": 272,
+      "end": 1040,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 25,
+        "cpuBegin": "008100",
+        "cpuEnd": "0083FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-000410",
+      "label": "common world map attribute table",
+      "begin": 1040,
+      "end": 1104,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 26,
+        "cpuBegin": "008400",
+        "cpuEnd": "00843F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-000450",
+      "label": "world map attribute tables",
+      "begin": 1104,
+      "end": 1296,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 27,
+        "cpuBegin": "008440",
+        "cpuEnd": "0084FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-000510",
+      "label": "world tile properties",
+      "begin": 1296,
+      "end": 2064,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 28,
+        "cpuBegin": "008500",
+        "cpuEnd": "0087FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-000810",
+      "label": "destination maps for world 0 entrances",
+      "begin": 2064,
+      "end": 2128,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 29,
+        "cpuBegin": "008800",
+        "cpuEnd": "00883F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-000850",
+      "label": "destination maps for world 1 entrances",
+      "begin": 2128,
+      "end": 2192,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 30,
+        "cpuBegin": "008840",
+        "cpuEnd": "00887F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-000890",
+      "label": "map exit x positions",
+      "begin": 2192,
+      "end": 2256,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 31,
+        "cpuBegin": "008880",
+        "cpuEnd": "0088BF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-0008d0",
+      "label": "map exit y positions",
+      "begin": 2256,
+      "end": 2320,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 32,
+        "cpuBegin": "0088C0",
+        "cpuEnd": "0088FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-000910",
+      "label": "job equipment types",
+      "begin": 2320,
+      "end": 2576,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 33,
+        "cpuBegin": "008900",
+        "cpuEnd": "0089FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-000a10",
+      "label": "background tilemap id for each map",
+      "begin": 2576,
+      "end": 3088,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 34,
+        "cpuBegin": "008A00",
+        "cpuEnd": "008BFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-000c10",
+      "label": "map graphics subset for each map",
+      "begin": 3088,
+      "end": 3600,
+      "kind": "graphics",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 35,
+        "cpuBegin": "008C00",
+        "cpuEnd": "008DFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-000e10",
+      "label": "map graphics subsets",
+      "begin": 3600,
+      "end": 4368,
+      "kind": "graphics",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 36,
+        "cpuBegin": "008E00",
+        "cpuEnd": "0090FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-001110",
+      "label": "general use palettes",
+      "begin": 4368,
+      "end": 5136,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 37,
+        "cpuBegin": "009100",
+        "cpuEnd": "0093FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-001410",
+      "label": "graphics for each npc id",
+      "begin": 5136,
+      "end": 5648,
+      "kind": "graphics",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 38,
+        "cpuBegin": "009400",
+        "cpuEnd": "0095FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-001610",
+      "label": "initial npc switches",
+      "begin": 5648,
+      "end": 5712,
+      "kind": "data",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 39,
+        "cpuBegin": "009600",
+        "cpuEnd": "00963F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-001650",
+      "label": "map base palettes",
+      "begin": 5712,
+      "end": 5760,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 40,
+        "cpuBegin": "009640",
+        "cpuEnd": "00966F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-001680",
+      "label": "map sprite palettes",
+      "begin": 5760,
+      "end": 5792,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 41,
+        "cpuBegin": "009670",
+        "cpuEnd": "00968F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-0016a0",
+      "label": "map character palettes",
+      "begin": 5792,
+      "end": 5896,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 42,
+        "cpuBegin": "009690",
+        "cpuEnd": "0096F7"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-001708",
+      "label": "guest npc palettes",
+      "begin": 5896,
+      "end": 5912,
+      "kind": "data",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 43,
+        "cpuBegin": "0096F8",
+        "cpuEnd": "009707"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-001718",
+      "label": "pointers to magic animation frame data",
+      "begin": 5912,
+      "end": 6168,
+      "kind": "pointer-table",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 44,
+        "cpuBegin": "009708",
+        "cpuEnd": "009807"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-001818",
+      "label": "magic animation frame data",
+      "begin": 6168,
+      "end": 8798,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 45,
+        "cpuBegin": "009808",
+        "cpuEnd": "01A24D"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-00225e",
+      "label": "terrain attack for each map",
+      "begin": 8798,
+      "end": 9054,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 46,
+        "cpuBegin": "01A24E",
+        "cpuEnd": "01A35C"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ],
+      "correction": {
+        "originalBegin": 8798,
+        "originalEnd": 9069,
+        "reason": "35/AAD3..AAEA indexes one packed byte using the 8-bit map ID: 256 bytes, not the 271-byte ROM-map span. Two worlds select low/high nibbles at 35/AAF0..AAFF."
+      }
+    },
+    {
+      "id": "region-00236e",
+      "label": "item multipliers",
+      "begin": 9070,
+      "end": 9104,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 47,
+        "cpuBegin": "01A35E",
+        "cpuEnd": "01A37F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-002390",
+      "label": "map tilesets",
+      "begin": 9104,
+      "end": 12688,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 48,
+        "cpuBegin": "01A380",
+        "cpuEnd": "01B17F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-003190",
+      "label": "map tileset name tables",
+      "begin": 12688,
+      "end": 13584,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 49,
+        "cpuBegin": "01B180",
+        "cpuEnd": "01B4FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-003510",
+      "label": "map tile properties",
+      "begin": 13584,
+      "end": 15376,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 50,
+        "cpuBegin": "01B500",
+        "cpuEnd": "01BBFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-003c10",
+      "label": "treasure properties",
+      "begin": 15376,
+      "end": 15888,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 51,
+        "cpuBegin": "01BC00",
+        "cpuEnd": "01BDFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-003e10",
+      "label": "movement/animation speeds for each npc id",
+      "begin": 15888,
+      "end": 16400,
+      "kind": "data",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 52,
+        "cpuBegin": "01BE00",
+        "cpuEnd": "01BFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-004010",
+      "label": "map properties",
+      "begin": 16400,
+      "end": 24592,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 53,
+        "cpuBegin": "028000",
+        "cpuEnd": "029FFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-006010",
+      "label": "map background graphics",
+      "begin": 24592,
+      "end": 52240,
+      "kind": "graphics",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 54,
+        "cpuBegin": "03A000",
+        "cpuEnd": "068BFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-00cc10",
+      "label": "pointers to magic animation scripts",
+      "begin": 52240,
+      "end": 52422,
+      "kind": "pointer-table",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 55,
+        "cpuBegin": "068C00",
+        "cpuEnd": "068CB5"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-00ccc6",
+      "label": "magic animation scripts",
+      "begin": 52422,
+      "end": 52784,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 56,
+        "cpuBegin": "068CB6",
+        "cpuEnd": "068E1F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-00ce30",
+      "label": "enemy magic frame data",
+      "begin": 52784,
+      "end": 53264,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 57,
+        "cpuBegin": "068E20",
+        "cpuEnd": "068FFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-00d010",
+      "label": "pointers to world map tilemaps",
+      "begin": 53264,
+      "end": 55312,
+      "kind": "pointer-table",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 58,
+        "cpuBegin": "069000",
+        "cpuEnd": "0697FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-00d810",
+      "label": "world map tilemaps",
+      "begin": 55312,
+      "end": 78864,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 59,
+        "cpuBegin": "069800",
+        "cpuEnd": "09B3FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-013410",
+      "label": "pointers to songs $3B-$40",
+      "begin": 78864,
+      "end": 78876,
+      "kind": "pointer-table",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 60,
+        "cpuBegin": "09B400",
+        "cpuEnd": "09B40B"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-01341c",
+      "label": "songs $3B-$40",
+      "begin": 78876,
+      "end": 81936,
+      "kind": "data",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 61,
+        "cpuBegin": "09B40C",
+        "cpuEnd": "09BFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-014010",
+      "label": "two-frame sprite graphics",
+      "begin": 81936,
+      "end": 85008,
+      "kind": "graphics",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 62,
+        "cpuBegin": "0A8000",
+        "cpuEnd": "0A8BFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-014c10",
+      "label": "world map bg graphics",
+      "begin": 85008,
+      "end": 87056,
+      "kind": "graphics",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 63,
+        "cpuBegin": "0A8C00",
+        "cpuEnd": "0A93FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-015410",
+      "label": "world map bg graphics",
+      "begin": 87056,
+      "end": 91664,
+      "kind": "graphics",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 64,
+        "cpuBegin": "0A9400",
+        "cpuEnd": "0B85FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-016610",
+      "label": "world map sprite graphics",
+      "begin": 91664,
+      "end": 98320,
+      "kind": "graphics",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 65,
+        "cpuBegin": "0B8600",
+        "cpuEnd": "0BBFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-018010",
+      "label": "battle background graphics",
+      "begin": 98320,
+      "end": 104464,
+      "kind": "graphics",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 66,
+        "cpuBegin": "0C8000",
+        "cpuEnd": "0C97FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-019810",
+      "label": "summon graphics",
+      "begin": 104464,
+      "end": 108560,
+      "kind": "graphics",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 67,
+        "cpuBegin": "0C9800",
+        "cpuEnd": "0DA7FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-01a810",
+      "label": "battle sprite graphics",
+      "begin": 108560,
+      "end": 114704,
+      "kind": "graphics",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 68,
+        "cpuBegin": "0DA800",
+        "cpuEnd": "0DBFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-01c010",
+      "label": "map sprite graphics",
+      "begin": 114704,
+      "end": 131088,
+      "kind": "graphics",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 69,
+        "cpuBegin": "0E8000",
+        "cpuEnd": "0FBFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-020010",
+      "label": "pointers to map treasures",
+      "begin": 131088,
+      "end": 131600,
+      "kind": "pointer-table",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 70,
+        "cpuBegin": "108000",
+        "cpuEnd": "1081FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-020210",
+      "label": "pointers to map triggers",
+      "begin": 131600,
+      "end": 132112,
+      "kind": "pointer-table",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 71,
+        "cpuBegin": "108200",
+        "cpuEnd": "1083FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-020410",
+      "label": "map entrances",
+      "begin": 132112,
+      "end": 132806,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 72,
+        "cpuBegin": "108400",
+        "cpuEnd": "1086B5"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-0206c6",
+      "label": "map treasures",
+      "begin": 132806,
+      "end": 133369,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 73,
+        "cpuBegin": "1086B6",
+        "cpuEnd": "1088E8"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-0208f9",
+      "label": "map triggers",
+      "begin": 133369,
+      "end": 133648,
+      "kind": "data",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 74,
+        "cpuBegin": "1088E9",
+        "cpuEnd": "1089FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-020a10",
+      "label": "battle code",
+      "begin": 133648,
+      "end": 134464,
+      "kind": "code",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 75,
+        "cpuBegin": "108A00",
+        "cpuEnd": "108D2F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-020d40",
+      "label": "flare wave frame data",
+      "begin": 134464,
+      "end": 134544,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 76,
+        "cpuBegin": "108D30",
+        "cpuEnd": "108D7F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-020d90",
+      "label": "pointers to flare wave sprite data",
+      "begin": 134544,
+      "end": 134552,
+      "kind": "pointer-table",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 77,
+        "cpuBegin": "108D80",
+        "cpuEnd": "108D87"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-020d98",
+      "label": "flare wave sprite data",
+      "begin": 134552,
+      "end": 134672,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 78,
+        "cpuBegin": "108D88",
+        "cpuEnd": "108DFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-020e10",
+      "label": "cutscene font graphics",
+      "begin": 134672,
+      "end": 135248,
+      "kind": "graphics",
+      "domain": "text",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 79,
+        "cpuBegin": "108E00",
+        "cpuEnd": "10903F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "text-consumer"
+      ]
+    },
+    {
+      "id": "region-021050",
+      "label": "prologue crystal graphics",
+      "begin": 135248,
+      "end": 135840,
+      "kind": "graphics",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 80,
+        "cpuBegin": "109040",
+        "cpuEnd": "10928F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-0212a0",
+      "label": "ending sprite graphics",
+      "begin": 135840,
+      "end": 136400,
+      "kind": "graphics",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 81,
+        "cpuBegin": "109290",
+        "cpuEnd": "1094BF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-0214d0",
+      "label": "the end graphics",
+      "begin": 136400,
+      "end": 136784,
+      "kind": "graphics",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 82,
+        "cpuBegin": "1094C0",
+        "cpuEnd": "10963F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-021650",
+      "label": "pointers to end credits text",
+      "begin": 136784,
+      "end": 136846,
+      "kind": "pointer-table",
+      "domain": "text",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 83,
+        "cpuBegin": "109640",
+        "cpuEnd": "10967D"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "text-consumer"
+      ]
+    },
+    {
+      "id": "region-02168e",
+      "label": "end credits text",
+      "begin": 136846,
+      "end": 137872,
+      "kind": "data",
+      "domain": "text",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 84,
+        "cpuBegin": "10967E",
+        "cpuEnd": "109A7F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "text-consumer"
+      ],
+      "correction": {
+        "originalBegin": 136784,
+        "originalEnd": 137872,
+        "reason": "Correct file range from annotated CPU bounds."
+      }
+    },
+    {
+      "id": "region-021a90",
+      "label": "sine table",
+      "begin": 137872,
+      "end": 138128,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 85,
+        "cpuBegin": "109A80",
+        "cpuEnd": "109B7F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-021b90",
+      "label": "monster items",
+      "begin": 138128,
+      "end": 138384,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 86,
+        "cpuBegin": "109B80",
+        "cpuEnd": "109C7F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-021c90",
+      "label": "monster experience ids",
+      "begin": 138384,
+      "end": 138640,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 87,
+        "cpuBegin": "109C80",
+        "cpuEnd": "109D7F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-021d90",
+      "label": "monster experience values",
+      "begin": 138640,
+      "end": 138768,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 88,
+        "cpuBegin": "109D80",
+        "cpuEnd": "109DFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-021e10",
+      "label": "item prices",
+      "begin": 138768,
+      "end": 139280,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 89,
+        "cpuBegin": "109E00",
+        "cpuEnd": "109FFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-022010",
+      "label": "pointers to map background tilemaps",
+      "begin": 139280,
+      "end": 139792,
+      "kind": "pointer-table",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 90,
+        "cpuBegin": "11A000",
+        "cpuEnd": "11A1FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-022210",
+      "label": "map background tilemaps",
+      "begin": 139792,
+      "end": 196624,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 91,
+        "cpuBegin": "11A200",
+        "cpuEnd": "17BFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-030010",
+      "label": "pointers to text",
+      "begin": 196624,
+      "end": 200048,
+      "kind": "pointer-table",
+      "domain": "text",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 92,
+        "cpuBegin": "188000",
+        "cpuEnd": "188D5F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "text-consumer"
+      ]
+    },
+    {
+      "id": "region-030d70",
+      "label": "text",
+      "begin": 200048,
+      "end": 253968,
+      "kind": "data",
+      "domain": "text",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 93,
+        "cpuBegin": "188D60",
+        "cpuEnd": "1E9FFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "text-consumer"
+      ]
+    },
+    {
+      "id": "region-03e010",
+      "label": "cutscene code",
+      "begin": 253968,
+      "end": 255414,
+      "kind": "code",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 94,
+        "cpuBegin": "1FA000",
+        "cpuEnd": "1FA5A5"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-03e5b6",
+      "label": "cutscene text positions",
+      "begin": 255414,
+      "end": 255471,
+      "kind": "data",
+      "domain": "text",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 95,
+        "cpuBegin": "1FA5A5",
+        "cpuEnd": "1FA5DE"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "text-consumer"
+      ],
+      "correction": {
+        "originalBegin": 255414,
+        "originalEnd": 255471,
+        "reason": "Correct CPU start A5A5 to A5A6; preserve adjacent cutscene code boundary."
+      }
+    },
+    {
+      "id": "region-03e5ef",
+      "label": "pointers to cutscene text",
+      "begin": 255471,
+      "end": 255505,
+      "kind": "pointer-table",
+      "domain": "text",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 96,
+        "cpuBegin": "1FA5DF",
+        "cpuEnd": "1FA600"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "text-consumer"
+      ]
+    },
+    {
+      "id": "region-03e611",
+      "label": "cutscene text",
+      "begin": 255505,
+      "end": 256322,
+      "kind": "data",
+      "domain": "text",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 97,
+        "cpuBegin": "1FA601",
+        "cpuEnd": "1FA931"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "text-consumer"
+      ]
+    },
+    {
+      "id": "region-03e942",
+      "label": "pointers to compressed ending data",
+      "begin": 256322,
+      "end": 256332,
+      "kind": "pointer-table",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 98,
+        "cpuBegin": "1FA932",
+        "cpuEnd": "1FA93B"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-03e94c",
+      "label": "compressed ending data",
+      "begin": 256332,
+      "end": 258365,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 99,
+        "cpuBegin": "1FA93C",
+        "cpuEnd": "1FB12C"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-03f13d",
+      "label": "cutscene code",
+      "begin": 258365,
+      "end": 262160,
+      "kind": "code",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 100,
+        "cpuBegin": "1FB12D",
+        "cpuEnd": "1FBFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-040010",
+      "label": "monster graphics",
+      "begin": 262160,
+      "end": 327696,
+      "kind": "graphics",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 101,
+        "cpuBegin": "208000",
+        "cpuEnd": "27BFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-050010",
+      "label": "battle character graphics",
+      "begin": 327696,
+      "end": 344080,
+      "kind": "graphics",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 102,
+        "cpuBegin": "288000",
+        "cpuEnd": "29BFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-054010",
+      "label": "boss tilemaps",
+      "begin": 344080,
+      "end": 349264,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 103,
+        "cpuBegin": "2A8000",
+        "cpuEnd": "2A943F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-055450",
+      "label": "summon graphics properties",
+      "begin": 349264,
+      "end": 349328,
+      "kind": "graphics",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 104,
+        "cpuBegin": "2A9440",
+        "cpuEnd": "2A947F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-055490",
+      "label": "summon tilemaps",
+      "begin": 349328,
+      "end": 349712,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 105,
+        "cpuBegin": "2A9480",
+        "cpuEnd": "2A95FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-055610",
+      "label": "attack graphics",
+      "begin": 349712,
+      "end": 360464,
+      "kind": "graphics",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 106,
+        "cpuBegin": "2A9600",
+        "cpuEnd": "2BBFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-058010",
+      "label": "pointers to npc properties",
+      "begin": 360464,
+      "end": 360976,
+      "kind": "pointer-table",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 107,
+        "cpuBegin": "2C8000",
+        "cpuEnd": "2C81FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-058210",
+      "label": "pointers to npc scripts",
+      "begin": 360976,
+      "end": 362000,
+      "kind": "pointer-table",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 108,
+        "cpuBegin": "2C8200",
+        "cpuEnd": "2C85FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-058610",
+      "label": "pointers to event scripts",
+      "begin": 362000,
+      "end": 362512,
+      "kind": "pointer-table",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 109,
+        "cpuBegin": "2C8600",
+        "cpuEnd": "2C87FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-058810",
+      "label": "pointers to item select npc scripts",
+      "begin": 362512,
+      "end": 362608,
+      "kind": "pointer-table",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 110,
+        "cpuBegin": "2C8800",
+        "cpuEnd": "2C885F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-058870",
+      "label": "pointers to guest npc scripts",
+      "begin": 362608,
+      "end": 362624,
+      "kind": "pointer-table",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 111,
+        "cpuBegin": "2C8860",
+        "cpuEnd": "2C886F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-058880",
+      "label": "pointers to conditional song scripts",
+      "begin": 362624,
+      "end": 362640,
+      "kind": "pointer-table",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 112,
+        "cpuBegin": "2C8870",
+        "cpuEnd": "2C887F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-058890",
+      "label": "pointers to event trigger scripts",
+      "begin": 362640,
+      "end": 363152,
+      "kind": "pointer-table",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 113,
+        "cpuBegin": "2C8880",
+        "cpuEnd": "2C8A7F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-058a90",
+      "label": "npc properties",
+      "begin": 363152,
+      "end": 366931,
+      "kind": "data",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 114,
+        "cpuBegin": "2C8A80",
+        "cpuEnd": "2C9942"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-059953",
+      "label": "npc scripts",
+      "begin": 366931,
+      "end": 368947,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 115,
+        "cpuBegin": "2C9943",
+        "cpuEnd": "2DA122"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-05a133",
+      "label": "event trigger scripts",
+      "begin": 368947,
+      "end": 369431,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 116,
+        "cpuBegin": "2CA123",
+        "cpuEnd": "2DA306"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ],
+      "correction": {
+        "originalBegin": 368947,
+        "originalEnd": 369431,
+        "reason": "Correct start bank 2C to 2D and normalize file bounds from CPU addresses."
+      }
+    },
+    {
+      "id": "region-05a317",
+      "label": "item select npc trigger scripts",
+      "begin": 369431,
+      "end": 369509,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 117,
+        "cpuBegin": "2CA307",
+        "cpuEnd": "2DA354"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ],
+      "correction": {
+        "originalBegin": 369431,
+        "originalEnd": 369765,
+        "reason": "Correct start bank 2C to 2D and normalize file bounds from CPU addresses."
+      }
+    },
+    {
+      "id": "region-05a365",
+      "label": "guest npc scripts",
+      "begin": 369509,
+      "end": 369632,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 118,
+        "cpuBegin": "2CA355",
+        "cpuEnd": "2DA3CF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ],
+      "correction": {
+        "originalBegin": 369509,
+        "originalEnd": 369888,
+        "reason": "Correct start bank 2C to 2D and normalize file bounds from CPU addresses."
+      }
+    },
+    {
+      "id": "region-05a3e0",
+      "label": "conditional song scripts",
+      "begin": 369632,
+      "end": 369669,
+      "kind": "data",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 119,
+        "cpuBegin": "2CA3D0",
+        "cpuEnd": "2DA3F4"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ],
+      "correction": {
+        "originalBegin": 369632,
+        "originalEnd": 369669,
+        "reason": "Correct start bank 2C to 2D and normalize file bounds from CPU addresses."
+      }
+    },
+    {
+      "id": "region-05a405",
+      "label": "event scripts",
+      "begin": 369669,
+      "end": 376848,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 120,
+        "cpuBegin": "2DA3F5",
+        "cpuEnd": "2DBFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-05c010",
+      "label": "battle properties",
+      "begin": 376848,
+      "end": 377872,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 121,
+        "cpuBegin": "2E8000",
+        "cpuEnd": "2E83FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05c410",
+      "label": "battle monster id",
+      "begin": 377872,
+      "end": 379408,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 122,
+        "cpuBegin": "2E8400",
+        "cpuEnd": "2E89FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05ca10",
+      "label": "battle monster count",
+      "begin": 379408,
+      "end": 379664,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 123,
+        "cpuBegin": "2E8A00",
+        "cpuEnd": "2E8AFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05cb10",
+      "label": "monster graphics properties",
+      "begin": 379664,
+      "end": 379920,
+      "kind": "graphics",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 124,
+        "cpuBegin": "2E8B00",
+        "cpuEnd": "2E8BFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05cc10",
+      "label": "battle color palettes",
+      "begin": 379920,
+      "end": 380688,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 125,
+        "cpuBegin": "2E8C00",
+        "cpuEnd": "2E8EFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05cf10",
+      "label": "monster boss bit",
+      "begin": 380688,
+      "end": 380720,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 126,
+        "cpuBegin": "2E8F00",
+        "cpuEnd": "2E8F1F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05cf30",
+      "label": "monster attribute data",
+      "begin": 380720,
+      "end": 380880,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 127,
+        "cpuBegin": "2E8F20",
+        "cpuEnd": "2E8FBF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05cfd0",
+      "label": "boss attribute tables",
+      "begin": 380880,
+      "end": 381048,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 128,
+        "cpuBegin": "2E8FC0",
+        "cpuEnd": "2E9067"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05d078",
+      "label": "pointers to boss graphics",
+      "begin": 381048,
+      "end": 381096,
+      "kind": "pointer-table",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 129,
+        "cpuBegin": "2E9068",
+        "cpuEnd": "2E9097"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05d0a8",
+      "label": "weapon animation properties",
+      "begin": 381096,
+      "end": 381360,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 130,
+        "cpuBegin": "2E9098",
+        "cpuEnd": "2E919F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05d1b0",
+      "label": "item spell cast",
+      "begin": 381360,
+      "end": 381408,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 131,
+        "cpuBegin": "2E91A0",
+        "cpuEnd": "2E91CF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-05d1e0",
+      "label": "magic graphics properties",
+      "begin": 381408,
+      "end": 381696,
+      "kind": "graphics",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 132,
+        "cpuBegin": "2E91D0",
+        "cpuEnd": "2E92EF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05d300",
+      "label": "normal map battle groups",
+      "begin": 381696,
+      "end": 382208,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 133,
+        "cpuBegin": "2E92F0",
+        "cpuEnd": "2E94EF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05d500",
+      "label": "random battle groups",
+      "begin": 382208,
+      "end": 384256,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 134,
+        "cpuBegin": "2E94F0",
+        "cpuEnd": "2E9CEF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05dd00",
+      "label": "world 0 battle groups",
+      "begin": 384256,
+      "end": 384272,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 135,
+        "cpuBegin": "2E9CF0",
+        "cpuEnd": "2E9CFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05dd10",
+      "label": "world 2 battle groups",
+      "begin": 384272,
+      "end": 384336,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 136,
+        "cpuBegin": "2E9D00",
+        "cpuEnd": "2E9D3F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05dd50",
+      "label": "misc. world battle data",
+      "begin": 384336,
+      "end": 384352,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 137,
+        "cpuBegin": "2E9D40",
+        "cpuEnd": "2E9D4F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-05dd60",
+      "label": "battle graphics code",
+      "begin": 384352,
+      "end": 393232,
+      "kind": "code",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 138,
+        "cpuBegin": "2E9D50",
+        "cpuEnd": "2FBFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-060010",
+      "label": "monster properties",
+      "begin": 393232,
+      "end": 397328,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 139,
+        "cpuBegin": "308000",
+        "cpuEnd": "308FFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-061010",
+      "label": "monster stat values",
+      "begin": 397328,
+      "end": 397840,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 140,
+        "cpuBegin": "309000",
+        "cpuEnd": "3091FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-061210",
+      "label": "monster attack scripts",
+      "begin": 397840,
+      "end": 398352,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 141,
+        "cpuBegin": "309200",
+        "cpuEnd": "3093FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-061410",
+      "label": "weapon properties",
+      "begin": 398352,
+      "end": 399056,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 142,
+        "cpuBegin": "309400",
+        "cpuEnd": "3096BF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-0616d0",
+      "label": "armor properties",
+      "begin": 399056,
+      "end": 399568,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 143,
+        "cpuBegin": "3096C0",
+        "cpuEnd": "3098BF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-0618d0",
+      "label": "attack properties",
+      "begin": 399568,
+      "end": 400488,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 144,
+        "cpuBegin": "3098C0",
+        "cpuEnd": "309C57"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-061c68",
+      "label": "monster gil",
+      "begin": 400488,
+      "end": 401000,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 145,
+        "cpuBegin": "309C58",
+        "cpuEnd": "309E57"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-061e68",
+      "label": "battle main code",
+      "begin": 401000,
+      "end": 409616,
+      "kind": "code",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 146,
+        "cpuBegin": "309E58",
+        "cpuEnd": "31BFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-064010",
+      "label": "battle graphics code",
+      "begin": 409616,
+      "end": 426000,
+      "kind": "code",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 147,
+        "cpuBegin": "328000",
+        "cpuEnd": "33BFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-068010",
+      "label": "battle main code",
+      "begin": 426000,
+      "end": 442384,
+      "kind": "code",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 148,
+        "cpuBegin": "348000",
+        "cpuEnd": "35BFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-06c010",
+      "label": "sound/music code",
+      "begin": 442384,
+      "end": 445575,
+      "kind": "code",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 149,
+        "cpuBegin": "368000",
+        "cpuEnd": "368C76"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-06cc87",
+      "label": "pointers to songs $2B-36",
+      "begin": 445575,
+      "end": 445599,
+      "kind": "pointer-table",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 150,
+        "cpuBegin": "368C77",
+        "cpuEnd": "368C8E"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-06cc9f",
+      "label": "songs $2B-36",
+      "begin": 445599,
+      "end": 447189,
+      "kind": "data",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 151,
+        "cpuBegin": "368C8F",
+        "cpuEnd": "3692C4"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-06d2d5",
+      "label": "pointers to sound effects",
+      "begin": 447189,
+      "end": 447383,
+      "kind": "pointer-table",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 152,
+        "cpuBegin": "3692C5",
+        "cpuEnd": "369386"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ],
+      "correction": {
+        "originalBegin": 447188,
+        "originalEnd": 447127,
+        "reason": "Correct file range from annotated CPU bounds."
+      }
+    },
+    {
+      "id": "region-06d397",
+      "label": "sound effects",
+      "begin": 447383,
+      "end": 449164,
+      "kind": "data",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 153,
+        "cpuBegin": "369387",
+        "cpuEnd": "369A7B"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ],
+      "correction": {
+        "originalBegin": 447126,
+        "originalEnd": 449164,
+        "reason": "Correct file range from annotated CPU bounds."
+      }
+    },
+    {
+      "id": "region-06da8c",
+      "label": "pointers to volume envelope data",
+      "begin": 449164,
+      "end": 449246,
+      "kind": "pointer-table",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 154,
+        "cpuBegin": "369A7C",
+        "cpuEnd": "369ACD"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-06dade",
+      "label": "volume envelope data",
+      "begin": 449246,
+      "end": 450235,
+      "kind": "data",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 155,
+        "cpuBegin": "369ACE",
+        "cpuEnd": "369EAA"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-06debb",
+      "label": "pointers to pitch envelope data",
+      "begin": 450235,
+      "end": 450267,
+      "kind": "pointer-table",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 156,
+        "cpuBegin": "369EAB",
+        "cpuEnd": "369ECA"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-06dedb",
+      "label": "pitch envelope data",
+      "begin": 450267,
+      "end": 450576,
+      "kind": "data",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 157,
+        "cpuBegin": "369ECB",
+        "cpuEnd": "369FFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-06e010",
+      "label": "pointers to songs $00-$18",
+      "begin": 450576,
+      "end": 450626,
+      "kind": "pointer-table",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 158,
+        "cpuBegin": "37A000",
+        "cpuEnd": "37A031"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-06e042",
+      "label": "songs $00-$18",
+      "begin": 450626,
+      "end": 458768,
+      "kind": "data",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 159,
+        "cpuBegin": "37A032",
+        "cpuEnd": "37BFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-070010",
+      "label": "pointers to songs $19-$2A",
+      "begin": 458768,
+      "end": 458804,
+      "kind": "pointer-table",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 160,
+        "cpuBegin": "388000",
+        "cpuEnd": "388023"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-070034",
+      "label": "songs $19-$2A",
+      "begin": 458804,
+      "end": 466960,
+      "kind": "data",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 161,
+        "cpuBegin": "388024",
+        "cpuEnd": "389FFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-072010",
+      "label": "job base stats",
+      "begin": 466960,
+      "end": 467136,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 162,
+        "cpuBegin": "39A000",
+        "cpuEnd": "39A0AF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-0720c0",
+      "label": "level up experience",
+      "begin": 467136,
+      "end": 467430,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 163,
+        "cpuBegin": "39A0B0",
+        "cpuEnd": "39A1D5"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-0721e6",
+      "label": "level up stat bonuses",
+      "begin": 467430,
+      "end": 471742,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 164,
+        "cpuBegin": "39A1D6",
+        "cpuEnd": "39B2AD"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-0732be",
+      "label": "monster cp",
+      "begin": 471742,
+      "end": 471998,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 165,
+        "cpuBegin": "39B2AE",
+        "cpuEnd": "39B3AD"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-0733be",
+      "label": "pointers to songs $37-$3A",
+      "begin": 471998,
+      "end": 472006,
+      "kind": "pointer-table",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 166,
+        "cpuBegin": "39B3AE",
+        "cpuEnd": "39B3B5"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-0733c6",
+      "label": "songs $37-$3A",
+      "begin": 472006,
+      "end": 473898,
+      "kind": "data",
+      "domain": "audio",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 167,
+        "cpuBegin": "39B3B6",
+        "cpuEnd": "39BB19"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "audio-consumer"
+      ]
+    },
+    {
+      "id": "region-073b2a",
+      "label": "job modifiers",
+      "begin": 473898,
+      "end": 474008,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 168,
+        "cpuBegin": "39BB1A",
+        "cpuEnd": "39BB87"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-073b98",
+      "label": "character initial mp",
+      "begin": 474008,
+      "end": 474088,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 169,
+        "cpuBegin": "39BB88",
+        "cpuEnd": "39BBD7"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-073be8",
+      "label": "character initial hp",
+      "begin": 474088,
+      "end": 474090,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 170,
+        "cpuBegin": "39BBD8",
+        "cpuEnd": "39BBD9"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-073bea",
+      "label": "character initial stats",
+      "begin": 474090,
+      "end": 474110,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 171,
+        "cpuBegin": "39BBDA",
+        "cpuEnd": "39BBED"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-073bfe",
+      "label": "initial gil",
+      "begin": 474110,
+      "end": 474112,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 172,
+        "cpuBegin": "39BBEE",
+        "cpuEnd": "39BBEF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-073c00",
+      "label": "character initial equipment",
+      "begin": 474112,
+      "end": 474128,
+      "kind": "data",
+      "domain": "rules",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 173,
+        "cpuBegin": "39BBF0",
+        "cpuEnd": "39BBFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "rules-consumer"
+      ]
+    },
+    {
+      "id": "region-073c10",
+      "label": "battle bg for world 1 maps",
+      "begin": 474128,
+      "end": 474384,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 174,
+        "cpuBegin": "39BC00",
+        "cpuEnd": "39BCFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-073d10",
+      "label": "battle bg for world 0 maps",
+      "begin": 474384,
+      "end": 474640,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 175,
+        "cpuBegin": "39BD00",
+        "cpuEnd": "39BDFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-073e10",
+      "label": "initial random battle rng",
+      "begin": 474640,
+      "end": 475152,
+      "kind": "data",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 176,
+        "cpuBegin": "39BE00",
+        "cpuEnd": "39BFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ]
+    },
+    {
+      "id": "region-074010",
+      "label": "minimap attribute table",
+      "begin": 475152,
+      "end": 475216,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 177,
+        "cpuBegin": "3A8000",
+        "cpuEnd": "3A803F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-074050",
+      "label": "minimap sprite data",
+      "begin": 475216,
+      "end": 475232,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 178,
+        "cpuBegin": "3A8040",
+        "cpuEnd": "3A804F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-074060",
+      "label": "minimap palettes",
+      "begin": 475232,
+      "end": 475280,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 179,
+        "cpuBegin": "3A8050",
+        "cpuEnd": "3A807F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-074090",
+      "label": "minimap tilemap",
+      "begin": 475280,
+      "end": 475536,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 180,
+        "cpuBegin": "3A8080",
+        "cpuEnd": "3A817F"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-074190",
+      "label": "minimap graphics",
+      "begin": 475536,
+      "end": 476432,
+      "kind": "graphics",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 181,
+        "cpuBegin": "3A8180",
+        "cpuEnd": "3A84FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "decode-then-apply-approved-gbc-art-policy",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-074510",
+      "label": "map code",
+      "begin": 476432,
+      "end": 483344,
+      "kind": "code",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 182,
+        "cpuBegin": "3A8500",
+        "cpuEnd": "3A9FFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-076010",
+      "label": "event code",
+      "begin": 483344,
+      "end": 491536,
+      "kind": "code",
+      "domain": "event",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 183,
+        "cpuBegin": "3BA000",
+        "cpuEnd": "3BBFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "event-consumer"
+      ]
+    },
+    {
+      "id": "region-078010",
+      "label": "menu/field code",
+      "begin": 491536,
+      "end": 507920,
+      "kind": "code",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 184,
+        "cpuBegin": "3C8000",
+        "cpuEnd": "3DBFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    },
+    {
+      "id": "region-07c010",
+      "label": "field code",
+      "begin": 507920,
+      "end": 522256,
+      "kind": "code",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 185,
+        "cpuBegin": "3EC000",
+        "cpuEnd": "3EF7FF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ],
+      "correction": {
+        "originalBegin": 507920,
+        "originalEnd": 522256,
+        "reason": "Legacy 16 KiB fixed-bank notation; retain physical file range and normalize to 8 KiB banks."
+      }
+    },
+    {
+      "id": "region-07f810",
+      "label": "battle code",
+      "begin": 522256,
+      "end": 523792,
+      "kind": "code",
+      "domain": "battle",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 186,
+        "cpuBegin": "3EF800",
+        "cpuEnd": "3EFDFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "battle-consumer"
+      ],
+      "correction": {
+        "originalBegin": 522256,
+        "originalEnd": 523792,
+        "reason": "Legacy 16 KiB fixed-bank notation; retain physical file range and normalize to 8 KiB banks."
+      }
+    },
+    {
+      "id": "region-07fe10",
+      "label": "random number table",
+      "begin": 523792,
+      "end": 524048,
+      "kind": "data",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 187,
+        "cpuBegin": "3EFE00",
+        "cpuEnd": "3FFEFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "preserve-source-ids-and-semantics",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ],
+      "correction": {
+        "originalBegin": 523792,
+        "originalEnd": 524048,
+        "reason": "Legacy 16 KiB fixed-bank notation; retain physical file range and normalize to 8 KiB banks."
+      }
+    },
+    {
+      "id": "region-07ff10",
+      "label": "reset/interrupt code",
+      "begin": 524048,
+      "end": 524296,
+      "kind": "code",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 188,
+        "cpuBegin": "3EFF00",
+        "cpuEnd": "3FFFF7"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ],
+      "correction": {
+        "originalBegin": 524048,
+        "originalEnd": 524296,
+        "reason": "Legacy 16 KiB fixed-bank notation; retain physical file range and normalize to 8 KiB banks."
+      }
+    },
+    {
+      "id": "region-080008",
+      "label": "interrupt vectors",
+      "begin": 524296,
+      "end": 524304,
+      "kind": "code",
+      "domain": "field",
+      "source": {
+        "file": "rom-map.txt",
+        "line": 189,
+        "cpuBegin": "3FFFF8",
+        "cpuEnd": "3FFFFF"
+      },
+      "status": "bounded-region; consumer-contract-pending",
+      "conversion": "translate-original-logic",
+      "dependencies": [
+        "banked-resource-access",
+        "field-consumer"
+      ]
+    }
+  ],
+  "unclassified": [
+    {
+      "id": "unclassified-235e",
+      "begin": 9054,
+      "end": 9070,
+      "status": "consumer unknown; reserve all 16 bytes"
+    }
+  ]
+}
