@@ -15,9 +15,15 @@
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
+      "path": "AGENTS.md",
+      "bytes": 1357,
+      "sha256": "b262893def1198651b9ab1dd1bf1d3caffc235efdda76ded944f195c21ffdc3d",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "README.md",
-      "bytes": 9368,
-      "sha256": "d19885196226a255e72cf33f5b4da26c3b80c8228c3dcf8ab954c71209fd8df8",
+      "bytes": 10961,
+      "sha256": "004e3dcbc5082506464714c7420ea8f1c5f8f62762250708eaa234e7503be930",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -34,14 +40,32 @@
     },
     {
       "path": "package.json",
-      "bytes": 624,
-      "sha256": "6e3830223c7de34c792019bf1d8aa16e0c0d721484e7f3efa4c6f335cd1bb358",
+      "bytes": 777,
+      "sha256": "d10bafe6cad82611fb168fc2ae73ff0492e29566ee22b00ae683a5cc48f8efa7",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/implementation-roadmap.md",
+      "bytes": 19846,
+      "sha256": "b4865fd49f5ccf06ba5fee6fa83629ab66fd92f308544cd0c17ad8a414d1224b",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/development-skills.md",
+      "bytes": 4463,
+      "sha256": "432b5ac119ccf85ec3fec3c93e4b70f62dc9e600c83588e37a8b6a9b0875e063",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/survey-source.mjs",
+      "bytes": 6903,
+      "sha256": "8bd1a4991525739ffe5e4646cde4a7bd69c8c8f5052532890d74c677d6b28c4c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/port-plan.md",
-      "bytes": 17107,
-      "sha256": "8c42dfdcd0630cc9ace77d537f0c1be42f492ebc0f712781277cbc72b9b7365e",
+      "bytes": 17520,
+      "sha256": "0a65cb9c5be7251502f4525a070ea096c226a21e807934f09a7ea300af0c2939",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -238,8 +262,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 2684,
-      "sha256": "b5a41be24fd01dd78eef02f75dc7c12677bcb167fbbd341118a0030056af3c0e",
+      "bytes": 2940,
+      "sha256": "311de1c8b13944715369cf7f717451b051c3e368ef6436f34ef03fddaf4df4bd",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -334,8 +358,50 @@
     },
     {
       "path": "docs/audio-native.md",
-      "bytes": 10371,
-      "sha256": "b3fc322d2e81805f099d120e3ed6cf2067ae1ca7491d88638ece5a4d25840cb7",
+      "bytes": 10490,
+      "sha256": "b84f9d5e4a853cf83464bccddb9954d3ca549fb57e520527b4e805e8d6a83c19",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/field-audio.md",
+      "bytes": 10612,
+      "sha256": "71f6b60931ce3e57832409e9ec6670729a30470e65058d530860d8fe3be84ad2",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/field-source.mjs",
+      "bytes": 5564,
+      "sha256": "d067e0614856bf9ec386fd82b03ee44c9a20b8ce560a01a62b47202d6a8ea535",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/field-event.h",
+      "bytes": 349,
+      "sha256": "7cafb3862dd577116dd7c943e5dcb38581c4a1222a24aa8034ff4114f4e94e35",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/field-event.c",
+      "bytes": 1685,
+      "sha256": "3f73e02d5aad33280e4a92a154aa9bdd4908ba20a9501df8a43023808e3bad2b",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/field-event-test.c",
+      "bytes": 1005,
+      "sha256": "ef0d21a09b46d6e8f69e276cd85d9a1e9b8619db41d8cd54020af1fd45e51d0d",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/field-scene.h",
+      "bytes": 381,
+      "sha256": "8dad1be6057840b56c596e6d6fd647e9cd570c86d5d79fbd8e97f8c5e1abb646",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/field-scene.c",
+      "bytes": 5638,
+      "sha256": "89a333db0856d67a019a88872d86f7c8736942d0fd97ebcdccba3eb178b7f73f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -382,14 +448,14 @@
     },
     {
       "path": "src/audio-native.c",
-      "bytes": 7211,
-      "sha256": "89e915d9408499dc29b8bdd65ca06283d586ecd134543808e54f0661949e5eaa",
+      "bytes": 8014,
+      "sha256": "14caf87cb0148f6188761267a445d32fe2718b2c6b16ee1b4ed6a343b9874d13",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/audio-native-irq.inc",
-      "bytes": 1971,
-      "sha256": "36425cb34dda60a8e9edfa2e14b89aab3d72d3cead83c73a7e7fd76135e0bcb3",
+      "bytes": 2138,
+      "sha256": "d17cb930e14a635feb45f92dd6b63c9822fa31ddf0280ffe3bf046c7cbe7f45b",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -406,8 +472,8 @@
     },
     {
       "path": "tools/build-native.mjs",
-      "bytes": 3844,
-      "sha256": "cb0dfac6a37826569cc82b4eeffd7d6b27dc9561568f7870eb87b9dd1c41ef41",
+      "bytes": 5884,
+      "sha256": "9848f16d4b9aa29fdb758355a090714c956462e617d5b7558733f21b0fca9b87",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -418,8 +484,8 @@
     },
     {
       "path": "tools/native-reference.mjs",
-      "bytes": 3588,
-      "sha256": "09999101386d9df7b95d437a7f0855dfa728609390802724809347b09dc29093",
+      "bytes": 3700,
+      "sha256": "8ca07284ec7924ad62f9ff55015d30959f29aa98c7115f6f9ddba01c5038b2dd",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -430,8 +496,8 @@
     },
     {
       "path": "tools/verify-native.mjs",
-      "bytes": 4369,
-      "sha256": "53e3a701b22d3534e3e4c5cfb1c0d78bc6d0bbb72b8f233b65f3be5cdc6d65d8",
+      "bytes": 6783,
+      "sha256": "bed493dafc9f4b0c25b81564fd1d4dfe60c0bf62f00f966790700d11ae9c3ed6",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -442,8 +508,8 @@
     },
     {
       "path": "tools/VerifyNative/Program.cs",
-      "bytes": 5742,
-      "sha256": "cdf8c15161a8ea7d121ad6597a3f22b48fdbb18c253b453a7e7245377c907209",
+      "bytes": 6791,
+      "sha256": "814b52671a0d3f58114ae11ae09b4aeb49210bb50fb3aa144e1fbb61b1885d80",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]

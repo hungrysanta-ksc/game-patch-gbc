@@ -1,7 +1,8 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
- '.gitattributes','.gitignore','README.md','THIRD-PARTY-NOTICES.md','local.example.json','package.json',
+ '.gitattributes','.gitignore','AGENTS.md','README.md','THIRD-PARTY-NOTICES.md','local.example.json','package.json',
+ 'docs/implementation-roadmap.md','docs/development-skills.md','tools/survey-source.mjs',
  'docs/port-plan.md','docs/audio-design.md','docs/audio-validation.md','docs/vgz-assessment.md','docs/timed-audio.md','docs/localization-inputs.md','docs/audio-backlog.md','docs/audio-control.md','docs/audio-channel.md',
  'spec/source.json','spec/toolchain.json','spec/port-policy.json',
  'src/audio-player.c','src/vgm-player.c','src/audio-control.c','src/audio-control.h','src/audio-control-test.c','src/audio-channel.c','src/audio-channel.h','src/audio-channel-test.c','tests/audio.test.mjs','tests/vgm.test.mjs','tests/timed-stream.test.mjs',
@@ -11,7 +12,8 @@ export const files=[
  'tools/Capture/Capture.csproj','tools/Capture/NuGet.Config','tools/Capture/Program.cs',
  'tools/timed-stream.mjs','tools/build-timed.mjs','tools/build-timed-verifier.mjs','tools/verify-timed.mjs','tools/control-fixtures.mjs','tools/build-control.mjs','tools/channel-fixtures.mjs','tools/build-channel.mjs',
  'tools/VerifyTimed/VerifyTimed.csproj','tools/VerifyTimed/Program.cs',
- 'docs/audio-native.md',
+ 'docs/audio-native.md','docs/field-audio.md','tools/field-source.mjs',
+ 'src/field-event.h','src/field-event.c','src/field-event-test.c','src/field-scene.h','src/field-scene.c',
  'src/audio-music.c','src/audio-music.h','src/audio-engine.c','src/audio-engine.h','src/audio-engine-test.c',
  'src/audio-output.c','src/audio-output.h','src/audio-native.c','src/audio-native-irq.inc',
  'tools/engine-fixtures.mjs','tools/build-engine.mjs','tools/build-native.mjs','tools/native-plan.mjs','tools/native-reference.mjs',
