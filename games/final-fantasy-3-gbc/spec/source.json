@@ -1,0 +1,33 @@
+{
+  "id": "ff3-japan-user-nes2",
+  "size": 524304,
+  "sha256": "262a98737975df25fff80ad91090c3da039d2828035c6253140d2c5f3b176ea2",
+  "mapper": 4,
+  "prgSize": 524288,
+  "referenceCommit": "1acef8117120ff891003de249b1a74bc8d94d674",
+  "offsetBasis": "file offset including 16-byte header",
+  "tables": [
+    ["map_properties", 16400, 512, 16],
+    ["battle_properties", 376848, 512, 2],
+    ["monster_sets", 377872, 256, 6],
+    ["monster_counts", 379408, 64, 4],
+    ["monster_graphics_properties", 379664, 256, 1],
+    ["battle_palettes", 379920, 256, 3],
+    ["monster_palette_inversion", 380688, 32, 1],
+    ["normal_monster_attributes", 380720, 160, 1],
+    ["boss_attributes", 380880, 24, 7],
+    ["boss_graphics_pointers", 381048, 24, 2],
+    ["monster_properties", 393232, 256, 16],
+    ["monster_stat_sets", 397328, 170, 3],
+    ["monster_attack_scripts", 397840, 49, 8],
+    ["weapon_properties", 398352, 88, 8],
+    ["armor_properties", 399056, 64, 8],
+    ["attack_properties", 399568, 115, 8],
+    ["monster_gil", 400488, 256, 2],
+    ["job_base_stats", 466960, 22, 8],
+    ["level_experience", 467136, 98, 3],
+    ["level_stat_bonuses", 467430, 2156, 2],
+    ["monster_capacity_points", 471742, 256, 1],
+    ["job_modifiers", 473898, 22, 5]
+  ]
+}

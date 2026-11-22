@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "decisionDate": "2026-11-22",
+  "product": "Korean-language GBC port of the original NES Final Fantasy III",
+  "deliverable": "Offline distribution package that accepts a user-supplied supported NES ROM, validates it, extracts and converts source data, compiles the source-equivalent GBC implementation, links assets and Korean text, and emits a GBC ROM plus a build report",
+  "sourceProfile": "spec/source.json",
+  "sourceAuthority": "Pinned user ROM bytes and observed original behavior; annotated disassembly and editor definitions are cross-checked references",
+  "gameplayPolicy": "Preserve original game state, integer widths, formulas, RNG semantics, item/equipment/magic/job rules, event scripts, progression and menu interactions; do not invent substitute gameplay or prose",
+  "presentationPolicy": "Use approved GBC viewport, party/enemy pixel-size rules and Hangul font as rendering constraints; preserve original information, interaction order, message meaning and timing dependencies",
+  "prototypeStatus": "Frozen feasibility evidence only. Existing combat-model.c, authored dialogue, status/reward screens and fixed sample party names are not production gameplay or localization inputs",
+  "nextImplementation": "Source audio interpreter and GBC output feasibility check, through the ROM-input build path; no further invented gameplay samples",
+  "runtimeArchitecture": "Source-corresponding native GBC logic plus converted ROM data; no claim of an existing fully automatic 6502-to-SM83 compiler",
+  "releaseInputs": "Port implementation, versioned extraction/conversion rules, source-linked Korean translation records, permitted font/toolchain dependencies; original ROM and generated original-game asset files are supplied or generated locally",
+  "releaseChecks": ["clean offline build from supported ROM", "input integrity and output reproducibility", "source-relative behavior comparisons", "reachable-content completeness", "Korean text/control preservation", "save and reload", "full game progression through ending"],
+  "currentReleaseReady": false
+}

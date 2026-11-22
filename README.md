@@ -4,12 +4,15 @@
 
 **패치 파일·사용 안내·유지보수 소스와 기술 문서를 제공합니다.** 게임 원본 ROM, 패치가 적용된 ROM, ROM 다운로드 링크는 제공하지 않습니다. 정품 게임을 보유하고 적법하게 준비한 지원 버전의 원본 파일이 필요합니다.
 
+개발 중인 NES → GBC 이식 프로젝트도 게임별 폴더에서 관리합니다. 이 경우 사용자의 원본 ROM을 입력받는 추출·변환·컴파일 소스를 제공하며, 완성 패치와 구분합니다.
+
 ## 게임 목록
 
 | 게임 | 공개 버전 | 다운로드 | 안내 |
 |---|---|---|---|
 | 해리 포터와 마법사의 돌 | v1.0.0 · 정식 | [단일 패치](https://github.com/hungrysanta-ksc/game-patch-gbc/releases/tag/hp-ss-gbc-v1.0.0) | [소개](games/harry-potter-sorcerers-stone/README.md) · [설치](games/harry-potter-sorcerers-stone/INSTALL.md) · [소스](games/harry-potter-sorcerers-stone/maintenance/README.md) |
 | 해리 포터와 비밀의 방 | v1.0.0 · 정식 | [일반판·디버그판](https://github.com/hungrysanta-ksc/game-patch-gbc/releases/tag/hp-cos-gbc-v1.0.0) | [소개](games/harry-potter-chamber-of-secrets/README.md) · [설치](games/harry-potter-chamber-of-secrets/INSTALL.md) |
+| 파이널 판타지 III · NES → GBC | 개발 중 · 원작 사운드 검증 | 완성판 미출시 | [프로젝트·로컬 빌드](games/final-fantasy-3-gbc/README.md) · [이식 계획](games/final-fantasy-3-gbc/docs/port-plan.md) |
 
 ## 다운로드와 설치
 
@@ -25,6 +28,10 @@
 ```text
 README.md
 games/
+  final-fantasy-3-gbc/
+    tools/
+    src/
+    docs/
   harry-potter-sorcerers-stone/
     maintenance/
     screenshots/

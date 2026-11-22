@@ -1,0 +1,13 @@
+.local/
+build/
+evidence/
+local.json
+*.nes
+*.gbc
+*.gb
+*.nsf
+*.wav
+*.sav
+*.mss
+bin/
+obj/
