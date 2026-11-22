@@ -15,9 +15,15 @@
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
+      "path": "AGENTS.md",
+      "bytes": 1357,
+      "sha256": "b262893def1198651b9ab1dd1bf1d3caffc235efdda76ded944f195c21ffdc3d",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "README.md",
-      "bytes": 10454,
-      "sha256": "b0f49163387fc0f09142e6cffe1ae89103d9d70fb23dbc821523c339687f9278",
+      "bytes": 10961,
+      "sha256": "004e3dcbc5082506464714c7420ea8f1c5f8f62762250708eaa234e7503be930",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -34,14 +40,32 @@
     },
     {
       "path": "package.json",
-      "bytes": 730,
-      "sha256": "ef8ba81f6cf395aa8454bd0d02e418e35d4675be2aa8aa3cba28a606ea92806d",
+      "bytes": 777,
+      "sha256": "d10bafe6cad82611fb168fc2ae73ff0492e29566ee22b00ae683a5cc48f8efa7",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/implementation-roadmap.md",
+      "bytes": 19846,
+      "sha256": "b4865fd49f5ccf06ba5fee6fa83629ab66fd92f308544cd0c17ad8a414d1224b",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/development-skills.md",
+      "bytes": 4463,
+      "sha256": "432b5ac119ccf85ec3fec3c93e4b70f62dc9e600c83588e37a8b6a9b0875e063",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/survey-source.mjs",
+      "bytes": 6903,
+      "sha256": "8bd1a4991525739ffe5e4646cde4a7bd69c8c8f5052532890d74c677d6b28c4c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/port-plan.md",
-      "bytes": 17162,
-      "sha256": "88a1da42ea3352d14a5c6781517338a25c64c7adb75de4e97e395c6c29b7cde9",
+      "bytes": 17520,
+      "sha256": "0a65cb9c5be7251502f4525a070ea096c226a21e807934f09a7ea300af0c2939",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -238,8 +262,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 2838,
-      "sha256": "32a84c2658af0c12e9a0e77ffbff674555d49e0d4e7599761194bb0c7737a108",
+      "bytes": 2940,
+      "sha256": "311de1c8b13944715369cf7f717451b051c3e368ef6436f34ef03fddaf4df4bd",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -340,8 +364,8 @@
     },
     {
       "path": "docs/field-audio.md",
-      "bytes": 10523,
-      "sha256": "b592bd9298490711c6441897899ee76879103ca1efd60e9f45ec8dcd1f758053",
+      "bytes": 10612,
+      "sha256": "71f6b60931ce3e57832409e9ec6670729a30470e65058d530860d8fe3be84ad2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

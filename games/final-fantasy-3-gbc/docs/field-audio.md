@@ -97,4 +97,4 @@ cl /nologo /W4 /D_CRT_SECURE_NO_WARNINGS /Febuild/scene/field-host.exe /Fobuild/
 ./build/scene/field-host.exe build/scene/field-fixtures.bin
 ```
 
-원본/생성 ROM, 추출 그래픽·맵·이벤트·비교 기준·관측·번역 데이터는 공개 대상에서 제외한다. 배포 소스는 원본 ROM에서 필요한 자료를 다시 생성한다. 다음 게임 실행 계층 작업은 원작의 NPC 조건/이벤트 선택과 이동·충돌을 이 소비자에 연결하는 것이다. 한글 문장·전투/마법·다른 맵과 전체 CPU 예산은 각각 해당 경로를 합쳐 검증해야 한다.
+원본/생성 ROM, 추출 그래픽·맵·이벤트·비교 기준·관측·번역 데이터는 공개 대상에서 제외한다. 배포 소스는 원본 ROM에서 필요한 자료를 다시 생성한다. 후속 순서는 [전체 구현 로드맵](implementation-roadmap.md)으로 재검토했다. 전체 데이터 등록·은행/상태/RNG/저장 기반을 먼저 마련한 뒤 NPC 조건·이동과 전투 규칙을 연결한다. 한글 문장·전투/마법·다른 맵과 전체 CPU 예산은 각각 해당 경로를 합쳐 검증해야 한다.

@@ -1,7 +1,8 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
- '.gitattributes','.gitignore','README.md','THIRD-PARTY-NOTICES.md','local.example.json','package.json',
+ '.gitattributes','.gitignore','AGENTS.md','README.md','THIRD-PARTY-NOTICES.md','local.example.json','package.json',
+ 'docs/implementation-roadmap.md','docs/development-skills.md','tools/survey-source.mjs',
  'docs/port-plan.md','docs/audio-design.md','docs/audio-validation.md','docs/vgz-assessment.md','docs/timed-audio.md','docs/localization-inputs.md','docs/audio-backlog.md','docs/audio-control.md','docs/audio-channel.md',
  'spec/source.json','spec/toolchain.json','spec/port-policy.json',
  'src/audio-player.c','src/vgm-player.c','src/audio-control.c','src/audio-control.h','src/audio-control-test.c','src/audio-channel.c','src/audio-channel.h','src/audio-channel-test.c','tests/audio.test.mjs','tests/vgm.test.mjs','tests/timed-stream.test.mjs',
