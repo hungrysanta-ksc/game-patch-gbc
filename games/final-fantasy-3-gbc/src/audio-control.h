@@ -1,6 +1,7 @@
 #ifndef FF3_AUDIO_CONTROL_H
 #define FF3_AUDIO_CONTROL_H
 #include <stdint.h>
+#include "platform-call.h"
 
 /* Offsets preserve NES $7F40..$7FFF for comparison during the port.
  * These are logical NES APU writes, not Game Boy hardware registers. */
@@ -37,8 +38,8 @@ typedef struct {
 } FF3AudioOps;
 
 uint8_t ff3_audio_song(FF3AudioState *s, uint8_t id);
-uint8_t ff3_audio_effect(FF3AudioState *s, uint8_t id);
-void ff3_audio_stop_effect(FF3AudioState *s);
+uint8_t ff3_audio_effect(FF3AudioState *s, uint8_t id) FF3_BANKED;
+void ff3_audio_stop_effect(FF3AudioState *s) FF3_BANKED;
 void ff3_audio_init(FF3AudioState *s, const FF3AudioOps *ops);
 void ff3_audio_release_effect(FF3AudioState *s, const FF3AudioOps *ops);
 void ff3_audio_start_effect(FF3AudioState *s, const FF3AudioOps *ops);

@@ -7,6 +7,7 @@
 #include "audio-engine.h"
 #include "audio-output.h"
 #include "native-assets.h"
+#include "platform.h"
 #ifdef FF3_SCENE
 #include "field-scene.h"
 #endif
@@ -26,13 +27,11 @@ static uint8_t *slot;static uint8_t emitted,preparing,automatic,plan_index,pop_a
 static uint16_t next_vm,next_sweep,next_restore,prepare_due;
 static uint32_t fraction;
 static uint8_t sweep_fraction;
-static uint8_t mapped_bank=255;
 static const palette_color_t palette[]={RGB(28,30,29),RGB(18,22,21),RGB(9,13,14),RGB(2,4,6)};
 #include "audio-native-irq.inc"
-void ff3_map_bank(uint8_t bank){if(mapped_bank!=bank){SWITCH_ROM(bank);mapped_bank=bank;}}
-uint8_t ff3_rom_byte(uint8_t source,uint16_t offset){uint8_t bank=source==9?5:source-0x35;if(source!=9&&(source<0x36||source>0x39)){ff3_error=4;return 0;}ff3_map_bank(bank);return *((const uint8_t*)(0x4000+offset));}
-uint16_t ff3_pitch_lookup(uint16_t t){ff3_map_bank(6);return *((const uint16_t*)(0x4000+t*2));}
-uint8_t ff3_noise_lookup(uint8_t p){ff3_map_bank(6);return *((const uint8_t*)(0x5000+p));}
+uint8_t ff3_rom_byte(uint8_t source,uint16_t offset){uint8_t bank=source==9?5:source-0x35;if(source!=9&&(source<0x36||source>0x39)){ff3_error=4;return 0;}return ff3_resource_byte(bank,offset);}
+uint16_t ff3_pitch_lookup(uint16_t t){uint16_t value;if(!ff3_resource_copy(&value,6,t*2,2))return 0;return value;}
+uint8_t ff3_noise_lookup(uint8_t p){return ff3_resource_byte(6,4096u+p);}
 void ff3_output(uint8_t reg,uint8_t value){native_source_hash=(native_source_hash<<1)|(native_source_hash>>15);native_source_hash^=((uint16_t)reg<<8)|value;ff3_backend_write(reg,value);}
 void ff3_gb_write(uint8_t reg,uint8_t value){if(emitted>=23){ff3_error=5;return;}slot[18+emitted*2]=reg;slot[19+emitted*2]=value;emitted++;native_gb_hash=(native_gb_hash<<1)|(native_gb_hash>>15);native_gb_hash^=((uint16_t)reg<<8)|value;}
 static void silence(void){NR12_REG=NR22_REG=NR32_REG=NR42_REG=0;}
@@ -43,7 +42,7 @@ static void put32(uint8_t at,uint32_t value){put16(at,(uint16_t)value);put16(at+
 static void publish(void){uint8_t i,index=native_published^1,*p=native_snapshot[index];for(i=0;i<216;i++)p[i]=((uint8_t*)&ff3_state)[i];p+=216;for(i=0;i<12;i++)p[i]=slot[4+i];p[12]=(uint8_t)native_pops;p[13]=native_pops>>8;native_published=index;}
 /* About three source ticks of lookahead absorb note/SFX decode peaks.
  * The next packet may extend this bound by one event interval. */
-static uint8_t full(void){return ((native_tail+1)&15)==native_head||(int16_t)(prepare_due-native_clock)>205;}
+static uint8_t full(void){return ((native_tail+1)&15)==native_head||FF3_AUDIO_IS_AHEAD(prepare_due,ff3_clock_now());}
 static void prepare(void){uint8_t end=0,advanced=0;
  slot=native_queue[native_tail];emitted=0;prepare_due=(int16_t)(next_vm-next_sweep)<=0?next_vm:next_sweep;
  if(pop_active&&(int16_t)(next_restore-prepare_due)<0)prepare_due=next_restore;
@@ -64,7 +63,7 @@ static void prepare(void){uint8_t end=0,advanced=0;
   #endif
   native_ticks++;
   if(ff3_pop_seen&&native_pop_enabled){pop_active=1;next_restore=prepare_due+2;native_pops++;}
-  next_vm+=68;fraction+=92816ul;if(fraction>=600988ul){fraction-=600988ul;next_vm++;}
+  next_vm+=FF3_LOGIC_STEP;fraction+=FF3_LOGIC_FRACTION;if(fraction>=FF3_LOGIC_DENOMINATOR){fraction-=FF3_LOGIC_DENOMINATOR;next_vm++;}
   if(automatic&&native_ticks>=NATIVE_TEST_TICKS){end=1;preparing=0;}
  }
  ff3_backend_flush(pop_active);native_events++;
@@ -72,6 +71,7 @@ static void prepare(void){uint8_t end=0,advanced=0;
  #ifdef FF3_SCENE
  slot[16]=field_event.shake;slot[17]=field_event.revision;
  #endif
+ if(platform_error)ff3_error=26;
  if(ff3_error){preparing=0;native_playing=0;TAC_REG=0;silence();return;}
  /* RAM snapshots are diagnostics, not audio work. Sample every eight logical
   * ticks; consumed output metadata still covers every queued event. */
@@ -83,7 +83,7 @@ static void start(uint8_t test){uint8_t i;CRITICAL{TAC_REG=0;IF_REG&=~TIM_IFLAG;
 ff3_scene_init();
 #endif
 ff3_engine_init();while(preparing&&!full())prepare();if(!ff3_error)dispatch_due();if(native_playing){CRITICAL{TIMA_REG=TMA_REG=128;IF_REG&=~TIM_IFLAG;TAC_REG=5;}}}
-void main(void){uint8_t i,keys,old=0,pressed,frame=0,selection=0x20,mode=0,op,arg;cpu_fast();set_bkg_palette(0,1,palette);NR52_REG=128;NR50_REG=0x77;NR51_REG=0xff;NR10_REG=0;NR30_REG=0;SWITCH_ROM(6);for(i=0;i<16;i++)((volatile uint8_t*)0xff30)[i]=*((const uint8_t*)(0x5010+i));NR30_REG=128;silence();
+void main(void){uint8_t i,keys,old=0,pressed,frame=0,selection=0x20,mode=0,op,arg;ff3_platform_init();cpu_fast();set_bkg_palette(0,1,palette);NR52_REG=128;NR50_REG=0x77;NR51_REG=0xff;NR10_REG=0;NR30_REG=0;for(i=0;i<16;i++)((volatile uint8_t*)0xff30)[i]=ff3_resource_byte(6,4112u+i);NR30_REG=128;silence();
 #ifndef FF3_SCENE
 text("FF3 NATIVE AUDIO\nORIGINAL ROM DATA\n\nSONG 32\n\nA REQUEST B STOP\nL/R SELECT ID\nSELECT SONG/SFX\nUP FADE DOWN RESUME\nSTART AUTO CHECK\n\n65 SONGS / 97 SFX\n");set_bkg_palette(0,1,palette);SHOW_BKG;DISPLAY_ON;
 #else
@@ -101,10 +101,10 @@ native_busy=0;native_ready=0xa5;
 #ifdef FF3_SCENE
    /* Let a pending display frame run once at least one source tick of audio
     * is queued. Filling the entire lookahead first can starve rendering. */
-   if(frame!=(uint8_t)sys_time&&(int16_t)(prepare_due-native_clock)>68)break;
+   if(frame!=(uint8_t)sys_time&&(int16_t)(prepare_due-ff3_clock_now())>68)break;
 #endif
   }native_busy=0;
-  if(frame!=(uint8_t)sys_time){frame=(uint8_t)sys_time;keys=joypad();pressed=keys&~old;old=keys;
+  if(frame!=(uint8_t)sys_time){frame=(uint8_t)sys_time;ff3_platform_check();keys=joypad();pressed=keys&~old;old=keys;
    #ifdef FF3_SCENE
    ff3_scene_render();
    if(pressed&J_START)native_request=255;

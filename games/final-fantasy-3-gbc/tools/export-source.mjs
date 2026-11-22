@@ -4,6 +4,7 @@ export const files=[
  '.gitattributes','.gitignore','AGENTS.md','README.md','THIRD-PARTY-NOTICES.md','local.example.json','package.json',
  'docs/implementation-roadmap.md','docs/development-skills.md','tools/survey-source.mjs',
  'docs/data-registry.md','spec/data-registry.json','tools/register-data.mjs','tools/registry-core.mjs','tests/registry.test.mjs',
+ 'docs/platform-foundation.md','src/platform-call.h','src/platform.h','src/platform.c','src/platform-probe.c',
  'docs/port-plan.md','docs/audio-design.md','docs/audio-validation.md','docs/vgz-assessment.md','docs/timed-audio.md','docs/localization-inputs.md','docs/audio-backlog.md','docs/audio-control.md','docs/audio-channel.md',
  'spec/source.json','spec/toolchain.json','spec/port-policy.json',
  'src/audio-player.c','src/vgm-player.c','src/audio-control.c','src/audio-control.h','src/audio-control-test.c','src/audio-channel.c','src/audio-channel.h','src/audio-channel-test.c','tests/audio.test.mjs','tests/vgm.test.mjs','tests/timed-stream.test.mjs',
