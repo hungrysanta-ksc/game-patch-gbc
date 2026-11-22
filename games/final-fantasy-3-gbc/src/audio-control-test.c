@@ -1,9 +1,10 @@
 /* Source-derived differential fixture consumer. This is an engineering test,
- * not a playable audio engine: unported VM callbacks replay recorded results. */
+ * not a playable audio engine: only the outer music scheduler is replayed. */
 #include <gb/gb.h>
 #include <gb/cgb.h>
 #include <stdio.h>
 #include "audio-control.h"
+#include "audio-channel.h"
 #include "control-assets.h"
 
 volatile uint8_t control_ready=0,control_status=0,control_failure=0;
@@ -31,14 +32,22 @@ static void log_write(uint8_t reg,uint8_t value){
     if(used==128){fail(11,used);return;}
     writes[used][0]=reg;writes[used++][1]=value;
 }
+static const FF3ChannelOps channel_ops={source_byte,log_write};
 static void advance(uint8_t routine,uint8_t channel,uint8_t format,uint8_t effect){
-    uint8_t count,reg,value;
+    uint8_t count,reg,value,first=used,i,ok;
     if(!callbacks){fail(12,0);return;}callbacks--;
     if(byte()!=routine)fail(1,0);if(byte()!=channel)fail(1,1);
     if(byte()!=format)fail(1,2);if(byte()!=effect)fail(1,3);
     compare(state.ram,192,2);compare(state.apu,24,3);
-    read_into(state.ram,192);count=byte();
-    while(count--){reg=byte();value=byte();if(reg>=24){fail(13,reg);return;}state.apu[reg]=value;log_write(reg,value);}
+    if(routine<2){
+        ok=routine?ff3_channel_envelope(&state,&channel_ops,channel,effect):ff3_channel_script(&state,&channel_ops,channel,format,effect);
+        if(!ok)fail(15,routine);
+        compare(state.ram,192,16);count=byte();if(count!=used-first)fail(17,count);
+        for(i=0;i<count;i++){reg=byte();value=byte();if(reg!=writes[first+i][0]||value!=writes[first+i][1])fail(18,i);}
+    }else{
+        read_into(state.ram,192);count=byte();
+        while(count--){reg=byte();value=byte();if(reg>=24){fail(13,reg);return;}state.apu[reg]=value;log_write(reg,value);}
+    }
 }
 static const FF3AudioOps ops={source_byte,log_write,advance};
 void main(void){

@@ -16,8 +16,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 7931,
-      "sha256": "c61490b5c62be6e783417f2efb23dafeaa4f13dea5c7a6495865ebf9be94d9bc",
+      "bytes": 8216,
+      "sha256": "a662efc299516d857d030cb8a09caa8f38c23debad6c2dba0867d76bd05011c2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -34,8 +34,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 440,
-      "sha256": "91e5b5bd1e56b0baa673de3d82956f5dfb77b8254c1cd20aa3e4eae8a85bc3d2",
+      "bytes": 487,
+      "sha256": "3a12a56daf83266e7ca201e7fb02fd27dafe15e73e1ba48e886dbfff8ca73609",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -82,8 +82,14 @@
     },
     {
       "path": "docs/audio-control.md",
-      "bytes": 8004,
-      "sha256": "53784a5c7bf024649e1513b08534940d0ec01a4c87a0015f25b960252bad2738",
+      "bytes": 8070,
+      "sha256": "c4ea85247126f8f025058aab8120e2f1cd74165cf5709179a9fabb55f355c72b",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/audio-channel.md",
+      "bytes": 8664,
+      "sha256": "c0088ff7c7a1431560ab95bc4b008716854f4f4d2db4f75a6e2c4ea59f953480",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -130,8 +136,26 @@
     },
     {
       "path": "src/audio-control-test.c",
-      "bytes": 3961,
-      "sha256": "6f19314c82af9e0267e45016bcd9037e5a9769ac7ea4d7fe8f3b8d6d8d11c7ca",
+      "bytes": 4485,
+      "sha256": "a9d95895fcea33c9bdc5aaf31b117bc4252cefd241a9c117b2ec2e51d1db23a2",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/audio-channel.c",
+      "bytes": 7331,
+      "sha256": "a08067b1c0b410c0d51a11be00e2196944d7b7ed19690cf1d34f563a62605402",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/audio-channel.h",
+      "bytes": 718,
+      "sha256": "3d9cf5dd8e75e46d2a7d993b4ba7e8369a8d1dcfdc873f8716a2ff909f47f0f0",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/audio-channel-test.c",
+      "bytes": 3019,
+      "sha256": "64da60e015258258a5419bc456acb7f35c3e8a0b01d310df6f73c941671d8dd3",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -214,8 +238,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 2039,
-      "sha256": "882d3595be62c12b7d28a556ac2aa90973322d6e93cc4e8b2755b6e21f295a3b",
+      "bytes": 2189,
+      "sha256": "434a3a742d070806c3c84ebe1ab39bc622df1e3498bbabcd46592acc9c88ab45",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -280,8 +304,20 @@
     },
     {
       "path": "tools/build-control.mjs",
-      "bytes": 3792,
-      "sha256": "5f742415549cba574b5214c0d1cef99242a9b37f67ccac40732d68002641e47f",
+      "bytes": 3824,
+      "sha256": "0e785ac3de41616f88f3121c2d1c8f671b906a1b183df42cfabe5f6b4c58fac0",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/channel-fixtures.mjs",
+      "bytes": 5743,
+      "sha256": "8ab923362198cef2a4465df42c1fcf916e70f628afaab5d4ae1e02b6a6dda1c1",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-channel.mjs",
+      "bytes": 3744,
+      "sha256": "d7b07131a32562cee57baa65e4d6587e8926d2a96a12e4f6e3e9ffe2c1e2a5d7",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

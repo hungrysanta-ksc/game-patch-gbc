@@ -1,0 +1,32 @@
+import fs from 'node:fs/promises';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {ROOT,input,check,hash} from './source.mjs';
+import {makeChannelFixtures} from './channel-fixtures.mjs';
+const {data,profile,local}=await input(),out=ROOT+'/build/channel',gen=out+'/generated';
+await fs.mkdir(gen,{recursive:true});await fs.mkdir(ROOT+'/.local/compiler-tmp',{recursive:true});
+const fixtures=makeChannelFixtures(data);
+await fs.writeFile(out+'/fixtures.bin',fixtures.data);
+await fs.writeFile(out+'/cases.json',JSON.stringify(fixtures.cases.map(({bytes,...c})=>c),null,2));
+const negativeFixture=Buffer.from(fixtures.data);negativeFixture[fixtures.cases[0].expectedOffset]^=1;
+await fs.writeFile(out+'/fixtures-negative.bin',negativeFixture);
+const report={schema:1,sourceSha256:profile.sha256,cases:fixtures.cases.length,fixtureBytes:fixtures.data.length,fixtureSha256:hash(fixtures.data),coverage:fixtures.coverage,scope:'Native channel script and volume/pitch envelopes, source differential tests; no outer music scheduler or GBC timbre claim',recording:false};
+await fs.writeFile(out+'/report.json',JSON.stringify(report,null,2));
+console.log(JSON.stringify({cases:report.cases,bytes:report.fixtureBytes,coverage:{...report.coverage,pcs:report.coverage.pcs.length,commands:report.coverage.commands.length}}));
+if(process.argv.includes('--fixtures-only'))process.exit(0);
+const count=Math.ceil(fixtures.data.length/16384);check(count<=254,'Fixture bank capacity');
+const sources=[];
+for(let i=0;i<count;i++){const file=gen+'/channel-bank'+(i+1)+'.c';await fs.writeFile(file,'#pragma bank '+(i+1)+'\n#include <stdint.h>\nconst uint8_t channel_bank'+(i+1)+'[]={'+[...fixtures.data.subarray(i*16384,(i+1)*16384)].join(',')+'};\n');sources.push(file);}
+await fs.writeFile(gen+'/channel-assets.h','#define CHANNEL_CASES '+fixtures.cases.length+'u\n');
+const n=process.argv.indexOf('--gbdk'),gbdk=n<0?local.gbdk:process.argv[n+1];check(gbdk,'Pass --gbdk PATH');
+const compiler=gbdk+'/bin/lcc.exe',lock=JSON.parse(await fs.readFile(ROOT+'/spec/toolchain.json'));
+check(hash(await fs.readFile(compiler))===lock.gbdk.lccSha256,'Compiler mismatch');
+const banks=2**Math.ceil(Math.log2(count+1)),romPath=out+'/ff3-channel-test.gbc';
+try{const r=await promisify(execFile)(compiler,['-msm83:gb','-Wm-yC','-Wm-yt0x19','-Wm-yo'+banks,'-Wm-ynFF3CHANNEL','-Wl-m','-Wl-j','-I'+gen,'-o',romPath,ROOT+'/src/audio-channel.c',ROOT+'/src/audio-channel-test.c',...sources],{cwd:out,env:{...process.env,TMP:ROOT+'/.local/compiler-tmp',TEMP:ROOT+'/.local/compiler-tmp'},maxBuffer:8e6});await fs.writeFile(out+'/compiler.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(out+'/compiler.log',(e.stdout||'')+(e.stderr||''));throw e;}
+const rom=await fs.readFile(romPath);check(rom.length===banks*16384&&rom[0x143]===0xc0&&rom[0x147]===0x19,'ROM header');
+check(rom.subarray(16384,16384+fixtures.data.length).equals(fixtures.data),'Linked fixtures differ');
+let header=0,sum=0;for(let i=0x134;i<=0x14c;i++)header=(header-rom[i]-1)&255;for(let i=0;i<rom.length;i++)if(i!==0x14e&&i!==0x14f)sum=(sum+rom[i])&65535;
+check(header===rom[0x14d]&&sum===rom.readUInt16BE(0x14e),'ROM checksums');
+const negative=Buffer.from(rom);negative[16384+fixtures.cases[0].expectedOffset]^=1;sum=0;for(let i=0;i<negative.length;i++)if(i!==0x14e&&i!==0x14f)sum=(sum+negative[i])&65535;negative.writeUInt16BE(sum,0x14e);
+await fs.writeFile(out+'/ff3-channel-negative.gbc',negative);
+Object.assign(report,{romSha256:hash(rom),romBytes:rom.length,negativeRomSha256:hash(negative)});await fs.writeFile(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify({romSha256:report.romSha256,negativeRomSha256:report.negativeRomSha256}));
