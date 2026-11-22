@@ -5,18 +5,18 @@
   "files": [
     {
       "path": "CHANGELOG.md",
-      "sha256": "71d45691a3322aa369f452b6ad088322704b30628de89733fb56745656387dd5",
-      "bytes": 1582
+      "sha256": "dc7afce12580d5dbaf9a7d0b00404200cb148d232150b2b28a41a59a37b1381a",
+      "bytes": 1548
     },
     {
       "path": "INSTALL.md",
-      "sha256": "5f059168e3c1d150115e22b28873bdbe27ad7091097daa5769c16f8e15cd96d2",
-      "bytes": 3882
+      "sha256": "a32e19fb5d229db67162ff7ce65e4f8afcc67c2db8e3ed560e9801de760bbc82",
+      "bytes": 4198
     },
     {
       "path": "README.md",
-      "sha256": "d75b64172b1a5ade64bdf798a8b6219fbaa697941eb64fa2f15bb484b2f8e9a4",
-      "bytes": 4085
+      "sha256": "c8a5d1a38a23c92a5b7e1b7978d7bf519b6cf8bcdb1c01caf4441d3933baaa50",
+      "bytes": 3709
     },
     {
       "path": "THIRD-PARTY-NOTICES.md",
@@ -65,7 +65,7 @@
     },
     {
       "path": "maintenance/config/release-verification-v1.0.0.json",
-      "sha256": "58eb81c5a82e2f8df0aeb3987e79ceb2da5e0564783cce0af3994b66fb7447f1",
+      "sha256": "7d56506f82ec6836d583c7a1bbcdd9ee10b3ed4788d1a54b3d4337d19fc4280d",
       "bytes": 1429
     },
     {
