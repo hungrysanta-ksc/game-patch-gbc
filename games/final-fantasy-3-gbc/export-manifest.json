@@ -16,8 +16,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 5896,
-      "sha256": "3561259a554db27a037e0235f4fdf2ffe2c66afcd4daace45236f41449ea8e62",
+      "bytes": 7147,
+      "sha256": "ffe8e3d5a5b3c7e50904f72c7e7c273fb936c8db0190c355ce1dbaf4586f8e08",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -34,8 +34,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 249,
-      "sha256": "f94041a66451498ef4c1ac77a89299ae5261decd33059ae2cc407f8bbd7e8781",
+      "bytes": 393,
+      "sha256": "2bc2d10d161285bad80b0404d6ff4bc943f0e1c9960d78f67f44eea4a79e995a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -58,8 +58,20 @@
     },
     {
       "path": "docs/vgz-assessment.md",
-      "bytes": 5460,
-      "sha256": "3f11d55e0a7e9dfd62b8509b16f3b687e4a273dec1a4b5db2b10c11c0b213b33",
+      "bytes": 5679,
+      "sha256": "237bd0b6d76ea5e6676d9c44b601e235848c4fe9418ee5218e9fcae613ca759e",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/timed-audio.md",
+      "bytes": 7722,
+      "sha256": "398c212dc36e38e5a2ee1727648629b645078c90660916c48c09f130c49c0aa4",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/localization-inputs.md",
+      "bytes": 1851,
+      "sha256": "493174c0e85bb884fe66eb62257c867b847a98856aba3ddf9530b923020c207a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -87,6 +99,12 @@
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
+      "path": "src/vgm-player.c",
+      "bytes": 10407,
+      "sha256": "eb2229d07fb9d75fb6d351cb802096cf991463851054bfbf3261a1382daf8676",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "tests/audio.test.mjs",
       "bytes": 2596,
       "sha256": "5fe6c62148e03d769f4a8ac5504e3c15f6ead73e2b4ceaf046c5022e739b673a",
@@ -96,6 +114,12 @@
       "path": "tests/vgm.test.mjs",
       "bytes": 1729,
       "sha256": "64b84262936bee585f786322a7dfb30857b2016da4c4ebbe9a40a6f129df7476",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/timed-stream.test.mjs",
+      "bytes": 2368,
+      "sha256": "c601123d1e3123e0e568992e7deaff9ccf04ab7ab2f612cdffe2b3d6b540a0dc",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -160,8 +184,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 1583,
-      "sha256": "df8e9873435649f0f3b963fadaa1a36b28ca372a05dafd8782cba63911fe5978",
+      "bytes": 1865,
+      "sha256": "75f335e648e968bbc4b628f4e1e51248d41aec83e40ef28aa91e3905aa6df6ec",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -192,6 +216,42 @@
       "path": "tools/Capture/Program.cs",
       "bytes": 6538,
       "sha256": "19ac8a22b5ceb092519b5806ca768418ef3e99c0578aeaaa02aba15bc660a2e3",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/timed-stream.mjs",
+      "bytes": 3863,
+      "sha256": "e47e8e90fec40cdca83012170d623012f6c9b5369feb1e6214c930ad412d6c0e",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-timed.mjs",
+      "bytes": 5828,
+      "sha256": "86cbd794b1f43a5e8cad0a61d7667806d07ba4817a6bf65b91848f53f8de8f90",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-timed-verifier.mjs",
+      "bytes": 849,
+      "sha256": "947903c1f3349dd4648d5ab63a43a27245200111688b01dcc7cad1356cb4f3b1",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-timed.mjs",
+      "bytes": 5936,
+      "sha256": "c6253b06df9beaa9072d338d8fd417276391183d5c60674ff02942f04b7e5e45",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyTimed/VerifyTimed.csproj",
+      "bytes": 210,
+      "sha256": "da2d65915c599ead09a16aebbb6c8dd1f3a2a83e26b6b552c53ef1d3151518ad",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyTimed/Program.cs",
+      "bytes": 5379,
+      "sha256": "cd20900a90dabbc9c777c4f65d3bf8ffc73920c4cfa4f4e923b7a56286cd46bf",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]
