@@ -1,9 +1,9 @@
 #include "audio-control.h"
-#define R(address) s->ram[(address)-0x7f40]
+#define R(address) FF3_RAM(s)[(address)-0x7f40]
 
 static void emit(FF3AudioState *s, const FF3AudioOps *ops, uint8_t reg, uint8_t value) {
-    s->apu[reg] = value;
-    ops->write_apu(reg, value);
+    FF3_APU(s)[reg] = value;
+    FF3_WRITE(ops,reg, value);
 }
 uint8_t ff3_audio_song(FF3AudioState *s, uint8_t id) {
     if (id > 0x40) return 0;
@@ -46,11 +46,11 @@ void ff3_audio_start_effect(FF3AudioState *s, const FF3AudioOps *ops) {
         R(0x7fc6+i) = R(0x7ff0+i) = R(0x7faa+i) = R(0x7fbf+i) = 255;
     }
     table = 0x92c5 + (uint8_t)(R(0x7f49) << 1);
-    lo = ops->read_bank36(table); hi = ops->read_bank36(table + 1);
+    lo = FF3_READ36(ops,table); hi = FF3_READ36(ops,table + 1);
     pointer = lo | ((uint16_t)hi << 8);
     for (i = 1; i >= 0; i--) {
-        R(0x7f5d+i) = ops->read_bank36(pointer + i*2 + 1);
-        R(0x7f56+i) = ops->read_bank36(pointer + i*2);
+        R(0x7f5d+i) = FF3_READ36(ops,pointer + i*2 + 1);
+        R(0x7f56+i) = FF3_READ36(ops,pointer + i*2);
         if (R(0x7f56+i) != 255 || R(0x7f5d+i) != 255) R(0x7f4f+i) |= 0x80;
     }
     R(0x7f49) = 0x40;
@@ -63,10 +63,10 @@ void ff3_audio_update_effect(FF3AudioState *s, const FF3AudioOps *ops) {
     if (request == 255) { R(0x7f49) = 0; ff3_audio_release_effect(s, ops); }
     else if (request & 0x80) ff3_audio_start_effect(s, ops);
     else {
-        ops->advance(FF3_SCRIPT, 5, 3, 255);
-        ops->advance(FF3_ENVELOPE, 5, 3, 255);
-        ops->advance(FF3_SCRIPT, 6, 1, 255);
-        ops->advance(FF3_ENVELOPE, 6, 1, 255);
+        FF3_ADVANCE(ops,FF3_SCRIPT, 5, 3, 255);
+        FF3_ADVANCE(ops,FF3_ENVELOPE, 5, 3, 255);
+        FF3_ADVANCE(ops,FF3_SCRIPT, 6, 1, 255);
+        FF3_ADVANCE(ops,FF3_ENVELOPE, 6, 1, 255);
     }
 }
 
@@ -125,8 +125,8 @@ void ff3_audio_silence_music(FF3AudioState *s, const FF3AudioOps *ops) {
 void ff3_audio_tick(FF3AudioState *s, const FF3AudioOps *ops) {
     if (R(0x7f43) == 0x37) R(0x7f49) = 0;
     else ff3_audio_update_effect(s, ops);
-    ops->advance(FF3_MUSIC, 0, 0, 0);
-    emit(s, ops, 21, s->apu[21] | 15);
+    FF3_ADVANCE(ops,FF3_MUSIC, 0, 0, 0);
+    emit(s, ops, 21, FF3_APU(s)[21] | 15);
     ff3_audio_flush_effect(s, ops); ff3_audio_flush_music(s, ops);
     R(0x7f40) = (R(0x7f40) & 0x7f) | (R(0x7f42) & 0x80);
 }

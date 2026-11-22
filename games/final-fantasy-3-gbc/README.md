@@ -6,14 +6,32 @@ NES 일본판 FF3의 게임 규칙과 데이터를 유지하면서 GBC용 실행
 
 청취 결과에서 잡음과 음색 차이가 지적되어, 사용자 결정에 따라 **음색 조정은 보류하고 원작 로직 이식을 진행**합니다. [보류 기록](docs/audio-backlog.md)
 
-현재 원작의 효과음 요청·정지·교체·채널 점유/해제·APU 출력 제어부와 **음표·반복 명령·음량/피치 엔벌로프**를 C로 옮겼습니다. [채널 VM 이식과 검증](docs/audio-channel.md), [제어부 이식](docs/audio-control.md)
+현재 **음악 요청·이전 곡 복귀·템포·페이드·음표·반복·엔벌로프·효과음 제어**를 C로 옮기고 실제 GBC 음원 출력에 연결했습니다. 원작 악보를 GBC에서 직접 해석하며, 원본 반환 상태를 재생하는 콜백이나 미리 만든 APU 이벤트 파일을 재생 경로에서 사용하지 않습니다. [네이티브 엔진과 검증](docs/audio-native.md)
+
+```powershell
+node tools/build-native.mjs --rom "D:/private/Final Fantasy III (Japan).nes" --gbdk "D:/tools/gbdk"
+```
+
+출력은 **`build/native/ff3-native-audio.gbc` (128 KiB)**입니다. 좌우로 ID 선택, A 요청, B 정지, SELECT로 음악/효과음 전환, 위로 페이드아웃, 아래로 이전 곡 복귀, START로 자동 비교용 요청 순서를 실행합니다. 새 곡의 페이드인은 자동 비교와 엔진 API에 포함됩니다. 개발용 영문 메뉴이며 게임용 한글 UI가 아닙니다. 음색 근사 조정은 보류 상태입니다.
+
+현재 엔진 검사와 과거 단계별 검사는 다음 명령으로 생성합니다.
 
 ```powershell
 node tools/build-control.mjs --rom "D:/private/Final Fantasy III (Japan).nes" --gbdk "D:/tools/gbdk"
 node tools/build-channel.mjs --rom "D:/private/Final Fantasy III (Japan).nes" --gbdk "D:/tools/gbdk"
+node tools/build-engine.mjs --rom "D:/private/Final Fantasy III (Japan).nes" --gbdk "D:/tools/gbdk"
 ```
 
-생성되는 `build/control/ff3-control-test.gbc`와 `build/channel/ff3-channel-test.gbc`는 C 구현을 원본 기준값과 비교하는 무음 자동 검사 ROM입니다. 음악 요청·템포·페이드의 상위 처리와 GBC 출력 연결은 남아 있습니다. 청취용 플레이어나 완성 음악 엔진이 아닙니다.
+`build/engine/ff3-engine-test.gbc`는 완전한 C 엔진을 원본 실행과 틱별로 대조하는 무음 검사 ROM입니다. `build/control/`과 `build/channel/`은 이전 단계의 함수 경계/단위 검사입니다. 전체 게임이나 실기 성능 검증을 의미하지 않습니다.
+
+`local.json`에 MesenCore와 .NET 경로를 설정한 후 다음 명령으로 상태와 실제 음원 레지스터를 비교할 수 있습니다. 녹음하지 않습니다.
+
+```powershell
+node tools/build-native-verifier.mjs
+node tools/verify-native.mjs --engine
+node tools/verify-native.mjs --engine --negative
+node tools/verify-native.mjs
+```
 
 추가로 제공된 **VGZ 59개를 새 녹음 없이 GBC용 사운드 테스트 ROM으로 변환**했습니다. 4096 Hz 타이머와 사전 계산 버퍼로 재생하며, 49개 반복곡과 10개 종료곡을 처리합니다. [타이밍 재생 구현과 검증 범위](docs/timed-audio.md), [이전 입력 조사](docs/vgz-assessment.md)를 참고하세요. 이 VGZ 경로는 개발용 검증 입력이며, 최종 배포물의 원본 NES ROM 입력 계약은 유지합니다.
 
@@ -41,7 +59,7 @@ node tools/verify-timed.mjs --track 3 --loops 2
 - 128 KiB GBC 전용 사운드 테스트 ROM 생성. 방향키로 선택, A 재생, B 정지, SELECT로 DMC 근사 타격음 설정 전환.
 - NES 원본 드라이버 검증 ROM과 GBC ROM을 Mesen으로 각각 녹음하고, 메모리 상태를 대조한 뒤 로컬 A/B 청취 페이지 생성.
 
-NES 비교 음원은 원본 사운드 드라이버·곡 데이터를 유지한 별도 검증 ROM에서 나옵니다. 게임을 실제 플레이하며 녹음한 음원은 아닙니다. 이 초기 경로는 유한 구간 비교를 보존합니다. VGZ 전체 곡 반복은 위의 별도 테스트에서 구현했으며, 임의 시점 효과음 요청·실시간 원작 음악 명령 해석기·화면과 함께 실행하는 최종 엔진은 남아 있습니다.
+NES 비교 음원은 원본 사운드 드라이버·곡 데이터를 유지한 별도 검증 ROM에서 나옵니다. 게임을 실제 플레이하며 녹음한 음원은 아닙니다. 이 초기 경로는 유한 구간 비교를 보존합니다. VGZ 전체 곡 반복은 위의 별도 테스트에서 구현했으며, 현재 네이티브 경로에서 임의 효과음 요청과 원작 음악 명령 해석기를 구현했습니다. 게임 화면과의 통합은 남아 있습니다.
 
 ## 로컬 빌드
 
@@ -84,7 +102,7 @@ Start-Process ./evidence/audio/index.html
 
 원작 드라이버의 음표·템포·소프트웨어 엔벌로프·효과음 우선순위를 실행 결과에서 가져옵니다. GBC 하드웨어의 음색·노이즈·스윕과 음량 변경 때의 위상 재시작은 차이가 있습니다. NES `$4011` 직접 DAC 타격음은 짧은 CH4 노이즈로 근사하는 **비교 후보**이며 최종 채택하지 않았습니다. SELECT로 끌 수 있습니다. [변환 규칙과 근거](docs/audio-design.md)
 
-다음 순서는 음악 요청·템포·페이드 처리까지 C로 옮겨 원본 반환 상태 재생을 제거한 후, 기존 GBC 출력 백엔드와 연결하는 것입니다. 음색 조정은 보류 상태를 유지합니다. 이후 한글 렌더링·맵 스크롤과 동시에 예산을 측정하고 원작 상태·이벤트·전투 로직 이식으로 진행합니다.
+다음은 이 엔진을 한글 렌더링·맵 스크롤과 함께 실행하며 CPU/뱅크/메모리 예산과 실제 게임의 사운드 호출을 검증하는 단계입니다. 원작 상태·이벤트·전투 로직 이식으로 이어가며, 음색 조정은 보류 상태를 유지합니다.
 
 ## 저장소에 포함하는 범위
 

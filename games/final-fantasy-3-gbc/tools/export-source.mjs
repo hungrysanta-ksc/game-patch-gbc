@@ -10,7 +10,12 @@ export const files=[
  'tools/wav.mjs','tools/make-comparison.mjs','tools/export-source.mjs','tools/vgm.mjs','tools/audit-vgm.mjs',
  'tools/Capture/Capture.csproj','tools/Capture/NuGet.Config','tools/Capture/Program.cs',
  'tools/timed-stream.mjs','tools/build-timed.mjs','tools/build-timed-verifier.mjs','tools/verify-timed.mjs','tools/control-fixtures.mjs','tools/build-control.mjs','tools/channel-fixtures.mjs','tools/build-channel.mjs',
- 'tools/VerifyTimed/VerifyTimed.csproj','tools/VerifyTimed/Program.cs'
+ 'tools/VerifyTimed/VerifyTimed.csproj','tools/VerifyTimed/Program.cs',
+ 'docs/audio-native.md',
+ 'src/audio-music.c','src/audio-music.h','src/audio-engine.c','src/audio-engine.h','src/audio-engine-test.c',
+ 'src/audio-output.c','src/audio-output.h','src/audio-native.c','src/audio-native-irq.inc',
+ 'tools/engine-fixtures.mjs','tools/build-engine.mjs','tools/build-native.mjs','tools/native-plan.mjs','tools/native-reference.mjs',
+ 'tools/build-native-verifier.mjs','tools/verify-native.mjs','tools/VerifyNative/VerifyNative.csproj','tools/VerifyNative/Program.cs'
 ];
 const entries=[];for(const path of files){const b=await fs.readFile(ROOT+'/'+path);entries.push({path,bytes:b.length,sha256:hash(b),basis:'Project-authored code, specification or documentation; no extracted assets'});}
 const manifest=JSON.stringify({schema:1,scope:'Source-only development package; generated ROM/audio/private inputs excluded',files:entries},null,2)+'\n',target=ROOT+'/export-manifest.json';

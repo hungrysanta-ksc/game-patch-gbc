@@ -1,16 +1,21 @@
 #include "audio-channel.h"
-#define R(a) s->ram[(a)-0x7f40]
+#define R(a) FF3_RAM(s)[(a)-0x7f40]
 #define C(a) R((a)+ch)
 
 static uint16_t word(const FF3ChannelOps *ops,uint16_t address) {
-    uint8_t lo=ops->read(address);
-    return lo|((uint16_t)ops->read((uint16_t)(address+1))<<8);
+    uint8_t lo=FF3_READ(ops,address);
+    return lo|((uint16_t)FF3_READ(ops,(uint16_t)(address+1))<<8);
 }
 static uint8_t next(const FF3ChannelOps *ops,uint16_t base,uint8_t *y) {
-    uint8_t value=ops->read((uint16_t)(base+*y));(*y)++;return value;
+    uint8_t value=FF3_READ(ops,(uint16_t)(base+*y));(*y)++;return value;
 }
 static void emit(FF3AudioState *s,const FF3ChannelOps *ops,uint8_t reg,uint8_t value) {
-    s->apu[reg]=value;ops->write(reg,value);
+    FF3_APU(s)[reg]=value;
+#ifdef FF3_SINGLE_ENGINE
+    ff3_output(reg,value);
+#else
+    ops->write(reg,value);
+#endif
 }
 /* 36/84FF..857C. This preserves ownership/key-off behavior, not a generic mute. */
 static void end(FF3AudioState *s,const FF3ChannelOps *ops,uint8_t ch,uint8_t format,uint8_t effect) {
@@ -29,12 +34,12 @@ static void end(FF3AudioState *s,const FF3ChannelOps *ops,uint8_t ch,uint8_t for
 }
 /* 36/831D..8352. Y is an 8-bit index; a full wrap of only ties never ends. */
 static uint8_t decay(FF3AudioState *s,const FF3ChannelOps *ops,uint8_t ch,uint8_t note,uint16_t pointer) {
-    uint16_t duration=ops->read(0x8815+(note&15)),guard;
+    uint16_t duration=FF3_READ(ops,0x8815+(note&15)),guard;
     uint8_t y=0,value;
     for(guard=0;guard<256;guard++){
         value=next(ops,pointer,&y);
         if(value<0xd0||value>=0xe0){C(0x7f97)=(uint8_t)duration;C(0x7f9e)=(uint8_t)(duration>>8);return 1;}
-        duration=(uint16_t)(duration+ops->read(0x8815+(value&15)));
+        duration=(uint16_t)(duration+FF3_READ(ops,0x8815+(value&15)));
     }
     return 0;
 }
@@ -46,7 +51,7 @@ static uint8_t command(FF3AudioState *s,const FF3ChannelOps *ops,uint8_t ch,uint
         op=next(ops,base,&y);
         if(op<0xe0){
             pointer=(uint16_t)(base+y);C(0x7f51)=(uint8_t)pointer;C(0x7f58)=(uint8_t)(pointer>>8);
-            C(0x7f5f)=ops->read(0x8805+(op&15));
+            C(0x7f5f)=FF3_READ(ops,0x8805+(op&15));
             if(op>=0xd0)return 1;
             if(op>=0xc0){C(0x7f4a)|=2;return 1;}
             C(0x7f4a)=(C(0x7f4a)|1)&0xfd;
@@ -56,8 +61,8 @@ static uint8_t command(FF3AudioState *s,const FF3ChannelOps *ops,uint8_t ch,uint
             octave=C(0x7f66);
             index=(uint8_t)((uint8_t)(octave<<3)+(uint8_t)(octave<<2)+((octave>>5)&1));
             index=(uint8_t)(index+(op>>4));
-            if(format==1)C(0x7f6d)=ops->read(0x87bd+index);
-            else {index=(uint8_t)(index<<1);C(0x7f6d)=ops->read(0x872d+index);C(0x7f74)=ops->read(0x872e+index);}
+            if(format==1)C(0x7f6d)=FF3_READ(ops,0x87bd+index);
+            else {index=(uint8_t)(index<<1);C(0x7f6d)=FF3_READ(ops,0x872d+index);C(0x7f74)=FF3_READ(ops,0x872e+index);}
             return 1;
         }
         if(op==0xe0){R(0x7f45)=next(ops,base,&y);continue;}
@@ -75,7 +80,7 @@ static uint8_t command(FF3AudioState *s,const FF3ChannelOps *ops,uint8_t ch,uint
             if(!(value&1)){y+=2;continue;}C(0x7fa5)--;
         }else if(op==0xff){end(s,ops,ch,format,effect);return 1;}
         /* FC continuing, FD odd, FE: high operand is read before base changes. */
-        lo=next(ops,base,&y);value=ops->read((uint16_t)(base+y));base=lo|((uint16_t)value<<8);y=0;
+        lo=next(ops,base,&y);value=FF3_READ(ops,(uint16_t)(base+y));base=lo|((uint16_t)value<<8);y=0;
     }
     return 0;
 }
@@ -91,8 +96,8 @@ uint8_t ff3_channel_script(FF3AudioState *s,const FF3ChannelOps *ops,uint8_t ch,
 
 static void output_volume(FF3AudioState *s,const FF3ChannelOps *ops,uint8_t ch,uint8_t effect,uint8_t value) {
     uint8_t index=(uint8_t)(C(0x7f90)<<4)|value;
-    if(!effect)index=(uint8_t)(R(0x7f44)<<4)|ops->read(0x8825+index);
-    C(0x7f7b)=ops->read(0x8825+index);
+    if(!effect)index=(uint8_t)(R(0x7f44)<<4)|FF3_READ(ops,0x8825+index);
+    C(0x7f7b)=FF3_READ(ops,0x8825+index);
 }
 /* 36/8595..86D4. Modulation affects temporary output, not base envelope value. */
 static void volume(FF3AudioState *s,const FF3ChannelOps *ops,uint8_t ch,uint8_t effect) {
@@ -103,25 +108,25 @@ static void volume(FF3AudioState *s,const FF3ChannelOps *ops,uint8_t ch,uint8_t 
     table=word(ops,0x9a7c+(uint8_t)(C(0x7fc1)<<1));
     pointer=word(ops,(uint16_t)(table+(uint8_t)(C(0x7fba)<<1)));
     if(!C(0x7fba)){
-        y=C(0x7fc8);C(0x7fe4)=ops->read((uint16_t)(pointer+y));C(0x7fc8)++;y++;
-        if(ops->read((uint16_t)(pointer+y))&128){C(0x7fba)++;C(0x7fc8)=0;}
+        y=C(0x7fc8);C(0x7fe4)=FF3_READ(ops,(uint16_t)(pointer+y));C(0x7fc8)++;y++;
+        if(FF3_READ(ops,(uint16_t)(pointer+y))&128){C(0x7fba)++;C(0x7fc8)=0;}
         output_volume(s,ops,ch,effect,C(0x7fe4));return;
     }
     if(C(0x7fe4)){
         y=C(0x7fc8);
-        if(!y){C(0x7fd6)=ops->read(pointer);C(0x7fc8)++;C(0x7fcf)=0;}
+        if(!y){C(0x7fd6)=FF3_READ(ops,pointer);C(0x7fc8)++;C(0x7fcf)=0;}
         value=(uint8_t)(C(0x7fd6)+C(0x7fdd));C(0x7fdd)=value;
         if(value>=100){C(0x7fdd)=value-100;C(0x7fe4)--;}
     }
     if(!C(0x7fe4)){C(0x7fba)=3;C(0x7f7b)=0;return;}
     value=C(0x7fe4);y=C(0x7fc8);
     if(!C(0x7fcf)){
-        delta=ops->read((uint16_t)(pointer+y));
+        delta=FF3_READ(ops,(uint16_t)(pointer+y));
         if(!delta){output_volume(s,ops,ch,effect,value);return;}
-        if(delta&128){y=(uint8_t)(y+delta);delta=ops->read((uint16_t)(pointer+y));}
+        if(delta&128){y=(uint8_t)(y+delta);delta=FF3_READ(ops,(uint16_t)(pointer+y));}
         C(0x7fcf)=delta;y+=2;C(0x7fc8)=y;
     }
-    y--;delta=ops->read((uint16_t)(pointer+y));sum=(uint16_t)value+delta;
+    y--;delta=FF3_READ(ops,(uint16_t)(pointer+y));sum=(uint16_t)value+delta;
     value=(uint8_t)sum;
     if(delta&128){if(sum<256)value=0;}else if(value>=16)value=15;
     C(0x7fcf)--;output_volume(s,ops,ch,effect,value);
@@ -132,11 +137,11 @@ static void pitch(FF3AudioState *s,const FF3ChannelOps *ops,uint8_t ch) {
     if(C(0x7feb)&128)return;
     pointer=word(ops,0x9eab+(uint8_t)(C(0x7feb)<<1));
     if(!C(0x7ff9)){
-        y=C(0x7ff2);value=ops->read((uint16_t)(pointer+y));
+        y=C(0x7ff2);value=FF3_READ(ops,(uint16_t)(pointer+y));
         if(!value)return;
-        if(value&128){y=(uint8_t)(y+value);value=ops->read((uint16_t)(pointer+y));}
+        if(value&128){y=(uint8_t)(y+value);value=FF3_READ(ops,(uint16_t)(pointer+y));}
         C(0x7ff9)=value;y+=2;C(0x7ff2)=y;y--;
-        delta=ops->read((uint16_t)(pointer+y));sum=(uint16_t)C(0x7f6d)+delta;
+        delta=FF3_READ(ops,(uint16_t)(pointer+y));sum=(uint16_t)C(0x7f6d)+delta;
         if(delta&128)C(0x7f6d)=sum<256?0:(uint8_t)sum;
         else C(0x7f6d)=sum>255?255:(uint8_t)sum;
     }

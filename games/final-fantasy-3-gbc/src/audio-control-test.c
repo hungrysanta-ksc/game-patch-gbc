@@ -1,5 +1,6 @@
 /* Source-derived differential fixture consumer. This is an engineering test,
- * not a playable audio engine: only the outer music scheduler is replayed. */
+ * Legacy unit fixture: music is a recorded boundary here. The complete native
+ * engine is checked without any boundary replay by audio-engine-test.c. */
 #include <gb/gb.h>
 #include <gb/cgb.h>
 #include <stdio.h>
