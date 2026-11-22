@@ -16,7 +16,7 @@ node tools/build-native-verifier.mjs
 node tools/verify-native.mjs --scene
 ```
 
-출력은 **`build/scene/ff3-field-audio.gbc` (128 KiB)**입니다. 자동으로 실행되며 START는 개발용 검사를 재시작합니다. 검증기는 `local.json`의 MesenCore/.NET 경로를 사용합니다. 생성 ROM과 추출 데이터는 로컬에만 남습니다.
+출력은 **`build/scene/ff3-field-audio.gbc` (256 KiB)**입니다. 자동으로 실행되며 START는 개발용 검사를 재시작합니다. 검증기는 `local.json`의 MesenCore/.NET 경로를 사용합니다. 생성 ROM과 추출 데이터는 로컬에만 남습니다.
 
 현재 **음악 요청·이전 곡 복귀·템포·페이드·음표·반복·엔벌로프·효과음 제어**를 C로 옮기고 실제 GBC 음원 출력에 연결했습니다. 원작 악보를 GBC에서 직접 해석하며, 원본 반환 상태를 재생하는 콜백이나 미리 만든 APU 이벤트 파일을 재생 경로에서 사용하지 않습니다. [네이티브 엔진과 검증](docs/audio-native.md)
 
@@ -24,7 +24,7 @@ node tools/verify-native.mjs --scene
 node tools/build-native.mjs --rom "D:/private/Final Fantasy III (Japan).nes" --gbdk "D:/tools/gbdk"
 ```
 
-출력은 **`build/native/ff3-native-audio.gbc` (128 KiB)**입니다. 좌우로 ID 선택, A 요청, B 정지, SELECT로 음악/효과음 전환, 위로 페이드아웃, 아래로 이전 곡 복귀, START로 자동 비교용 요청 순서를 실행합니다. 새 곡의 페이드인은 자동 비교와 엔진 API에 포함됩니다. 개발용 영문 메뉴이며 게임용 한글 UI가 아닙니다. 음색 근사 조정은 보류 상태입니다.
+출력은 **`build/native/ff3-native-audio.gbc` (256 KiB)**입니다. 좌우로 ID 선택, A 요청, B 정지, SELECT로 음악/효과음 전환, 위로 페이드아웃, 아래로 이전 곡 복귀, START로 자동 비교용 요청 순서를 실행합니다. 새 곡의 페이드인은 자동 비교와 엔진 API에 포함됩니다. 개발용 영문 메뉴이며 게임용 한글 UI가 아닙니다. 음색 근사 조정은 보류 상태입니다.
 
 현재 엔진 검사와 과거 단계별 검사는 다음 명령으로 생성합니다.
 
@@ -116,7 +116,7 @@ Start-Process ./evidence/audio/index.html
 
 전체 PRG 영역과 미해결 참조를 [데이터 등록부](docs/data-registry.md)에 정리했습니다. `node tools/register-data.mjs --rom "원본 ROM 경로"`로 로컬 보고서를 재생성할 수 있습니다. 일반 맵·월드 행·AI 로딩·조건 선택을 원작 코드와 대조했으며, 의미/도달성 미해결 항목은 별도로 유지합니다.
 
-다음은 코드 은행/메모리/시간 기반과 공통 게임 상태/RNG/저장 계약입니다. 이를 준비한 뒤 원작 NPC 조건·이동·장비·전투 계산을 연결합니다. [순서 재검토와 완료 조건](docs/implementation-roadmap.md)을 기준으로 진행하며 음색 조정은 보류 상태를 유지합니다.
+[은행·메모리·시간 기반](docs/platform-foundation.md)을 연결했습니다. 사운드 실행 코드를 교체 은행으로 옮기고, 데이터 접근 시 은행 복원과 메모리 보호를 검사합니다. 배터리 SRAM 헤더와 게임 상태 공간은 예약됐으며 저장 기능은 아직 구현하지 않았습니다. 다음은 원작 새 게임 초기값·공통 상태·RNG·저장 계약입니다. 이를 준비한 뒤 원작 NPC 조건·이동·장비·전투 계산을 연결합니다. [순서 재검토와 완료 조건](docs/implementation-roadmap.md)을 기준으로 진행하며 음색 조정은 보류 상태를 유지합니다.
 
 ## 저장소에 포함하는 범위
 

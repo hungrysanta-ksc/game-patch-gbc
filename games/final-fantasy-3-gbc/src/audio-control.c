@@ -1,3 +1,6 @@
+#ifdef FF3_BANKED_RUNTIME
+#pragma bank 8
+#endif
 #include "audio-control.h"
 #define R(address) FF3_RAM(s)[(address)-0x7f40]
 
@@ -9,11 +12,11 @@ uint8_t ff3_audio_song(FF3AudioState *s, uint8_t id) {
     if (id > 0x40) return 0;
     R(0x7f43) = id; R(0x7f42) = 1; return 1;
 }
-uint8_t ff3_audio_effect(FF3AudioState *s, uint8_t id) {
+uint8_t ff3_audio_effect(FF3AudioState *s, uint8_t id) FF3_BANKED {
     if (id > 0x60) return 0;
     R(0x7f49) = id | 0x80; return 1;
 }
-void ff3_audio_stop_effect(FF3AudioState *s) { R(0x7f49) = 0xff; }
+void ff3_audio_stop_effect(FF3AudioState *s) FF3_BANKED { R(0x7f49) = 0xff; }
 
 /* 36/81C3..81E5: deliberately preserve RAM the original does not clear. */
 void ff3_audio_init(FF3AudioState *s, const FF3AudioOps *ops) {

@@ -1,8 +1,11 @@
+#ifdef FF3_BANKED_RUNTIME
+#pragma bank 8
+#endif
 #include "audio-music.h"
 #define R(a) FF3_RAM(s)[(a)-0x7f40]
-uint8_t ff3_music_request(FF3AudioState *s,uint8_t id,uint8_t fade){if(!ff3_audio_song(s,id))return 0;if(fade)R(0x7f42)|=8;return 1;}
-void ff3_music_stop(FF3AudioState *s,uint8_t fade){R(0x7f42)=fade?12:4;}
-void ff3_music_resume(FF3AudioState *s){R(0x7f42)=2;}
+uint8_t ff3_music_request(FF3AudioState *s,uint8_t id,uint8_t fade) FF3_BANKED {if(!ff3_audio_song(s,id))return 0;if(fade)R(0x7f42)|=8;return 1;}
+void ff3_music_stop(FF3AudioState *s,uint8_t fade) FF3_BANKED {R(0x7f42)=fade?12:4;}
+void ff3_music_resume(FF3AudioState *s) FF3_BANKED {R(0x7f42)=2;}
 /* 36/89C3..8AA6. Read the original pointer tables in the selected bank. */
 static void start(FF3AudioState *s,const FF3AudioOps *ops,const FF3ChannelOps *channels){
  int8_t i;uint8_t id=R(0x7f43),lo;uint16_t table,pointer;

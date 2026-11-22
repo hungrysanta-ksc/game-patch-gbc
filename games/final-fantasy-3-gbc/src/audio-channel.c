@@ -1,3 +1,6 @@
+#ifdef FF3_BANKED_RUNTIME
+#pragma bank 8
+#endif
 #include "audio-channel.h"
 #define R(a) FF3_RAM(s)[(a)-0x7f40]
 #define C(a) R((a)+ch)
