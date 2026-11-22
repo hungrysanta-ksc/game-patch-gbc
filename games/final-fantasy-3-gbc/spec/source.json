@@ -19,7 +19,7 @@
     ["boss_graphics_pointers", 381048, 24, 2],
     ["monster_properties", 393232, 256, 16],
     ["monster_stat_sets", 397328, 170, 3],
-    ["monster_attack_scripts", 397840, 49, 8],
+    ["monster_attack_scripts", 397840, 64, 8],
     ["weapon_properties", 398352, 88, 8],
     ["armor_properties", 399056, 64, 8],
     ["attack_properties", 399568, 115, 8],
