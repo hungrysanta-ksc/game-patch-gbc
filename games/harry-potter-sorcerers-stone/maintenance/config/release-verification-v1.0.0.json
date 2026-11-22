@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0",
+  "tag": "hp-ss-gbc-v1.0.0",
+  "variant": "single-with-optional-cheats",
+  "source_sha256": "8eb56e0d55a04aa3fcf940f172757f4f60baa6c53c82707def8ae4e78844b1da",
+  "output_sha256": "02960257a34718339076e484cd3a8f7c924b6d22b5ba708d65db60cae3d3d22b",
+  "output_bytes": 4194304,
+  "patch_sha256": "7147ab01740513bd36e73b704a7d52f00bfee5cdd3e2b19182dfdb8dc13eb21b",
+  "patch_bytes": 112772,
+  "flips": {
+    "version": "v198",
+    "sha256": "ca6b364ccb23ab83ff0f4458f589eac001e7baf74315decde73c878a8eb519fd",
+    "url": "https://github.com/Sir-Walrus/Flips/releases/tag/v198"
+  },
+  "byte_identical_application": true,
+  "negative_cases": [
+    {
+      "case": "wrong-source",
+      "rejected": true
+    },
+    {
+      "case": "corrupt-patch",
+      "rejected": true
+    }
+  ],
+  "memory_layout": {
+    "ledger": "hp1-v027-memory-review-20261122",
+    "reviewed_nontext_writers": 160,
+    "text_writers": 3063,
+    "ram_regions": 21,
+    "scope": "Placement/content regression guard; not proof of all indirect native accesses"
+  },
+  "documents": {
+    "README.md": "d75b64172b1a5ade64bdf798a8b6219fbaa697941eb64fa2f15bb484b2f8e9a4",
+    "INSTALL.md": "5f059168e3c1d150115e22b28873bdbe27ad7091097daa5769c16f8e15cd96d2",
+    "CHANGELOG.md": "71d45691a3322aa369f452b6ad088322704b30628de89733fb56745656387dd5",
+    "THIRD-PARTY-NOTICES.md": "9572ec49fca4c936f8f9f7f44a474b13e5b8896bbd238c4bd0d551800ec46e6f"
+  }
+}

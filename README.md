@@ -2,12 +2,13 @@
 
 게임보이 컬러(Game Boy Color) 게임의 비공식 한글 패치를 모아 배포하는 저장소입니다.
 
-**패치 파일과 사용 안내만 제공합니다.** 게임 원본 ROM, 패치가 적용된 ROM, ROM 다운로드 링크는 제공하지 않습니다. 정품 게임을 보유하고 적법하게 준비한 지원 버전의 원본 파일이 필요합니다.
+**패치 파일·사용 안내·유지보수 소스와 기술 문서를 제공합니다.** 게임 원본 ROM, 패치가 적용된 ROM, ROM 다운로드 링크는 제공하지 않습니다. 정품 게임을 보유하고 적법하게 준비한 지원 버전의 원본 파일이 필요합니다.
 
 ## 게임 목록
 
 | 게임 | 공개 버전 | 다운로드 | 안내 |
 |---|---|---|---|
+| 해리 포터와 마법사의 돌 | v1.0.0 · 정식 | [단일 패치](https://github.com/hungrysanta-ksc/game-patch-gbc/releases/tag/hp-ss-gbc-v1.0.0) | [소개](games/harry-potter-sorcerers-stone/README.md) · [설치](games/harry-potter-sorcerers-stone/INSTALL.md) · [소스](games/harry-potter-sorcerers-stone/maintenance/README.md) |
 | 해리 포터와 비밀의 방 | v1.0.0 · 정식 | [일반판·디버그판](https://github.com/hungrysanta-ksc/game-patch-gbc/releases/tag/hp-cos-gbc-v1.0.0) | [소개](games/harry-potter-chamber-of-secrets/README.md) · [설치](games/harry-potter-chamber-of-secrets/INSTALL.md) |
 
 ## 다운로드와 설치
@@ -24,6 +25,9 @@
 ```text
 README.md
 games/
+  harry-potter-sorcerers-stone/
+    maintenance/
+    screenshots/
   harry-potter-chamber-of-secrets/
     README.md
     INSTALL.md
@@ -54,3 +58,7 @@ games/
 **기술적 문제나 권리 관련 문제 등으로 패치 배포가 언제든지 중단될 수 있습니다.** 권리 관련 요청은 내용을 확인하여 수정 또는 배포 중단 등 필요한 조치를 취하겠습니다.
 
 배포·문의: [hungrysanta-ksc](https://github.com/hungrysanta-ksc)
+
+## 개발 자료
+
+[공통 기술 문서](guides/README.md)에서 두 게임의 실패 사례와 회귀 방법을 확인할 수 있습니다. 마법사의 돌은 누적 런타임·ASM·빌드·검증 소스를, 비밀의 방은 기존 K157 유지보수 소스를 제공합니다. 원본 ROM과 번역·폰트 등 로컬 입력은 각 빌드 안내에 따라 별도로 준비해야 합니다.

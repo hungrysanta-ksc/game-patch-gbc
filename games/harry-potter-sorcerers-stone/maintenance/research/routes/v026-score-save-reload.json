@@ -1,0 +1,160 @@
+{
+  "initial_sram": "work/private-saves/v025-repro.sav",
+  "inputs": [
+    {
+      "at": 2202,
+      "key": 3,
+      "duration": 3
+    },
+    {
+      "at": 2386,
+      "key": 8,
+      "duration": 3
+    },
+    {
+      "at": 2650,
+      "key": 5,
+      "duration": 5
+    },
+    {
+      "at": 2731,
+      "key": 8,
+      "duration": 3
+    },
+    {
+      "at": 3200,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 3450,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 3700,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 3950,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 4200,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 4450,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 4700,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 5500,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 5750,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 6200,
+      "key": 3,
+      "duration": 4
+    },
+    {
+      "at": 6500,
+      "key": 5,
+      "duration": 4
+    },
+    {
+      "at": 6600,
+      "key": 5,
+      "duration": 4
+    },
+    {
+      "at": 6700,
+      "key": 5,
+      "duration": 4
+    },
+    {
+      "at": 6800,
+      "key": 5,
+      "duration": 4
+    },
+    {
+      "at": 6900,
+      "key": 5,
+      "duration": 4
+    },
+    {
+      "at": 7100,
+      "key": 8,
+      "duration": 4
+    },
+    {
+      "at": 7400,
+      "key": 8,
+      "duration": 4
+    },
+    {
+      "at": 7800,
+      "key": 8,
+      "duration": 4
+    },
+    {
+      "at": 10302,
+      "key": 3,
+      "duration": 3
+    },
+    {
+      "at": 10486,
+      "key": 8,
+      "duration": 3
+    },
+    {
+      "at": 10750,
+      "key": 5,
+      "duration": 5
+    },
+    {
+      "at": 10831,
+      "key": 8,
+      "duration": 3
+    }
+  ],
+  "screenshots": [
+    3084,
+    3300,
+    4300,
+    4550,
+    4800,
+    4900,
+    5200,
+    5600,
+    5900,
+    7050,
+    7300,
+    7600,
+    8000,
+    10200,
+    10500,
+    10800,
+    11200,
+    11400
+  ],
+  "frames": 11400,
+  "capture_sram": true,
+  "reset_frames": [
+    8100
+  ]
+}

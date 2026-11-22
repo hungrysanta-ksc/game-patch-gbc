@@ -1,0 +1,23 @@
+{
+  "rom_sha256": "02960257a34718339076e484cd3a8f7c924b6d22b5ba708d65db60cae3d3d22b",
+  "save_sha256": "20f5c0e6d6cff48aac6572868c5e324de443c9933baaca71642639547d920e5f",
+  "native_pickup_placements": 21,
+  "remaining_pickups": 14,
+  "already_consumed": 7,
+  "corrected_positions": 5,
+  "unmodified_reachable_positions": 9,
+  "translations_identical": true,
+  "machine_code_identical": true,
+  "memory_layout": {
+    "ledger": "hp1-v027-memory-review-20261122",
+    "reviewed_nontext_writers": 160,
+    "text_writers": 3063,
+    "ram_regions": 21,
+    "scope": "Placement/content regression guard; not proof of all indirect native accesses"
+  },
+  "dual_core_cases": 10,
+  "original_save_reload_cores": 2,
+  "unit_tests": 13,
+  "release": "1.0.0",
+  "clean_export_build": "Same ROM, BPS, and deterministic ZIP from public sources with declared private inputs"
+}

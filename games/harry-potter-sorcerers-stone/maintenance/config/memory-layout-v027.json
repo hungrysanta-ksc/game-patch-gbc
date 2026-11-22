@@ -1,0 +1,1477 @@
+{
+  "id": "hp1-v027-memory-review-20261122",
+  "source_sha256": "8eb56e0d55a04aa3fcf940f172757f4f60baa6c53c82707def8ae4e78844b1da",
+  "raw_text_range": [
+    688129,
+    933888
+  ],
+  "rom_sites": [
+    {
+      "writer": "runtime-module",
+      "offset": 634880,
+      "length": 640,
+      "replacement_sha256": "677d0def96aa053bedce4d3488ff022ba0d73b1db13750ae0dc7288ef51abd56",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "decode_gate",
+      "offset": 16343,
+      "length": 18,
+      "replacement_sha256": "830b21d72b1b65048f05a4e5a0136f634ee2bcadd159a3241f57f14be172099b",
+      "kind": "reviewed-native-cave",
+      "evidence": "00:3FD6 RET; fixed bank end; no candidate direct references"
+    },
+    {
+      "writer": "init-loader-hook",
+      "offset": 26634,
+      "length": 3,
+      "replacement_sha256": "b2f2aeaa5ab159f2446f511bf74b89530368813c35f20000992123233c000f36",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "substitution-reader-hook",
+      "offset": 12418,
+      "length": 3,
+      "replacement_sha256": "c923f3869b632345260bcc2b5d2a66a05979e1d9b18168a6e89b083f6a76edc7",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "direct-reader-hook",
+      "offset": 12488,
+      "length": 3,
+      "replacement_sha256": "c923f3869b632345260bcc2b5d2a66a05979e1d9b18168a6e89b083f6a76edc7",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "glyph-hook",
+      "offset": 25965,
+      "length": 4,
+      "replacement_sha256": "0931a4f35fb679e808f270262e7ab6a507f367d40838bd2fcbff1bb94a6f168c",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "word-width-hook",
+      "offset": 28735,
+      "length": 4,
+      "replacement_sha256": "72865df37356868c470df3e0cc1806e022dd421d83a93f54acb845fd2f152a74",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "string-width-hook",
+      "offset": 26434,
+      "length": 4,
+      "replacement_sha256": "aeb84dc6a7910a530d9590f15df1cb570b20c415ca29b56decfec34cdb382df5",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "descriptor-reader-hook",
+      "offset": 13872,
+      "length": 3,
+      "replacement_sha256": "158d973b39d3de74f6b9e48e958118fc54e6edf4c6d11ee1a5ff6bf5ddaba530",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "variable-copy-hook",
+      "offset": 12393,
+      "length": 4,
+      "replacement_sha256": "d2304e00350689a69796f6c3bbd09abfed4b011acb8ccb42acf143f640aaeaf9",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "edition-title-sprite",
+      "offset": 944384,
+      "length": 422,
+      "replacement_sha256": "24aee8481fc286c7a7b6078b34d4c34687db73e5d46c9bc84801620431ffaa2b",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "edition-title-pointer",
+      "offset": 123839,
+      "length": 3,
+      "replacement_sha256": "2bfbd287cf4ba83620d754a552392b44dfa0a889f83039365ae81dbc542b05a6",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "cheat-label-xp",
+      "offset": 945152,
+      "length": 31,
+      "replacement_sha256": "9722d1932446acb1f4b7f3d70c4f3041d9f35aaa1642d75f1d521d3542259898",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "cheat-label-xp_on",
+      "offset": 945183,
+      "length": 31,
+      "replacement_sha256": "5e8523379c902d6c42085886746e563569fda9c8d7eb415af98a0a4c0effe521",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "cheat-label-money",
+      "offset": 945214,
+      "length": 27,
+      "replacement_sha256": "de3431137c0aa0e9651530a4b51cd83694bfad19c56098f9b14f4d57b95bccfb",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "cheat-label-money_on",
+      "offset": 945241,
+      "length": 27,
+      "replacement_sha256": "567c067f2041c3bce411b9e9e3c9fb223b51267de6f82f6cac0ebb317d572d09",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "cheat-label-spells",
+      "offset": 945268,
+      "length": 28,
+      "replacement_sha256": "3d1e2eaef3672865c9ec2f3743d4c01d567b9da7f60338584eea6915031f4deb",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "cheat-label-spells_done",
+      "offset": 945296,
+      "length": 40,
+      "replacement_sha256": "744531a71741a1ecacf5338654cd0fa07a1382a7ce29f6a3b7c3d161ac191fcb",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "cheat-label-cards",
+      "offset": 945336,
+      "length": 28,
+      "replacement_sha256": "3250308f2ec8d42685c1fb7b7eb5888d6587f604261228779cdd2023f8f733f0",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "cheat-label-cards_done",
+      "offset": 945364,
+      "length": 40,
+      "replacement_sha256": "c0e18c3f1ab9f30f2d06b96828297b923ebf35c9a52b3d7781d7abb5944fce9b",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "cheat-actions",
+      "offset": 19505,
+      "length": 118,
+      "replacement_sha256": "3efe22f5a9ba30c67d92b78f4c21e56552e7ffebb7e7fea7b2903c0200662c91",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "read-option-flags",
+      "offset": 19623,
+      "length": 5,
+      "replacement_sha256": "0cf73897b892c02ae63a3c85e043ec3e78c0eb7469485310b46cf16c7f8ac553",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "read-option-flags-return",
+      "offset": 19628,
+      "length": 1,
+      "replacement_sha256": "4fb733bedb74fec8d65bedf056b935189a289e928b3302bec38a281814de523a",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "grant-card-collection",
+      "offset": 19629,
+      "length": 5,
+      "replacement_sha256": "54e0f28f993a7e0ec28248ea991a9c20644db2617857414623066e6372a2e025",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "grant-card-collection-return",
+      "offset": 19634,
+      "length": 1,
+      "replacement_sha256": "4fb733bedb74fec8d65bedf056b935189a289e928b3302bec38a281814de523a",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "cheat-render-line",
+      "offset": 19635,
+      "length": 12,
+      "replacement_sha256": "c2621846b88f70eac067d028af46d98c95fdced6da563bb68fc284d5bfdec800",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "cheat-label-draw",
+      "offset": 19684,
+      "length": 24,
+      "replacement_sha256": "b2e7f55512d2f07f8627e490798a02656c5d79dd9704fe2e29659ad9f29c6a68",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "prepare-cheat-row",
+      "offset": 19710,
+      "length": 5,
+      "replacement_sha256": "9c09d86c4bd74851309b64dec3e065139ebb8910bca1a75b0d28206c7930c6bf",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "prepare-cheat-row-return",
+      "offset": 19715,
+      "length": 1,
+      "replacement_sha256": "4fb733bedb74fec8d65bedf056b935189a289e928b3302bec38a281814de523a",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "saved-battle-options",
+      "offset": 945408,
+      "length": 16,
+      "replacement_sha256": "1685762b8cdeee5bdca48f9c475fbdecc55b48885197cc165dd1e833fade376b",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "return-option-flags",
+      "offset": 945424,
+      "length": 6,
+      "replacement_sha256": "a1f24aa1c7620abfa56bd70a4a54f7295f95201acc7e94fb8ba6dc99ae81ce02",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "banked-grant-cards",
+      "offset": 945440,
+      "length": 6,
+      "replacement_sha256": "c24a6133bb3bb2074e1a519dbb4055077eacd33e8af21015b343f99e740dfc0c",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "all-cards",
+      "offset": 945446,
+      "length": 32,
+      "replacement_sha256": "3bd8632d48e3556ef87ce8f4cc052019f40e5f743daa99a6505bc00d7ac74826",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "prepare-cheat-text",
+      "offset": 945488,
+      "length": 112,
+      "replacement_sha256": "a6f128bf1ff7655c93942764aefcbd3d8e700f4d80c36389dd5c099e176994e5",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "victory-xp",
+      "offset": 99423,
+      "length": 5,
+      "replacement_sha256": "531af3c4908864d6cf6556c43e2d93afe1b6ab3bf6378574f7abfe5a06f95498",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "skip-field-reward-entry",
+      "offset": 99428,
+      "length": 2,
+      "replacement_sha256": "cda627efb8a1f140f4985464390842f89d4ec216ad3db8b19641f9d6e5b1544c",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-sickle-entry",
+      "offset": 99430,
+      "length": 14,
+      "replacement_sha256": "1531089edd9c492caa913353cd950f95f54010dac89fbd49faf099eddfa0f658",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-sickle-multiplier",
+      "offset": 943264,
+      "length": 36,
+      "replacement_sha256": "90f5cc27b2eb16894fd13a39da2319597c847a15ed1b6457ab2118612942078e",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "pickup-sickles",
+      "offset": 106030,
+      "length": 3,
+      "replacement_sha256": "c7dab93624822436439904fea2242bd124551b34ba5189f7f62585cd15b04084",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "story-sickle-bank-entry",
+      "offset": 93732,
+      "length": 2,
+      "replacement_sha256": "f0850632222eee5a4177ab500da77caf18d4b132b6265dc11263b06febd39e16",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "story-sickle-display",
+      "offset": 93744,
+      "length": 2,
+      "replacement_sha256": "6a3aea19761ac8238e4e1d298f15207fe12375f13cb79dfba243aabed36163ca",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "victory-sickles",
+      "offset": 99458,
+      "length": 5,
+      "replacement_sha256": "97313b0fa84063d1f79d6ff64e0801a67e98df96e7fe68f0ef4b99df68e57a35",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "skip-new-game-entry",
+      "offset": 99463,
+      "length": 2,
+      "replacement_sha256": "d9ed4910d9606dc2eba9e1405aac9c7c2394919347e84a74650c21d3d1d09f2f",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "new-game-cheat-default",
+      "offset": 106373,
+      "length": 3,
+      "replacement_sha256": "2b9f44848baddb4797e5034495de96ee1a0fa5d81e3833da34b842e0e4dcb05f",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "new-game-cheat-init",
+      "offset": 99465,
+      "length": 8,
+      "replacement_sha256": "2ce60ae215aa49f084d8510ccaa0bd83d65adc83a8665e038216a6ddef8526e4",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "xp-arguments",
+      "offset": 943104,
+      "length": 9,
+      "replacement_sha256": "da7ddc3700fbe660ae2e5d2832b6fddcc283cdfc54d6a468139b41414c8041d2",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "sickle-arguments",
+      "offset": 943120,
+      "length": 9,
+      "replacement_sha256": "4374953f798bb92f7bd0558dc950040e18b767278349e983983d940a626a591e",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "battle-award-multiplier",
+      "offset": 943136,
+      "length": 74,
+      "replacement_sha256": "e261f8ddd0f7925c4eb4780da6752b91fab33f7d75c38ba01f2c6dd6c15bc297",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "round-handoff",
+      "offset": 52489,
+      "length": 5,
+      "replacement_sha256": "bb5d4e715f8a2adbf815049b749a4b0acb9ff0ba11490391292032e7c526c659",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "round-handoff-delay",
+      "offset": 943360,
+      "length": 10,
+      "replacement_sha256": "ea9b3df1f3d03ee763c6c71996be5393254e3aa11baf4396277b7b6c628c2773",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "round-start",
+      "offset": 52649,
+      "length": 2,
+      "replacement_sha256": "7ef719f30076cebde6949b13b3216ca155fb0999c6a041e603a6beca4214c1ca",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "turn-handoff",
+      "offset": 52694,
+      "length": 2,
+      "replacement_sha256": "f1ffbc981e61338e515ec196424dc9b621d1da2f02cfc35cf47d7b632ed055f3",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "enemy-announcement",
+      "offset": 54992,
+      "length": 2,
+      "replacement_sha256": "ee9f0dfc07499e2a8788b3ceee93f9750be6bcf0fd20ee49548ba60e03ab2e8c",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "fast-cast-poses",
+      "offset": 49136,
+      "length": 8,
+      "replacement_sha256": "7f7971f40498077354b637798cf1bacf99907b5d4f1bc421794a4c2ac50a2c7c",
+      "kind": "reviewed-native-cave",
+      "evidence": "02:7F62 JP 090D; bank end; 00:38B7 selects bank06, not02"
+    },
+    {
+      "writer": "cast-pose-selection",
+      "offset": 126443,
+      "length": 3,
+      "replacement_sha256": "42eeae31f138fea7438fca84b6756fce7af6a5ec78eccaf1a1d5a044582774ec",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "cast-pose-duration",
+      "offset": 126449,
+      "length": 2,
+      "replacement_sha256": "f1ffbc981e61338e515ec196424dc9b621d1da2f02cfc35cf47d7b632ed055f3",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "casting-lead",
+      "offset": 44684,
+      "length": 2,
+      "replacement_sha256": "583c7dfb7b3055d99465544032a571e10a134b1b6f769422bbb71fd7fa167a5d",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "casting-pause",
+      "offset": 44693,
+      "length": 2,
+      "replacement_sha256": "fcf0a6c700dd13e274b6fba8deea8dd9b26e4eedde3495717cac8408c9c5177f",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "damage-number-rise",
+      "offset": 44656,
+      "length": 2,
+      "replacement_sha256": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "damage-number-hold",
+      "offset": 44661,
+      "length": 2,
+      "replacement_sha256": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "damage-number-tail",
+      "offset": 44666,
+      "length": 2,
+      "replacement_sha256": "b4c43b50bf245bd727623e3c775a8fcfb8d823d00b57dd65f7f79dd33f126315",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "defeated-enemy-hold",
+      "offset": 113961,
+      "length": 2,
+      "replacement_sha256": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "language-screen-skip",
+      "offset": 100143,
+      "length": 3,
+      "replacement_sha256": "e9f9e546e41f9e0536bff18c1cd61c80f2b29c7803ef32ecd2825e2d5b0353e7",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "language-slot",
+      "offset": 100319,
+      "length": 10,
+      "replacement_sha256": "6e01a6e64c234a5fc67d8b11aea85d87aedc49f3d91d67e9b06503376eab7636",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "restore-settings",
+      "offset": 71280,
+      "length": 3,
+      "replacement_sha256": "5d68e14c8335e351ed3130a9f300a1c790af64cf4051fe580fefafcbc69d038d",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "lock-loaded-language",
+      "offset": 81826,
+      "length": 15,
+      "replacement_sha256": "3fbf0d49e70c82ca0f772b9ee556565bbc9ba14702875740d6e9730d71003492",
+      "kind": "reviewed-native-cave",
+      "evidence": "04:7F9F JP 3405; bank end; 04:4538 is an operand overlap"
+    },
+    {
+      "writer": "title-count",
+      "offset": 82655,
+      "length": 2,
+      "replacement_sha256": "9f19dcce19b2749abbb35d3d8ee08a9712c735882dbf9b14a1e5a60e67f51908",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "title-cursor",
+      "offset": 82321,
+      "length": 37,
+      "replacement_sha256": "eca863835a46df5bfa8c1bf910587878ad829fc23096e3bf1e4f2511b0b77759",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-vector-hook",
+      "offset": 61111,
+      "length": 3,
+      "replacement_sha256": "f283bf0b1aa671ba6064b9c5c6d295d5a032f484e6b37a3a84f06158144b0670",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-dash",
+      "offset": 16362,
+      "length": 22,
+      "replacement_sha256": "3d1525483cf4b10eb6d6609431908e14bd98f17aeaf35a01635545c55aaf8445",
+      "kind": "reviewed-native-cave",
+      "evidence": "00:3FD6 RET; fixed bank end; no candidate direct references"
+    },
+    {
+      "writer": "field-dash-axis",
+      "offset": 15012,
+      "length": 10,
+      "replacement_sha256": "ac065b6503b42918caddf7616a28fb73bf9076d385d5c83e400d9fedb14ae92d",
+      "kind": "reviewed-native-cave",
+      "evidence": "00:3A77 RET; next sound entry 3AB0; candidate references reviewed"
+    },
+    {
+      "writer": "next-title-label",
+      "offset": 82686,
+      "length": 4,
+      "replacement_sha256": "648554944208d626784e7e6e4fcce9fd4a208b63f456c0c748498aeb6fd5fcc2",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "title-label-step",
+      "offset": 98238,
+      "length": 12,
+      "replacement_sha256": "aa7809d824868cf42ff1aabb15404fde919fb4d4376c0f74c53c7d6491b0de71",
+      "kind": "reviewed-native-cave",
+      "evidence": "05:7FBC XOR/RET; bank end; no direct reference candidates"
+    },
+    {
+      "writer": "title-bonus-action",
+      "offset": 82415,
+      "length": 2,
+      "replacement_sha256": "4ef4b42da5ac34a5e6bfbda8e8ab3a0b144d9e75463d1953070bc2f9ac95b016",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-buttons-init-hook",
+      "offset": 25337,
+      "length": 3,
+      "replacement_sha256": "4f6801c2bb2f332df65f33b51cf520fd0243768965085c726aa89251388624be",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-buttons-init",
+      "offset": 32736,
+      "length": 8,
+      "replacement_sha256": "cd08c130edbb934274eb7ffd98b98d2cecb9821e67c803b867afd9c16b7718a9",
+      "kind": "reviewed-native-cave",
+      "evidence": "01:7FB6 RET; bank end; raw references at 079D/07F2/0816/082D are operand overlaps"
+    },
+    {
+      "writer": "field-cheat-buttons",
+      "offset": 48997,
+      "length": 79,
+      "replacement_sha256": "9381d0f8f2cb425994d32496b1c2394668e43606a8719f0025702be86f0e902b",
+      "kind": "reviewed-native-cave",
+      "evidence": "02:7F62 JP 090D; bank end; 00:38B7 selects bank06, not02"
+    },
+    {
+      "writer": "field-button-dispatch",
+      "offset": 6057,
+      "length": 27,
+      "replacement_sha256": "9fc45539baf21ff7cc238660dc95e064b0aace9a81adb1850ce8a0ebccc6b9e5",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "menu-gateway",
+      "offset": 14968,
+      "length": 13,
+      "replacement_sha256": "e86fe4a5473f56c85903c2376f7fd7148ca7844d508f0161b088cb5fb02b9681",
+      "kind": "reviewed-native-cave",
+      "evidence": "00:3A77 RET; next sound entry 3AB0; candidate references reviewed"
+    },
+    {
+      "writer": "renderer-loader-entry",
+      "offset": 32695,
+      "length": 24,
+      "replacement_sha256": "5918f8f608f65ec78e90933a61b994273c3cfb4398031349f4dd11c469c82d48",
+      "kind": "reviewed-native-cave",
+      "evidence": "01:7FB6 RET; bank end; raw references at 079D/07F2/0816/082D are operand overlaps"
+    },
+    {
+      "writer": "renderer-loader-loop",
+      "offset": 14985,
+      "length": 22,
+      "replacement_sha256": "77d81673f01984d1fcf1841d7d07184d6c44b3a6e981f89a21ea1322f83cb466",
+      "kind": "reviewed-native-cave",
+      "evidence": "00:3A77 RET; next sound entry 3AB0; candidate references reviewed"
+    },
+    {
+      "writer": "reserve-stack-15a",
+      "offset": 346,
+      "length": 3,
+      "replacement_sha256": "61a578b0ce65f42696a4b36abe4cb6f2771c08cd51440fe98e5f4acff8af3059",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "reserve-stack-163",
+      "offset": 355,
+      "length": 3,
+      "replacement_sha256": "61a578b0ce65f42696a4b36abe4cb6f2771c08cd51440fe98e5f4acff8af3059",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "boot-cursor-init",
+      "offset": 392,
+      "length": 3,
+      "replacement_sha256": "27e90b47e4200942450600be8efa8647dfa9dfefbb91c8ef7843e70457b8d5d8",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "clear-cursors",
+      "offset": 32724,
+      "length": 12,
+      "replacement_sha256": "8f52d42f3770f0610c4ac92f3eb23973539c52225b633f7b4d42e20e9607cc69",
+      "kind": "reviewed-native-cave",
+      "evidence": "01:7FB6 RET; bank end; raw references at 079D/07F2/0816/082D are operand overlaps"
+    },
+    {
+      "writer": "party-panel",
+      "offset": 934144,
+      "length": 433,
+      "replacement_sha256": "8892867ee43b7333b8ab8f13bbc21163de2ef9b2ff008bb8ae230266c9da0c36",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "party-panel-tiles",
+      "offset": 937984,
+      "length": 2576,
+      "replacement_sha256": "5c05366938c3251d1891d4312a2af26e54c9b9936d58baa485bbc9f19d1972a9",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "field-party-hook",
+      "offset": 73298,
+      "length": 3,
+      "replacement_sha256": "ec75f484697a2e2e077cf21e9b48e5f8d4f34d0aa4446e39a5a109e4885698fc",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-party-quest",
+      "offset": 81894,
+      "length": 3,
+      "replacement_sha256": "527aba1495647311a5d5fe2ccbe5931572dfaded86d2edeec7f95767dcc21321",
+      "kind": "reviewed-native-cave",
+      "evidence": "04:7F9F JP 3405; bank end; 04:4538 is an operand overlap"
+    },
+    {
+      "writer": "party-compose",
+      "offset": 81897,
+      "length": 6,
+      "replacement_sha256": "79e68a6585d458b639a5470fb973ed73e6b6b41dfcba44c56d9cd1ef63863fa6",
+      "kind": "reviewed-native-cave",
+      "evidence": "04:7F9F JP 3405; bank end; 04:4538 is an operand overlap"
+    },
+    {
+      "writer": "field-root-row",
+      "offset": 81841,
+      "length": 30,
+      "replacement_sha256": "01ca6461c33f0affcc6c8dd02164bdf22abfb9daffae17f18285f66fd1b94f22",
+      "kind": "reviewed-native-cave",
+      "evidence": "04:7F9F JP 3405; bank end; 04:4538 is an operand overlap"
+    },
+    {
+      "writer": "field-restore-11be5",
+      "offset": 72677,
+      "length": 4,
+      "replacement_sha256": "86561d261733657f70091fab7f4d6f9837ecabeb912268c3ddd67a5ed1ed1ea0",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-restore-11cee",
+      "offset": 72942,
+      "length": 4,
+      "replacement_sha256": "86561d261733657f70091fab7f4d6f9837ecabeb912268c3ddd67a5ed1ed1ea0",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-root-args",
+      "offset": 81874,
+      "length": 7,
+      "replacement_sha256": "711f082dba7863b36b42fb3bd554d16be16e4b1515568f55346a0b189dfc097c",
+      "kind": "reviewed-native-cave",
+      "evidence": "04:7F9F JP 3405; bank end; 04:4538 is an operand overlap"
+    },
+    {
+      "writer": "field-save-row-11f03",
+      "offset": 73475,
+      "length": 5,
+      "replacement_sha256": "f69d4ff1919de3635429c0ad0267f02286f03ae8b4ea1dd24b454f0fc091ed1e",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-save-row-11f47",
+      "offset": 73543,
+      "length": 5,
+      "replacement_sha256": "1d37a6bbbef4d511cd83c4b0af8e54ebce499b5da87811479dace76dde1b9b37",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-remember-row",
+      "offset": 81882,
+      "length": 11,
+      "replacement_sha256": "76887ff67b4ded4cec6cebd7ada482da457962cc05c9c165f5d9659a5486d20b",
+      "kind": "reviewed-native-cave",
+      "evidence": "04:7F9F JP 3405; bank end; 04:4538 is an operand overlap"
+    },
+    {
+      "writer": "battle-command-confirm",
+      "offset": 54493,
+      "length": 5,
+      "replacement_sha256": "2c5b542e47e7a798e4700357fe1645f86f2cd14ac4f2a5e820808fb96a9b2506",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "remember-command",
+      "offset": 945664,
+      "length": 17,
+      "replacement_sha256": "644c95648b86c80cf2cbd77a961151e41be31103e5ff7b5c020bd21682e6d9d4",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "loaded-house-score-repair",
+      "offset": 71832,
+      "length": 5,
+      "replacement_sha256": "2d3efe2502212a8c04b1456c9e26b50cf528efa1a6caa7ab0d78aed089846cd5",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "repair-house-score",
+      "offset": 945728,
+      "length": 85,
+      "replacement_sha256": "eb2dbe4368b1b98e4707bea994b08dc35033fdb352a96be8601f06987318383f",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "damaged-house-score-signatures",
+      "offset": 945920,
+      "length": 8,
+      "replacement_sha256": "d45024569a5f2c8dfe91cd1b44776ca859a7fb6fecc11e9dbd8a5c1d11a898ad",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "native-chapter-house-scores",
+      "offset": 945928,
+      "length": 12,
+      "replacement_sha256": "76c4c023b61f492fb168ec03c39af531d1e2d2629624dd24e5ae5ae66d5bea9c",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "battle-return-init-low",
+      "offset": 55036,
+      "length": 2,
+      "replacement_sha256": "88d6b1082319715e1f2f89c01fffad1c7c0d8b28c3b73f5381de57ff7d28a34d",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "battle-return-init-high",
+      "offset": 55040,
+      "length": 2,
+      "replacement_sha256": "6cd77657c156de951885b12f37eccd3a37ffca454cc70b5724e27cb1dfc36381",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "battle-root-init-low",
+      "offset": 54560,
+      "length": 2,
+      "replacement_sha256": "88d6b1082319715e1f2f89c01fffad1c7c0d8b28c3b73f5381de57ff7d28a34d",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "battle-root-init-high",
+      "offset": 54564,
+      "length": 2,
+      "replacement_sha256": "6cd77657c156de951885b12f37eccd3a37ffca454cc70b5724e27cb1dfc36381",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "spell-init-low",
+      "offset": 54623,
+      "length": 2,
+      "replacement_sha256": "239f79ed28344d2c7b1fabac68ce8532d2a1a2998678c1e30100436226df3bfd",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "spell-init-high",
+      "offset": 54627,
+      "length": 2,
+      "replacement_sha256": "6cd77657c156de951885b12f37eccd3a37ffca454cc70b5724e27cb1dfc36381",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "root-cursor-entry",
+      "offset": 114645,
+      "length": 3,
+      "replacement_sha256": "40fccf04a96087991a2a1090802a436f7839070b04bcfdd8c00126418524a55f",
+      "kind": "reviewed-native-cave",
+      "evidence": "06:7FCA..7FD3 five serial callbacks, last target7FD4 RET; bank end"
+    },
+    {
+      "writer": "root-cursor-restore",
+      "offset": 114648,
+      "length": 13,
+      "replacement_sha256": "d11b4fd00d45bb8928c805e883b93c153f367d426d1ffb8526b84fd63dc12a71",
+      "kind": "reviewed-native-cave",
+      "evidence": "06:7FCA..7FD3 five serial callbacks, last target7FD4 RET; bank end"
+    },
+    {
+      "writer": "available-command",
+      "offset": 936704,
+      "length": 89,
+      "replacement_sha256": "0a5e787f7023da41d7871e9c7f675f192ebe27aa4cc53da2d3c05f0b57f8eb8f",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "battle-item-ids",
+      "offset": 936960,
+      "length": 147,
+      "replacement_sha256": "2f917cb2169e842fc581b79f5b7e729a20fb978c8791696393527e6021b8bc17",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "spell-cursor-entry",
+      "offset": 114667,
+      "length": 16,
+      "replacement_sha256": "c037c9294a763a5da786f415e62b8016291d2b632257e43d3349963e6ddfb941",
+      "kind": "reviewed-native-cave",
+      "evidence": "06:7FCA..7FD3 five serial callbacks, last target7FD4 RET; bank end"
+    },
+    {
+      "writer": "spell-row-hook",
+      "offset": 54604,
+      "length": 11,
+      "replacement_sha256": "8a2f28157875595bd275cdd3ae3d679116ba10c921ee2af430c0a60d86f9c739",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "spell-row",
+      "offset": 935936,
+      "length": 94,
+      "replacement_sha256": "7919464a741cac4243feac9920719eaf8df312d621668d0244a0dd9826a578bf",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "remember-used-spell",
+      "offset": 55884,
+      "length": 6,
+      "replacement_sha256": "5802a6d8fabd8f16ff7a553e1a2f11b719f0ae0588293d0c3a89ad291b12704b",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "commit-spell",
+      "offset": 936128,
+      "length": 35,
+      "replacement_sha256": "89cfb26ac80bb77011cfac773338894206045eedcfed1df3e004475c1bcab6c3",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "inventory-index",
+      "offset": 936192,
+      "length": 69,
+      "replacement_sha256": "744a7d5d5c8648ae9627b4fb46cdc5ab7d8cac67324cdaa7c122ee36344b9433",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "field-item-row",
+      "offset": 936352,
+      "length": 17,
+      "replacement_sha256": "642a81e3636ab9c50a5250b008d35f6b60a68df3ea35719cdc7ad864fe26e0cb",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "field-item-restore",
+      "offset": 77663,
+      "length": 5,
+      "replacement_sha256": "70d50343d0207c5fc9e3aa2b23a8e3ebc7319e19eca0ef06774c024685028e8d",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-item-init",
+      "offset": 77694,
+      "length": 4,
+      "replacement_sha256": "3b8518bcb219445b8b4eae8e8f591cb9ecddc9d176ed51206f17a54682400d23",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-item-init-args",
+      "offset": 81904,
+      "length": 7,
+      "replacement_sha256": "d1019d365c9e7daaede19aa9f763bc9d6dc6bd567da18bf049b277e33f2584b0",
+      "kind": "reviewed-native-cave",
+      "evidence": "04:7F9F JP 3405; bank end; 04:4538 is an operand overlap"
+    },
+    {
+      "writer": "field-item-confirm",
+      "offset": 79046,
+      "length": 4,
+      "replacement_sha256": "fd1ea2a5a79a9c57594e3a46cdc623261da9d1fea8c1543077a6b0a266a51247",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-item-store",
+      "offset": 81911,
+      "length": 9,
+      "replacement_sha256": "a76f7dbea60e0f9b080b35629580824b9cc2ad9b689cef725f3b21af6adfa9bf",
+      "kind": "reviewed-native-cave",
+      "evidence": "04:7F9F JP 3405; bank end; 04:4538 is an operand overlap"
+    },
+    {
+      "writer": "battle-item-row",
+      "offset": 936448,
+      "length": 25,
+      "replacement_sha256": "daa5dd1f7e3a10489de58cbeb5d4f4c26e74788e309646da527dd85b96c844ef",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "battle-item-restore",
+      "offset": 53374,
+      "length": 7,
+      "replacement_sha256": "3020d059467315cae8e1883bef7ce963a6abdc1e984ddc8bc4bc091c77eb73b1",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "battle-item-confirm",
+      "offset": 53747,
+      "length": 11,
+      "replacement_sha256": "ec4a09cce3100b84b178fd3ddc8581c47216251da6a21cf6ff2186c9e00d6232",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "battle-item-store",
+      "offset": 936512,
+      "length": 20,
+      "replacement_sha256": "e804b52e53a27e2cd6fd275a24a106b2e9c45ae0629488a90971e0ed9b8e1bad",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "empty-field-inventory",
+      "offset": 77715,
+      "length": 7,
+      "replacement_sha256": "0b3eeb8c3f2ee9e7c977cd9b92c0a223464ad176d85b7ff8cd11d1d5d9f91d1e",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "forget-field-item",
+      "offset": 936624,
+      "length": 13,
+      "replacement_sha256": "5429b39b973acbd4c2abf0b964e1b076315ee2be37721950eb56f88832a13244",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "empty-battle-inventory",
+      "offset": 53405,
+      "length": 7,
+      "replacement_sha256": "29f01f7ca15222ae900ca3f1f3f4d455bcea7579c3a824fd7d0d3192540dd3a2",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "forget-battle-item",
+      "offset": 936656,
+      "length": 17,
+      "replacement_sha256": "97498079da819b02fe988c33bbcecc3295c2ddab9a7902fa1dba209443139953",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "combination-pieces",
+      "offset": 937216,
+      "length": 153,
+      "replacement_sha256": "e215c8ac7205f72ed2d71e16b767d1e061f943fc66f454dc9f07d0e45961d362",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "combination-is-usable",
+      "offset": 937392,
+      "length": 29,
+      "replacement_sha256": "343b2f750e216a597c889571a76611f6849ff268b69318e753666e06bad1ea8f",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "combination-row",
+      "offset": 937472,
+      "length": 121,
+      "replacement_sha256": "95ee0384a00fe4cd8a60e9fd625260c7a262b9d54442e279f6d5c0e512de906b",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "combination-restore",
+      "offset": 69937,
+      "length": 8,
+      "replacement_sha256": "696b22d94792dd1a1443d14d983e0603adf146e344623875ec1b8318e03564f4",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "combination-confirm",
+      "offset": 70245,
+      "length": 5,
+      "replacement_sha256": "cc15408f191e77f4b4699b4ca713c98a00f37bd6a64dfc86db29f80d0c8e7bb6",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "remember-combination",
+      "offset": 937632,
+      "length": 11,
+      "replacement_sha256": "23f614fed32c7e9ca7432b94dc043579c26422aa99dd0186e11173e7a50c0a25",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "field-pickup-hook",
+      "offset": 581,
+      "length": 8,
+      "replacement_sha256": "03a0bb77050af9676e324583a2aa598a99fc7d92994f826ad911f1f25f9ff6e0",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "field-dialogue-tile-layout",
+      "offset": 25325,
+      "length": 12,
+      "replacement_sha256": "687c847553fd0ad79484040b5cc27c88ce7077ebb032906e7d7318395d78e1d9",
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "herb-is-collectible",
+      "offset": 942592,
+      "length": 24,
+      "replacement_sha256": "844c4f367defbe000f1501ed8ed95d8426f0bd789a464a37898b9a33d704b717",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "combination-is-discoverable",
+      "offset": 942640,
+      "length": 31,
+      "replacement_sha256": "eda08d447685153a78569dcb1c68e62bb32a817c8830d9e374fcb669654ebb73",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "combination-discovery-pointer",
+      "offset": 942720,
+      "length": 82,
+      "replacement_sha256": "3e5508d6ef25c4e839e4c5925089457c97ab3d00d6af68d5b7a1a7ebb2576a80",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "event-discovery-is-collectible",
+      "offset": 942848,
+      "length": 77,
+      "replacement_sha256": "ad30a7dd50cbb98ade0cddf27847a3915271235cc2927500ba3dafc1189c5bbc",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "event-discovery-conditions",
+      "offset": 943872,
+      "length": 88,
+      "replacement_sha256": "725937c3134f8c7133edd354c8b52b249cc79615fbccff5219bd2334cad1fbd1",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "field-pickup-markers",
+      "offset": 942080,
+      "length": 260,
+      "replacement_sha256": "cb5150b85f5d87700a2e64d5a254e684b7d4d57fe0fb5e7dfdbfd1667cafc650",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "great-hall-combination-position",
+      "offset": 2686957,
+      "length": 6,
+      "replacement_sha256": "2c93af8589ec3bd8c41bf0d5247334da7298289c3ca61724c026a290527f6f73",
+      "kind": "native-object-coordinate",
+      "evidence": "docs/qa-v022.md; same six-byte record, only Y coordinate changes"
+    },
+    {
+      "writer": "english-self-descriptors",
+      "offset": 524289,
+      "length": 9189,
+      "kind": "english-descriptor-table",
+      "evidence": "3063 fixed three-byte self descriptors; docs/text-engine.md"
+    },
+    {
+      "writer": "raw-directory",
+      "offset": 622593,
+      "length": 9189,
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "font-block-0",
+      "offset": 647168,
+      "length": 8192,
+      "replacement_sha256": "729bed2556f146ce12202e7aa22af1abe873c9c03e105aebc4c60f2fdb9f8672",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "font-block-1",
+      "offset": 663552,
+      "length": 8192,
+      "replacement_sha256": "e3bbeb0ac0ce51c138b795ea4d9554eddc2a75a6abaca30243b2085318c7eb14",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "font-block-2",
+      "offset": 679936,
+      "length": 2416,
+      "replacement_sha256": "de4a8998b5c5ee1368ad61333a8fdaf8d716cf300fa42b9b1ab183107872030d",
+      "kind": "retired-language-pool",
+      "evidence": "src/compact_runtime.py parses all 3063 descriptors for language bases26/2C/33; native bank tags excluded; language locked20"
+    },
+    {
+      "writer": "header-checksum",
+      "offset": 333,
+      "length": 1,
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "global-checksum",
+      "offset": 334,
+      "length": 2,
+      "kind": "native-instruction-or-header-replacement",
+      "evidence": "Original bytes and consumer retained in manifest; see docs/memory-audit-v026.md"
+    },
+    {
+      "writer": "forest-3-pickup-3-position",
+      "offset": 2604556,
+      "length": 6,
+      "replacement_sha256": "81e11cbc03c6431ed1bc6f01ef6a44ec5e961ea60daf222db016869dc77b8d34",
+      "kind": "native-object-position-correction",
+      "evidence": "docs/qa-v027.md; exact native six-byte object, only Y changed; no new allocations"
+    },
+    {
+      "writer": "forest-4-pickup-2-position",
+      "offset": 2604643,
+      "length": 6,
+      "replacement_sha256": "ae40f6f6d26d463b3e8a26d7cd695a20f4a1247b0249045ed3f252f2e4f5f826",
+      "kind": "native-object-position-correction",
+      "evidence": "docs/qa-v027.md; exact native six-byte object, only Y changed; no new allocations"
+    },
+    {
+      "writer": "forest-4-pickup-3-position",
+      "offset": 2604655,
+      "length": 6,
+      "replacement_sha256": "3b82e0c389aca648424bc9f13af61b606a766259c02cd6b3e95ef8cb1b1e0429",
+      "kind": "native-object-position-correction",
+      "evidence": "docs/qa-v027.md; exact native six-byte object, only Y changed; no new allocations"
+    },
+    {
+      "writer": "forest-5-pickup-2-position",
+      "offset": 2604733,
+      "length": 6,
+      "replacement_sha256": "3b886584523b9ad73b7c8e7a705713a4b713b39aff825fcb2f210d9be71e64ab",
+      "kind": "native-object-position-correction",
+      "evidence": "docs/qa-v027.md; exact native six-byte object, only Y changed; no new allocations"
+    },
+    {
+      "writer": "forest-6-pickup-3-position",
+      "offset": 2604805,
+      "length": 6,
+      "replacement_sha256": "cdf4216097845eee1c76b40f046c051799fd6783c6ceaab7defc88add8b7d4b9",
+      "kind": "native-object-position-correction",
+      "evidence": "docs/qa-v027.md; exact native six-byte object, only Y changed; no new allocations"
+    }
+  ],
+  "ram_regions": [
+    {
+      "name": "cursor-values",
+      "space": "wram",
+      "bank": 0,
+      "start": 53240,
+      "end": 53247,
+      "evidence": "Both native LD SP,CFFF changed to CFF8; bootstrap clears seven bytes; native immediate candidate search excludes other access"
+    },
+    {
+      "name": "observed-stack-watermark",
+      "space": "wram",
+      "bank": 0,
+      "start": 53120,
+      "end": 53240,
+      "evidence": "03:7D61 native canary; actual stack can extend below this diagnostic window; not a proven maximum depth"
+    },
+    {
+      "name": "shortcut-counter",
+      "space": "wram",
+      "bank": 0,
+      "start": 52758,
+      "end": 52759,
+      "evidence": "Original same debug shortcut owns CE16 at00:17BC/17CE; new field entry clears it"
+    },
+    {
+      "name": "deferred-variable-slots",
+      "space": "wram",
+      "bank": 0,
+      "start": 49722,
+      "end": 49770,
+      "evidence": "Three native16-byte slots; descriptor writes3 bytes, numeric writes<=5; no expansion in slot"
+    },
+    {
+      "name": "native-font",
+      "space": "wram",
+      "bank": 7,
+      "start": 53248,
+      "end": 54272,
+      "evidence": "00:32E4 selects bank7 and copies0400 bytes"
+    },
+    {
+      "name": "expanded-text",
+      "space": "wram",
+      "bank": 7,
+      "start": 54272,
+      "end": 55296,
+      "evidence": "00:3071/30B6; build output bounds <=750 of1024 bytes"
+    },
+    {
+      "name": "unexpanded-text",
+      "space": "wram",
+      "bank": 7,
+      "start": 55296,
+      "end": 56320,
+      "evidence": "00:3071; maximum raw descriptor650 of1024 bytes"
+    },
+    {
+      "name": "native-huffman-tree",
+      "space": "wram",
+      "bank": 7,
+      "start": 56320,
+      "end": 56576,
+      "evidence": "00:360F tree loader; US tree byte extent checked"
+    },
+    {
+      "name": "native-metrics",
+      "space": "wram",
+      "bank": 7,
+      "start": 56576,
+      "end": 56704,
+      "evidence": "01:67F5 copies128 bytes; DD01 is Hangul escape width"
+    },
+    {
+      "name": "hangul-glyph-mask",
+      "space": "wram",
+      "bank": 7,
+      "start": 56704,
+      "end": 56712,
+      "evidence": "glyph_compact copies exactly8 bytes"
+    },
+    {
+      "name": "hangul-runtime",
+      "space": "wram",
+      "bank": 7,
+      "start": 56736,
+      "end": 57296,
+      "evidence": "Explicit module placements; retained at every observed frame after load"
+    },
+    {
+      "name": "party-compositor",
+      "space": "wram",
+      "bank": 7,
+      "start": 57296,
+      "end": 57344,
+      "evidence": "party_compact temporary tile/digits/recipes; clears48 bytes before return"
+    },
+    {
+      "name": "saved-cheat-options",
+      "space": "wram",
+      "bank": 6,
+      "start": 54647,
+      "end": 54648,
+      "evidence": "Native combo IDs0..50 useD570..D576; counter52C6 reads7 bytes; save5742/load5801 serialize8"
+    },
+    {
+      "name": "native-combo-bits",
+      "space": "wram",
+      "bank": 6,
+      "start": 54640,
+      "end": 54647,
+      "evidence": "51 learned combinations; edition_cards fills6 bytes plus07"
+    },
+    {
+      "name": "party-tiles",
+      "space": "vram",
+      "bank": 1,
+      "start": 36864,
+      "end": 37248,
+      "evidence": "24 tiles; root menu reference scan outside x11..18,y4..6 empty; native transitions reload tiles"
+    },
+    {
+      "name": "native-audio-workspace",
+      "space": "wram",
+      "bank": 3,
+      "start": 57088,
+      "end": 57344,
+      "evidence": "00:3A2B/39AC and38C3 select WRAM3; separated physically from WRAM7 renderer"
+    },
+    {
+      "name": "native-bg-tilemap",
+      "space": "wram",
+      "bank": 1,
+      "start": 55296,
+      "end": 56320,
+      "evidence": "Party panel writes eight cells in each of rows4..6, columns11..18; original menu owns the map"
+    },
+    {
+      "name": "native-bg-attributes",
+      "space": "wram",
+      "bank": 1,
+      "start": 56320,
+      "end": 57344,
+      "evidence": "Same panel cells, +0400; preserve palette/priority and set tile bank bit3"
+    },
+    {
+      "name": "native-OAM-shadow",
+      "space": "wram",
+      "bank": 0,
+      "start": 49152,
+      "end": 49312,
+      "evidence": "Append one4-byte marker only when C0B7<A0 and free sprite count C0B9 nonzero; native cursor is4-byte aligned"
+    },
+    {
+      "name": "native-OAM-cursor",
+      "space": "wram",
+      "bank": 0,
+      "start": 49335,
+      "end": 49336,
+      "evidence": "Shared with original sprite builder; marker updates by4"
+    },
+    {
+      "name": "native-OAM-free-count",
+      "space": "wram",
+      "bank": 0,
+      "start": 49337,
+      "end": 49338,
+      "evidence": "Shared with original sprite builder; marker decrements one"
+    }
+  ],
+  "protected_rom": [
+    {
+      "name": "event-warp-tables",
+      "start": 19006,
+      "end": 19402
+    },
+    {
+      "name": "house-score-tables",
+      "start": 65105,
+      "end": 65165
+    },
+    {
+      "name": "native-font-asset",
+      "start": 2776235,
+      "end": 2777259
+    }
+  ],
+  "limitations": [
+    "Raw reference scans do not prove the absence of every computed pointer",
+    "Runtime evidence covers recorded routes, not every game state"
+  ]
+}

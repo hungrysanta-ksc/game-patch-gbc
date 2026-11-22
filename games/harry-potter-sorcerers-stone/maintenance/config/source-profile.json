@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "profile_id": "hp1-gbc-usa-europe-multilingual-v0",
+  "filename": "Harry Potter and the Sorcerer's Stone (USA, Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi).gbc",
+  "size_bytes": 4194304,
+  "sha256": "8eb56e0d55a04aa3fcf940f172757f4f60baa6c53c82707def8ae4e78844b1da",
+  "header": {
+    "title_hex": "4841525259504f5454455242485645",
+    "cgb_flag": 192,
+    "cartridge_type": 27,
+    "rom_size_code": 7,
+    "ram_size_code": 2,
+    "header_checksum": 215,
+    "global_checksum": 46200
+  }
+}

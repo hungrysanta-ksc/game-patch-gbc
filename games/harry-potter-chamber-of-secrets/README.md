@@ -70,3 +70,7 @@
 폰트·도구의 출처와 이용 조건은 [제3자 고지](THIRD-PARTY-NOTICES.md)를 참고하세요.
 
 [유지보수 소스](maintenance/) · [후속 GBC 프로젝트 검수 기록](../../guides/gbc-hp2-qa.md)
+
+## 유지보수 자료
+
+[K157 소스](maintenance/README.md) · [두 게임의 공통 기술 문서](../../guides/README.md) · [마법사의 돌](../harry-potter-sorcerers-stone/README.md)

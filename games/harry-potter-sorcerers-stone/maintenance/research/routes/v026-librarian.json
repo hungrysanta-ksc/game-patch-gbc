@@ -1,0 +1,82 @@
+{
+  "initial_sram": "work/private-saves/v025-repro.sav",
+  "inputs": [
+    {
+      "at": 2202,
+      "key": 3,
+      "duration": 3
+    },
+    {
+      "at": 2386,
+      "key": 8,
+      "duration": 3
+    },
+    {
+      "at": 2650,
+      "key": 5,
+      "duration": 5
+    },
+    {
+      "at": 2731,
+      "key": 8,
+      "duration": 3
+    },
+    {
+      "at": 3200,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 3450,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 3700,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 3950,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 4200,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 4450,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 4700,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 5500,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 5750,
+      "key": 8,
+      "duration": 5
+    }
+  ],
+  "screenshots": [
+    3084,
+    3300,
+    4300,
+    4550,
+    4800,
+    4900,
+    5200,
+    5600,
+    5900
+  ],
+  "frames": 5900
+}

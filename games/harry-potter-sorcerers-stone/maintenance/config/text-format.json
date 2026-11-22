@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "spec_id": "hp1-en-us-huffman-static-v1",
+  "status": "static consumer established; runtime and full localization scope pending",
+  "english_us": {
+    "base_bank": 32,
+    "descriptor_start": 16385,
+    "count": 3063,
+    "tree_address": 25574
+  },
+  "consumer_fingerprints": [
+    {
+      "name": "descriptor-resolver",
+      "offset": 12298,
+      "expected_hex": "fadccdea0020cbf486f5232a666fcbf4f1ea0020c9"
+    },
+    {
+      "name": "tree-loader",
+      "offset": 13839,
+      "expected_hex": "f070f53e07e070fadccdea002021e6632a874f0600cb101100dccd4011f1e070c9"
+    },
+    {
+      "name": "huffman-decoder",
+      "offset": 13875,
+      "expected_hex": "c5d5e5d55d540e01060026dc1aa1c6ff788f6f46cb01300113780730efb71fe1fe7f280422e518e02bcbfee1d1c1c9"
+    },
+    {
+      "name": "initial-language-bank",
+      "offset": 71253,
+      "expected_hex": "3effeaddcd3e20eadccd"
+    }
+  ],
+  "interpretation": {
+    "descriptor": "bank delta + little-endian pointer, pointer OR 0x4000",
+    "tree": "byte count * 2; children pairs; high-bit leaf; low 7 bits code",
+    "bits": "LSB first",
+    "terminator": 127,
+    "native_output": "set bit 7 of final decoded code",
+    "tree_wram": "bank 7:DC00",
+    "language_bank_variable": "CDDC"
+  },
+  "unresolved": [
+    "layout/control semantics",
+    "glyph and width consumers",
+    "non-table or graphics text",
+    "runtime crosscheck"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "tag": "hp-ss-gbc-v1.0.0",
+  "runtime_spec": "config/runtime-v027.json",
+  "runtime_version": "v027",
+  "source_profile": "config/source-profile.json",
+  "output_sha256": "02960257a34718339076e484cd3a8f7c924b6d22b5ba708d65db60cae3d3d22b",
+  "output_bytes": 4194304,
+  "approval": "User requested public release 1.0.0 on 2026-11-22; single version including optional cheats.",
+  "private_inputs": [
+    {
+      "path": "config/runtime-v027.json",
+      "sha256": "57fd7354d950e1416dfbd3a23223c064ec8dce4fc022adff372131141809cc5b"
+    },
+    {
+      "path": "assets/fonts/7x7_comp.fnt",
+      "sha256": "04ba6bb04d33662dd0a1f324c31c31b4cc7824b593e6b80a5bdcdf1111bb43f6"
+    },
+    {
+      "path": "assets/translation/reference-private/approved-v001/translation.json",
+      "sha256": "623568f5dbb96fadf815c10fd1ccbd9beb8d1ac92f4341eac7b0dd3a8fdb1668"
+    },
+    {
+      "path": "assets/translation/reference-private/approved-v001/user-approved.tsv",
+      "sha256": "c8245204ddd9324f1258218fa2ee63909aa0cf09e1ac5729828ca865724b47b7"
+    },
+    {
+      "path": "assets/title-edition-plate.txt",
+      "sha256": "5979ad6c455b1db85a0ec8b16c759ab1186d2f2544dea6913e42d4efd6da6e14"
+    }
+  ],
+  "flips": {
+    "version": "v198",
+    "sha256": "ca6b364ccb23ab83ff0f4458f589eac001e7baf74315decde73c878a8eb519fd",
+    "url": "https://github.com/Sir-Walrus/Flips/releases/tag/v198"
+  }
+}

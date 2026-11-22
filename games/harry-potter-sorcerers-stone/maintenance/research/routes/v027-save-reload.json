@@ -1,0 +1,123 @@
+{
+  "initial_sram": "work/private-saves/v026-repro.sav",
+  "inputs": [
+    {
+      "at": 2202,
+      "key": 3,
+      "duration": 3
+    },
+    {
+      "at": 2386,
+      "key": 8,
+      "duration": 3
+    },
+    {
+      "at": 2650,
+      "key": 5,
+      "duration": 5
+    },
+    {
+      "at": 2731,
+      "key": 8,
+      "duration": 3
+    },
+    {
+      "at": 3200,
+      "key": 4,
+      "duration": 50
+    },
+    {
+      "at": 3300,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 3500,
+      "key": 8,
+      "duration": 5
+    },
+    {
+      "at": 3800,
+      "key": 3,
+      "duration": 4
+    },
+    {
+      "at": 4000,
+      "key": 5,
+      "duration": 4
+    },
+    {
+      "at": 4100,
+      "key": 5,
+      "duration": 4
+    },
+    {
+      "at": 4200,
+      "key": 5,
+      "duration": 4
+    },
+    {
+      "at": 4300,
+      "key": 5,
+      "duration": 4
+    },
+    {
+      "at": 4400,
+      "key": 5,
+      "duration": 4
+    },
+    {
+      "at": 4600,
+      "key": 8,
+      "duration": 4
+    },
+    {
+      "at": 4900,
+      "key": 8,
+      "duration": 4
+    },
+    {
+      "at": 5300,
+      "key": 8,
+      "duration": 4
+    },
+    {
+      "at": 7802,
+      "key": 3,
+      "duration": 3
+    },
+    {
+      "at": 7986,
+      "key": 8,
+      "duration": 3
+    },
+    {
+      "at": 8250,
+      "key": 5,
+      "duration": 5
+    },
+    {
+      "at": 8331,
+      "key": 8,
+      "duration": 3
+    }
+  ],
+  "screenshots": [
+    3084,
+    3260,
+    3400,
+    3700,
+    4500,
+    4800,
+    5100,
+    5500,
+    8700,
+    8900
+  ],
+  "frames": 8900,
+  "reset_frames": [
+    5600
+  ],
+  "capture_sram": true,
+  "audit_memory_layout": true
+}

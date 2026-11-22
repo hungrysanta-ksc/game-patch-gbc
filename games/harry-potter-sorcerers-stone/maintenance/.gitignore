@@ -1,0 +1,14 @@
+/roms/
+/out/
+/work/
+/config/runtime-v*.json
+/assets/fonts/*.fnt
+/assets/title-edition-plate.txt
+/assets/translation/reference-private/
+*.gb
+*.gbc
+*.sav
+*.srm
+*.state
+__pycache__/
+*.pyc
