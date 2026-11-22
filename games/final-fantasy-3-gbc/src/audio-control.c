@@ -1,0 +1,132 @@
+#include "audio-control.h"
+#define R(address) s->ram[(address)-0x7f40]
+
+static void emit(FF3AudioState *s, const FF3AudioOps *ops, uint8_t reg, uint8_t value) {
+    s->apu[reg] = value;
+    ops->write_apu(reg, value);
+}
+uint8_t ff3_audio_song(FF3AudioState *s, uint8_t id) {
+    if (id > 0x40) return 0;
+    R(0x7f43) = id; R(0x7f42) = 1; return 1;
+}
+uint8_t ff3_audio_effect(FF3AudioState *s, uint8_t id) {
+    if (id > 0x60) return 0;
+    R(0x7f49) = id | 0x80; return 1;
+}
+void ff3_audio_stop_effect(FF3AudioState *s) { R(0x7f49) = 0xff; }
+
+/* 36/81C3..81E5: deliberately preserve RAM the original does not clear. */
+void ff3_audio_init(FF3AudioState *s, const FF3AudioOps *ops) {
+    uint8_t i;
+    emit(s, ops, 0x15, 0);
+    for (i = 3; i <= 15; i += 4) emit(s, ops, i, 0);
+    R(0x7f42) = R(0x7f40) = R(0x7f49) = 0;
+    for (i = 0; i < 7; i++) R(0x7f4a + i) = 0;
+}
+
+/* 36/8C29..8C57: release old claims, mute, mark BGM key-off.
+ * Calling this does not itself clear the request/status byte. */
+void ff3_audio_release_effect(FF3AudioState *s, const FF3AudioOps *ops) {
+    if (R(0x7f4f) & 0x80) {
+        R(0x7f4f) &= 0x7f; emit(s, ops, 4, 0x30); R(0x7f4b) |= 2;
+    }
+    if (R(0x7f50) & 0x80) {
+        R(0x7f50) &= 0x7f; emit(s, ops, 12, 0x30); R(0x7f4d) |= 2;
+    }
+}
+
+/* 36/8BB8..8C28: latest request replaces both old effect paths.
+ * The validated public request API admits exactly the 97 source slots. */
+void ff3_audio_start_effect(FF3AudioState *s, const FF3AudioOps *ops) {
+    int8_t i; uint16_t table, pointer; uint8_t lo, hi;
+    ff3_audio_release_effect(s, ops);
+    for (i = 1; i >= 0; i--) {
+        R(0x7f4f+i) = R(0x7f64+i) = R(0x7f80+i) = 0;
+        R(0x7f87+i) = 8; R(0x7f8e+i) = 0x30; R(0x7f95+i) = 15;
+        R(0x7fc6+i) = R(0x7ff0+i) = R(0x7faa+i) = R(0x7fbf+i) = 255;
+    }
+    table = 0x92c5 + (uint8_t)(R(0x7f49) << 1);
+    lo = ops->read_bank36(table); hi = ops->read_bank36(table + 1);
+    pointer = lo | ((uint16_t)hi << 8);
+    for (i = 1; i >= 0; i--) {
+        R(0x7f5d+i) = ops->read_bank36(pointer + i*2 + 1);
+        R(0x7f56+i) = ops->read_bank36(pointer + i*2);
+        if (R(0x7f56+i) != 255 || R(0x7f5d+i) != 255) R(0x7f4f+i) |= 0x80;
+    }
+    R(0x7f49) = 0x40;
+}
+
+/* 36/8B9D..8BB7, 8C58..8C76. Script/envelope bodies are separate ports. */
+void ff3_audio_update_effect(FF3AudioState *s, const FF3AudioOps *ops) {
+    uint8_t request = R(0x7f49);
+    if (!request) return;
+    if (request == 255) { R(0x7f49) = 0; ff3_audio_release_effect(s, ops); }
+    else if (request & 0x80) ff3_audio_start_effect(s, ops);
+    else {
+        ops->advance(FF3_SCRIPT, 5, 3, 255);
+        ops->advance(FF3_ENVELOPE, 5, 3, 255);
+        ops->advance(FF3_SCRIPT, 6, 1, 255);
+        ops->advance(FF3_ENVELOPE, 6, 1, 255);
+    }
+}
+
+static void pulse(FF3AudioState *s, const FF3AudioOps *ops, uint8_t ch, uint8_t reg) {
+    uint8_t flags = R(0x7f4a+ch), sweep = R(0x7f82+ch);
+    if (!(flags & 0x80)) return;
+    if (flags & 1) R(0x7f4a+ch) &= 0xfe;
+    emit(s, ops, reg, R(0x7f89+ch) | R(0x7f7b+ch));
+    if (flags & 1) {
+        emit(s, ops, reg+1, sweep);
+        emit(s, ops, reg+2, R(0x7f6d+ch));
+        emit(s, ops, reg+3, R(0x7f74+ch));
+    } else if (!(sweep & 0x80)) emit(s, ops, reg+2, R(0x7f6d+ch));
+}
+static void noise(FF3AudioState *s, const FF3AudioOps *ops, uint8_t ch) {
+    uint8_t flags = R(0x7f4a+ch), period = R(0x7f6d+ch);
+    if (!(flags & 0x80)) return;
+    if (flags & 1) R(0x7f4a+ch) &= 0xfe;
+    emit(s, ops, 12, R(0x7f7b+ch) | 0x30);
+    emit(s, ops, 14, period);
+    if (flags & 1) emit(s, ops, 15, period);
+}
+
+/* 36/8030..80AA. */
+void ff3_audio_flush_effect(FF3AudioState *s, const FF3AudioOps *ops) {
+    if (!R(0x7f49)) return;
+    pulse(s, ops, 5, 4); noise(s, ops, 6);
+}
+/* 36/80AB..81C2. Retain the original ordering and trigger-bit consumption. */
+void ff3_audio_flush_music(FF3AudioState *s, const FF3AudioOps *ops) {
+    uint8_t flags;
+    if (!(R(0x7f42) & 0x80)) return;
+    pulse(s, ops, 0, 0);
+    if (!(R(0x7f4f) & 0x80)) pulse(s, ops, 1, 4);
+    flags = R(0x7f4c);
+    if (flags & 0x80) {
+        if (flags & 1) R(0x7f4c) &= 0xfe;
+        emit(s, ops, 8, R(0x7f7d) | 0x80);
+        emit(s, ops, 10, R(0x7f6f));
+        if (flags & 1) emit(s, ops, 11, R(0x7f76));
+    }
+    if (!(R(0x7f50) & 0x80)) noise(s, ops, 3);
+    if ((R(0x7f4e) & 0x81) == 0x81) { R(0x7f4e) &= 0xfe; emit(s, ops, 17, 0); }
+}
+/* 36/8AC0..8AEF: reverse channel order; preserve currently owned SFX. */
+void ff3_audio_silence_music(FF3AudioState *s, const FF3AudioOps *ops) {
+    int8_t ch;
+    for (ch = 3; ch >= 0; ch--) {
+        if (!(R(0x7f4a+ch) & 0x80)) continue;
+        if (ch == 1 && (R(0x7f4f) & 0x80)) continue;
+        if (ch == 3 && (R(0x7f50) & 0x80)) continue;
+        emit(s, ops, ch*4, ch == 2 ? 0x80 : 0x30);
+    }
+}
+/* 36/8003..802F. Song $37 suppresses requests without releasing stale flags. */
+void ff3_audio_tick(FF3AudioState *s, const FF3AudioOps *ops) {
+    if (R(0x7f43) == 0x37) R(0x7f49) = 0;
+    else ff3_audio_update_effect(s, ops);
+    ops->advance(FF3_MUSIC, 0, 0, 0);
+    emit(s, ops, 21, s->apu[21] | 15);
+    ff3_audio_flush_effect(s, ops); ff3_audio_flush_music(s, ops);
+    R(0x7f40) = (R(0x7f40) & 0x7f) | (R(0x7f42) & 0x80);
+}

@@ -16,8 +16,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 7147,
-      "sha256": "ffe8e3d5a5b3c7e50904f72c7e7c273fb936c8db0190c355ce1dbaf4586f8e08",
+      "bytes": 7931,
+      "sha256": "c61490b5c62be6e783417f2efb23dafeaa4f13dea5c7a6495865ebf9be94d9bc",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -34,8 +34,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 393,
-      "sha256": "2bc2d10d161285bad80b0404d6ff4bc943f0e1c9960d78f67f44eea4a79e995a",
+      "bytes": 440,
+      "sha256": "91e5b5bd1e56b0baa673de3d82956f5dfb77b8254c1cd20aa3e4eae8a85bc3d2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -64,14 +64,26 @@
     },
     {
       "path": "docs/timed-audio.md",
-      "bytes": 7722,
-      "sha256": "398c212dc36e38e5a2ee1727648629b645078c90660916c48c09f130c49c0aa4",
+      "bytes": 8009,
+      "sha256": "da258b4d003ddfb944c9e447f8741b20998862705888779eb5e3b2cef3b6f114",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/localization-inputs.md",
       "bytes": 1851,
       "sha256": "493174c0e85bb884fe66eb62257c867b847a98856aba3ddf9530b923020c207a",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/audio-backlog.md",
+      "bytes": 1295,
+      "sha256": "7dcf31dbb76cb203a0ee2333d8a6a6c1b6213b56d95334de26c005da06b02da7",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/audio-control.md",
+      "bytes": 8004,
+      "sha256": "53784a5c7bf024649e1513b08534940d0ec01a4c87a0015f25b960252bad2738",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -102,6 +114,24 @@
       "path": "src/vgm-player.c",
       "bytes": 10407,
       "sha256": "eb2229d07fb9d75fb6d351cb802096cf991463851054bfbf3261a1382daf8676",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/audio-control.c",
+      "bytes": 5211,
+      "sha256": "f17f11495ceda294dd3f277d66f1d83bfa369680f684b4aacbb74211c7f99f89",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/audio-control.h",
+      "bytes": 1358,
+      "sha256": "4d06721f96df0bfe498212de4b095bcb35b368f0747bae82cf2a5daeaf5854c2",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/audio-control-test.c",
+      "bytes": 3961,
+      "sha256": "6f19314c82af9e0267e45016bcd9037e5a9769ac7ea4d7fe8f3b8d6d8d11c7ca",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -184,8 +214,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 1865,
-      "sha256": "75f335e648e968bbc4b628f4e1e51248d41aec83e40ef28aa91e3905aa6df6ec",
+      "bytes": 2039,
+      "sha256": "882d3595be62c12b7d28a556ac2aa90973322d6e93cc4e8b2755b6e21f295a3b",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -240,6 +270,18 @@
       "path": "tools/verify-timed.mjs",
       "bytes": 5936,
       "sha256": "c6253b06df9beaa9072d338d8fd417276391183d5c60674ff02942f04b7e5e45",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/control-fixtures.mjs",
+      "bytes": 4118,
+      "sha256": "0a9ac364d47500b7ccd7eebecf1db5fb0e7363908d258b7f4f520bbac0321b07",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-control.mjs",
+      "bytes": 3792,
+      "sha256": "5f742415549cba574b5214c0d1cef99242a9b37f67ccac40732d68002641e47f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

@@ -4,6 +4,16 @@ NES 일본판 FF3의 게임 규칙과 데이터를 유지하면서 GBC용 실행
 
 현재 공개 단계는 **원작 사운드 비교 실험**입니다. 완성 게임이나 한글 패치 릴리스가 아닙니다. 앞서 만든 화면·던전·임의 전투 샘플은 표현 가능성 확인용이며, 새 게임 규칙의 기반으로 채택하지 않습니다. [전체 이식 계획](docs/port-plan.md)
 
+청취 결과에서 잡음과 음색 차이가 지적되어, 사용자 결정에 따라 **음색 조정은 보류하고 원작 로직 이식을 진행**합니다. [보류 기록](docs/audio-backlog.md)
+
+현재 원작의 효과음 요청·정지·교체·채널 점유/해제·APU 출력 제어부를 C로 옮겼습니다. 음악 스크립트와 엔벌로프 본문은 다음 이식 대상입니다. [이식 범위와 원본 비교 검사](docs/audio-control.md)
+
+```powershell
+node tools/build-control.mjs --rom "D:/private/Final Fantasy III (Japan).nes" --gbdk "D:/tools/gbdk"
+```
+
+생성되는 `build/control/ff3-control-test.gbc`는 C 제어부를 원본 기준값과 비교하는 무음 자동 검사 ROM입니다. 청취용 플레이어나 완성 음악 엔진이 아닙니다.
+
 추가로 제공된 **VGZ 59개를 새 녹음 없이 GBC용 사운드 테스트 ROM으로 변환**했습니다. 4096 Hz 타이머와 사전 계산 버퍼로 재생하며, 49개 반복곡과 10개 종료곡을 처리합니다. [타이밍 재생 구현과 검증 범위](docs/timed-audio.md), [이전 입력 조사](docs/vgz-assessment.md)를 참고하세요. 이 VGZ 경로는 개발용 검증 입력이며, 최종 배포물의 원본 NES ROM 입력 계약은 유지합니다.
 
 ## VGZ 전체 곡 테스트
