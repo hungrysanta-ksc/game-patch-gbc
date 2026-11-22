@@ -75,8 +75,21 @@ static void dispatch_due(void) __naked {
  inc de
  dec b
  jp nz,90104$
+ __endasm;
+#ifdef FF3_SCENE
+ __asm
+ ld a,(hl+)
+ ld (_scene_target_shake),a
+ ld a,(hl+)
+ ld (_scene_target_revision),a
+ __endasm;
+#else
+ __asm
  inc hl
  inc hl
+ __endasm;
+#endif
+ __asm
  ld a,(_irq_write_count)
  ld b,a
  or a
