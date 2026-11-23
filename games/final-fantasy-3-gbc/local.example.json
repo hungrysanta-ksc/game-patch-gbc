@@ -2,5 +2,10 @@
   "rom": "D:/private/Final Fantasy III (Japan).nes",
   "gbdk": "D:/tools/gbdk",
   "mesenCore": "D:/tools/Mesen/MesenCore.dll",
-  "dotnet": "dotnet"
+  "dotnet": "dotnet",
+  "text": {
+    "font": "D:/private/fonts/7x7_comp.fnt",
+    "bindings": "D:/private/text-bindings.json",
+    "translationDir": "D:/private/textasset"
+  }
 }

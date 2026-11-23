@@ -10,4 +10,4 @@ Final Fantasy III의 게임·음악·데이터·상표에 대한 권리는 해�
 - [Mesen Community Edition](https://github.com/nesdev-org/MesenCE), 검증 코어 출처. Mesen 코드·바이너리를 동봉하지 않습니다. `tools/Capture`는 해당 네이티브 인터페이스를 호출하는 프로젝트 작성 래퍼입니다.
 - [Pan Docs Audio Registers](https://gbdev.io/pandocs/Audio_Registers.html), 하드웨어 출력 변환의 참고 자료.
 
-이번 오디오 검증 프로젝트에는 기존 해리포터 한글 폰트나 게임 아트를 포함하지 않습니다. 실제 게임 한글 UI는 승인된 7×7 폰트 정책과 원작 메뉴 의미를 따르는 후속 통합 대상입니다.
+공개 소스 패키지에는 해리포터 작업에서 사용한 한글 폰트나 게임 아트를 포함하지 않습니다. 후속 [한글 창 검증](docs/text-window.md)은 사용자가 선택한 `7x7_comp.fnt`를 별도 비공개 입력으로 사용합니다. 기존 출처 표기 “7x7 yamche 변형 [작자미상]”과 권리 확인 미완료 상태를 유지하며 폰트를 재배포하지 않습니다. 사용자가 제공한 일본어/한국어 번역과 대응 자료도 동봉하지 않습니다.

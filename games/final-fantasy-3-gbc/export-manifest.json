@@ -22,32 +22,32 @@
     },
     {
       "path": "README.md",
-      "bytes": 12792,
-      "sha256": "36e82dd350a0d4780e9157a5faad1d55ec25e4f9472843f4e76f336be490da6f",
+      "bytes": 13323,
+      "sha256": "e997897f64ea8fa7ff3f3a569e451dc8d6d2789cb9e9287503c40efb134c6e75",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "THIRD-PARTY-NOTICES.md",
-      "bytes": 1596,
-      "sha256": "299d6c47faf6ac8bed981a0b731639264fef49a0415c02404d44d2e24406650b",
+      "bytes": 1861,
+      "sha256": "d2083cbab022bba138dbfdbbb3e258c8901138143f86cc2033300e0429853aa0",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "local.example.json",
-      "bytes": 152,
-      "sha256": "df2afd81d0fef99594d2f085201f8f6d12c21566d1812d169a744c175f61aa66",
+      "bytes": 308,
+      "sha256": "d36385da9031fdd1ca002cb2a8ac088d43c238fc9af1b2297b137ed0b1acb30f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "package.json",
-      "bytes": 1374,
-      "sha256": "53bcdcea5ab7681c846e03cd45e5c750fc470aaee679dee404f7a3ff555b71d0",
+      "bytes": 1490,
+      "sha256": "0e4636146d637d1e8ec30ef05c8919877b024b0cdfce9e4eadfe7096cc5e86e9",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 22242,
-      "sha256": "10d5dde3ff3421d057105ad48a7103998b23bc3f8222cdcfc409fcaa86483e0a",
+      "bytes": 23063,
+      "sha256": "23a82f17bf79967a13be2eed133567db9cdfd5983fa9ea8b73e7b376903813d8",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -64,8 +64,8 @@
     },
     {
       "path": "docs/data-registry.md",
-      "bytes": 10251,
-      "sha256": "946917382604760983d3207634665ea37121592d8ad737cf4a25484ac0dfbacd",
+      "bytes": 10921,
+      "sha256": "d71792510539a2ec68ccf1809e0858a3ee0e9ec07051c20bee293c7bef06912a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -351,6 +351,84 @@
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
+      "path": "docs/text-window.md",
+      "bytes": 11105,
+      "sha256": "1b353707eb0c72e99ecd9cbd16daa3687bdd5460ed9eae4db4053fccd069f5f4",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/text-window.h",
+      "bytes": 594,
+      "sha256": "d68e5bdbf72394b2afa0ab7709ff1c9300cd80e0e8cdc6e7dc1101e458e425df",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/text-window.c",
+      "bytes": 4524,
+      "sha256": "8b1309e2567edafd4f342e66cfd9c63967769100b93dc00417342e9990163394",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/text-viewer.c",
+      "bytes": 1594,
+      "sha256": "74ad7b6ab70691d32dbaa29a50e512abdca9827b686bb8763953e0e04f641f76",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/text-source.mjs",
+      "bytes": 4488,
+      "sha256": "99a0fcda6eab95a082476353aa4613355e3d0605e4d61f5a35555e14d648711f",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/korean-text.mjs",
+      "bytes": 6093,
+      "sha256": "3d3f367ca3dec2fdffcd13f4888c016e470908b323f587ed59a353fc840844a8",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/text-reference.mjs",
+      "bytes": 1768,
+      "sha256": "15b25ce80cf639db02cb42d7d22063e0a32c5aeb5d52a2560ccd5c4c205e9ebc",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-text.mjs",
+      "bytes": 5263,
+      "sha256": "7e679731223a0e597916a16c2b3fb2126db7c9930005473c99c86a21d9566700",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-text-verifier.mjs",
+      "bytes": 835,
+      "sha256": "5372292e35e89d1567edf9bc8d8548035519b342d63b3193f929824671276ae8",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-text.mjs",
+      "bytes": 7955,
+      "sha256": "6353a44ef10971373b7f1a37394ce63bf29d1dc109ff9f019f7551268650a661",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyText/VerifyText.csproj",
+      "bytes": 293,
+      "sha256": "ad9ee6103501fb8e1e539f6660f7ba49b28f0c266c4d0768511ea964b8a8c7f3",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyText/Program.cs",
+      "bytes": 3937,
+      "sha256": "d8ec98cec820081e897491c50f6d585799baff84e894daa1e09729f905d9491b",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/text.test.mjs",
+      "bytes": 2225,
+      "sha256": "a0cbba03adc25e1ce7ca87da054ac2caefb77acf44cba0570204962aae795382",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "docs/port-plan.md",
       "bytes": 17520,
       "sha256": "0a65cb9c5be7251502f4525a070ea096c226a21e807934f09a7ea300af0c2939",
@@ -382,8 +460,8 @@
     },
     {
       "path": "docs/localization-inputs.md",
-      "bytes": 1851,
-      "sha256": "493174c0e85bb884fe66eb62257c867b847a98856aba3ddf9530b923020c207a",
+      "bytes": 2445,
+      "sha256": "616e4d397e87fe969d37e8bb61451552987d6b61a327a2e52151077a8ae08b15",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -550,8 +628,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 4168,
-      "sha256": "d36e9858c25da3564e2f3cad5ee1dffc7725dc5ae89849d7d4a1a0f144435a60",
+      "bytes": 4499,
+      "sha256": "11c035268ae65a084e33e311b867b68e8c614b4b37d33c333a386ed369e2f05d",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
