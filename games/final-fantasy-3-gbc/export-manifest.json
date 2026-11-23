@@ -3,6 +3,72 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "docs/composition-kernel.md",
+      "bytes": 7766,
+      "sha256": "e4497cc2c1e7061a2353b2287e90509ac88b25cae0914485bd7a74fc9ef9b866",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/composition-kernel.h",
+      "bytes": 511,
+      "sha256": "564bfab9419ee70b25e95f404ca693c129b6d3ce1e8bf7c538f166155aa512c2",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/composition-kernel.c",
+      "bytes": 1366,
+      "sha256": "0eea5ed724877168a224565880f6e45bb493c15acf23f05a6844b617b2d419c1",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/composition-kernel-probe.c",
+      "bytes": 1612,
+      "sha256": "96e6c3c491949a35e66fa741d0a18be02989a8359d90e240f6a96537b766bb02",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/composition-kernel.test.mjs",
+      "bytes": 2136,
+      "sha256": "2fa2950dc40dc75982f30519f5d46b0007e229514034f150b8fb44cc1e6ca868",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/composition-kernel.mjs",
+      "bytes": 3313,
+      "sha256": "f45bce8899b7b4e1b47a93bf4f7dac35a1fe3e2c3554970e40f89a5ca8940d5b",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-composition-kernel.mjs",
+      "bytes": 6023,
+      "sha256": "29ec74c72baaf172d24f8ebd0cd6f4bb70772a503eb8d9856449a96b2bf88910",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-composition-kernel.mjs",
+      "bytes": 6798,
+      "sha256": "b3c5a3060fc6640776d921560c5473ebcdac78489945406a77702f793a1e6813",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/composition-kernel-audit.lua",
+      "bytes": 690,
+      "sha256": "7b24546b787ce21f948f1a23e9f55e1400a82a6948855339c0989e193c0d0525",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyCompositionKernel/VerifyCompositionKernel.csproj",
+      "bytes": 358,
+      "sha256": "bcc6b5a8ea8d8e02225a6645c4e89121613a08d5da402b66ac0fe4a85e36a046",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyCompositionKernel/Program.cs",
+      "bytes": 4229,
+      "sha256": "4bb1336b91026d48bfcd66b52f315cf8435b90a79969f5b456197cd55cb83a95",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "docs/npc-composition.md",
       "bytes": 9259,
       "sha256": "04a73bab9c402502120771a84dcbbeebeb57d9ec3af178acbad9686ef490a50f",
@@ -106,8 +172,8 @@
     },
     {
       "path": "docs/memory-lifetimes.md",
-      "bytes": 13320,
-      "sha256": "0ab8b567907c659407de3303e7b69374d5b1e5261c56e75013abd697ce328a62",
+      "bytes": 13794,
+      "sha256": "f02cf3020220178561b0a3243fd77a0f9f55db68a783f5b8c8e1aed1558629ad",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -196,8 +262,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 17252,
-      "sha256": "c669cc5eedf275b711efb5c3669efdd5559170b3be722267127755265fa63527",
+      "bytes": 17364,
+      "sha256": "65a535c20a5120d5f56c7549c43538dd44a5d604ddba3098873ca4f169a35f12",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -214,14 +280,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 2620,
-      "sha256": "0d6c169d62606645b5c6ebb98791d3f85b114df504809cf44c26ae92e0f4e257",
+      "bytes": 2806,
+      "sha256": "2d33c04d17874a5af3829d063724ccf3be430b83f8364b8c72deb79151442fe6",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 14583,
-      "sha256": "cd9d81431c0ad1bb6203291036a2a4c631e3c0698612f17a8712c42e32ad6290",
+      "bytes": 15735,
+      "sha256": "831c137088fd17f610c704a9e7c61a89e23d60234718c26e7874bdb09c653039",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -232,8 +298,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 5928,
-      "sha256": "3b4d5d66366cbbde55417f8f51198ab880b8f7b72f73bc922c765599d5ddc907",
+      "bytes": 6086,
+      "sha256": "c425cb063ea0d440c7e60f06714f4c4a6514be5de355eb6a23e5254d4f60807b",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -892,8 +958,8 @@
     },
     {
       "path": "docs/audio-backlog.md",
-      "bytes": 1295,
-      "sha256": "7dcf31dbb76cb203a0ee2333d8a6a6c1b6213b56d95334de26c005da06b02da7",
+      "bytes": 2995,
+      "sha256": "9e00b5a8810960d3efb39acd64488d155c8cd9c6e2ab4439fcf64b42bfd77d8a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1054,8 +1120,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 6606,
-      "sha256": "c5920a5290d7004ffbb6276ac49fe2c46bc8b83235686792a7186f7d83f051be",
+      "bytes": 7013,
+      "sha256": "1a0dcb52547958da09785b0d3a170ce8782f93b174a38e1ea7913454d49f3b60",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
