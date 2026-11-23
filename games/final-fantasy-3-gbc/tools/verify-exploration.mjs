@@ -7,8 +7,8 @@ check(romSha256===report.romSha256&&coreSha256==='1ba99d2c848e007c60cbd7fceca058
 const symbols={};for(const m of(await fs.readFile(dir+'/ff3-exploration.noi','utf8')).matchAll(/DEF _(\w+) (0x[0-9a-f]+)/gi))symbols[m[1]]=Number(m[2]);
 const out=ROOT+'/evidence/exploration';await fs.mkdir(out,{recursive:true});const tag=units?'units':'play',output=out+'/'+tag+'.json',configPath=output+'.config.json';let home;
 if(process.argv.includes('--reuse')){const c=JSON.parse(await fs.readFile(configPath));check(c.romSha256===romSha256,'Stale artifact');home=c.home;}
-else{home=await fs.mkdtemp(ROOT+'/.local/mesen-exploration-'+tag+'-');const auditPath=ROOT+'/tools/text-audio-audit.lua',audit=(await fs.readFile(auditPath,'utf8')).replace('__IRQ_BUSY__',String(symbols.native_irq_busy))+'\n'+(await fs.readFile(ROOT+'/tools/exploration-audit.lua','utf8')).replaceAll('__FIELD_RENDER_BUSY__',String(symbols.field+64));
- await fs.writeFile(configPath,JSON.stringify({dll:local.mesenCore,home,rom,romSha256,coreSha256,symbols,fixtures:units?fieldFixtures(data):undefined,auditPath,audit,output}));
+else{home=await fs.mkdtemp(ROOT+'/.local/mesen-exploration-'+tag+'-');const auditPath=ROOT+'/tools/text-audio-audit.lua',audit=(await fs.readFile(auditPath,'utf8')).replaceAll('__IRQ_BUSY__',String(symbols.native_irq_busy)).replaceAll('__NATIVE_CLOCK__',String(symbols.native_clock)).replaceAll('__NATIVE_REQUEST__',String(symbols.native_request))+'\n'+(await fs.readFile(ROOT+'/tools/exploration-audit.lua','utf8')).replaceAll('__FIELD_RENDER_BUSY__',String(symbols.field+64)).replaceAll('__NATIVE_BUSY__',String(symbols.native_busy));
+ check(!/__[A-Z][A-Z_]*__/.test(audit),'Unresolved audit symbol');await fs.writeFile(configPath,JSON.stringify({dll:local.mesenCore,home,rom,romSha256,coreSha256,symbols,fixtures:units?fieldFixtures(data):undefined,auditPath,audit,output}));
  try{const r=await promisify(execFile)(local.dotnet||'dotnet',[ROOT+'/tools/VerifyExploration/bin/Release/net8.0/VerifyExploration.dll',configPath],{cwd:ROOT,timeout:1200000,maxBuffer:8e6});await fs.writeFile(output+'.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(output+'.log',(e.stdout||'')+(e.stderr||''));throw e;}}
 const actual=JSON.parse(await fs.readFile(output));check(actual.done&&actual.romSha256===romSha256&&actual.coreSha256===coreSha256,'Run identity/completion');
 let result={romSha256,coreSha256,units:actual.units,frames:actual.frames.length};
@@ -18,7 +18,8 @@ if(!units){
  for(const s of actual.frames){const b=Buffer.from(s.consumed,'hex'),e=b.readUInt32LE(4)?reference.advanceToEvent(b.readUInt32LE(4)):undefined;if(e){check(e.ticks===b.readUInt32LE(0)&&e.sourceHash===b.readUInt16LE(8)&&e.gbHash===b.readUInt16LE(10)&&+e.done===s.done,'Consumed original audio '+s.frame);end=e;}check(!s.late&&!s.underruns,'Audio timing');}
  check(end?.done&&end.ticks===report.audio.ticks,'Complete audio schedule');const log=await fs.readFile(output+'.lua.log','utf8'),audit=[...log.matchAll(/audit:(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1);check(audit,'Independent bus audit');
  const [writes,bad,off,apuHash,apuWrites,maxLy,dmaStarts,badDma]=audit.slice(1).map(Number);let expectedHash=end.gbHash;for(const reg of [2,7,12,17])expectedHash=(((expectedHash<<1)|(expectedHash>>>15))^(reg<<8))&65535;
- check(!bad&&!off&&!badDma&&writes>1000&&apuHash===expectedHash,'Video/APU bus audit '+JSON.stringify({writes,bad,off,apuHash,expectedHash,badDma}));
+ const origin=[...log.matchAll(/audit-origin:(\d+),(\d+)/g)].at(-1);check(origin&&Number(origin[1])===1,'APU audit anchored to actual restart');const preRestartApuWrites=Number(origin[2]);
+ check(!bad&&!off&&!badDma&&writes>1000&&apuHash===expectedHash&&apuWrites===end.gbWrites+4,'Video/APU bus audit '+JSON.stringify({writes,bad,off,apuHash,expectedHash,apuWrites,expectedApuWrites:end.gbWrites+4,badDma}));
  const fieldAudit=[...log.matchAll(/field-audit:(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1);check(fieldAudit,'Field bus audit');const [oamDmas,badOam,scrollWrites,badScroll,peak]=fieldAudit.slice(1).map(Number);check(oamDmas>7000&&!badOam&&scrollWrites>100&&!badScroll&&peak<=10,'OAM/scroll bus budget');
  const assets=await addTextAssets(data,makeObjectAssets(data,makeMapAssets(data,{verify:false}),{verify:false}),local.dialogue,{verify:false});await prepareDialogue(data,assets,local.dialogue);
  const d=assets.dialogue.diagnostic,state=sourceInitialState(data),selection=npcOriginal(data,d.world,d.npc,[...state.subarray(0x20,0x30)]),event=assets.dialogue.events[selection.event],id=512+selection.dialogue[event.commands[0].operand];
@@ -43,8 +44,12 @@ if(!units){
  gaps.sort((a,b)=>a-b);check(gaps.length>1000,'Sustained movement samples');
  performance.actualCommit={count,maxSeconds:maxUs/1e6,meanSeconds:sumUs/count/1e6,p95UpperSeconds:percentile(.95),histogramMilliseconds:bins};
  performance.movingScroll={movingFrames,changedFrames,maxUnchangedFrames:maxUnchanged,intervals:gaps.length,p95SampledGapSeconds:gaps[Math.ceil(gaps.length*.95)-1],maxSampledGapSeconds:gaps.at(-1)};
+ const producer=[...log.matchAll(/producer-time:(\d+),(\d+),(\d+),(\d+)/g)].at(-1);check(producer,'Independent audio producer timing');
+ const [producerCalls,producerMaxUs,producerSumUs,producerInvalid]=producer.slice(1).map(Number);check(!producerInvalid&&producerCalls>1000,'Producer observation coverage');
+ performance.audioProducer={calls:producerCalls,maxSeconds:producerMaxUs/1e6,totalSeconds:producerSumUs/1e6};
  check(maxUs<=35000&&performance.maxRenderSeconds<=.020,'Movement preparation/commit regression');
- check(maxUnchanged<=4&&gaps.at(-1)<=.085,'Moving scroll starvation regression');
- result={...result,sourceTicks:end.ticks,sourceEvents:end.events,videoWrites:writes,invalidVideoWrites:bad,lcdOff:off,actualApuHash:apuHash,actualApuWrites:apuWrites,maxWriteLine:maxLy,dmaStarts,badDma,oamDmas,badOam,scrollWrites,badScroll,peakSpritesPerLine:peak,shots:actual.shots.length,pixels:actual.shots.length*160*144,performance,home};
+ check(maxUnchanged<=3&&gaps.at(-1)<=.055&&performance.movingScroll.p95SampledGapSeconds<=.035,'Moving scroll starvation regression');
+ check(producerMaxUs<=55000,'Audio producer monopolization regression');
+ result={...result,sourceTicks:end.ticks,sourceEvents:end.events,videoWrites:writes,invalidVideoWrites:bad,lcdOff:off,actualApuHash:apuHash,actualApuWrites:apuWrites,preRestartApuWrites,maxWriteLine:maxLy,dmaStarts,badDma,oamDmas,badOam,scrollWrites,badScroll,peakSpritesPerLine:peak,shots:actual.shots.length,pixels:actual.shots.length*160*144,performance,home};
 }
 await fs.writeFile(out+'/'+tag+'-result.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));

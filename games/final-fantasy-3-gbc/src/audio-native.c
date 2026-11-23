@@ -29,9 +29,15 @@ static uint32_t fraction;
 static uint8_t sweep_fraction;
 static const palette_color_t palette[]={RGB(28,30,29),RGB(18,22,21),RGB(9,13,14),RGB(2,4,6)};
 #include "audio-native-irq.inc"
-uint8_t ff3_rom_byte(uint8_t source,uint16_t offset){uint8_t bank=source==9?5:source-0x35;if(source!=9&&(source<0x36||source>0x39)){ff3_error=4;return 0;}return ff3_resource_byte(bank,offset);}
-uint16_t ff3_pitch_lookup(uint16_t t){uint16_t value;if(!ff3_resource_copy(&value,6,t*2,2))return 0;return value;}
-uint8_t ff3_noise_lookup(uint8_t p){return ff3_resource_byte(6,4096u+p);}
+/* Both audio builders link and verify five exact 8 KiB source banks at 1..5
+ * and the 4128-byte conversion table at 6. These bounded lookups need no
+ * generic range-table checks or two-byte memcpy. Keep the old checked path for
+ * out-of-domain arguments, and restore the caller's bank before returning.
+ * IRQ consumers never switch ROM banks. */
+static uint8_t audio_byte(uint8_t bank,uint16_t offset){uint8_t saved=CURRENT_BANK,value;SWITCH_ROM(bank);value=*(const uint8_t*)(0x4000u+offset);SWITCH_ROM(saved);return value;}
+uint8_t ff3_rom_byte(uint8_t source,uint16_t offset){uint8_t bank=source==9?5:source-0x35;if(source!=9&&(source<0x36||source>0x39)){ff3_error=4;return 0;}if(offset>=8192)return ff3_resource_byte(bank,offset);return audio_byte(bank,offset);}
+uint16_t ff3_pitch_lookup(uint16_t t){uint16_t value;uint8_t saved,lo,hi;const uint8_t *p;if(t>=2048){if(!ff3_resource_copy(&value,6,t*2,2))return 0;return value;}saved=CURRENT_BANK;p=(const uint8_t*)(0x4000u+t*2);SWITCH_ROM(6);lo=*p++;hi=*p;SWITCH_ROM(saved);return lo|((uint16_t)hi<<8);}
+uint8_t ff3_noise_lookup(uint8_t p){if(p>=16)return ff3_resource_byte(6,4096u+p);return audio_byte(6,4096u+p);}
 void ff3_output(uint8_t reg,uint8_t value){native_source_hash=(native_source_hash<<1)|(native_source_hash>>15);native_source_hash^=((uint16_t)reg<<8)|value;ff3_backend_write(reg,value);}
 void ff3_gb_write(uint8_t reg,uint8_t value){if(emitted>=23){ff3_error=5;return;}slot[18+emitted*2]=reg;slot[19+emitted*2]=value;emitted++;native_gb_hash=(native_gb_hash<<1)|(native_gb_hash>>15);native_gb_hash^=((uint16_t)reg<<8)|value;}
 static void silence(void){NR12_REG=NR22_REG=NR32_REG=NR42_REG=0;}
@@ -39,7 +45,9 @@ static void text(const char *p){while(*p)putchar(*p++);}
 static void command(uint8_t op,uint8_t arg){switch(op){case 2:case 3:if(!ff3_music_request(&ff3_state,arg,op==3))ff3_error=6;break;case 4:ff3_music_resume(&ff3_state);break;case 5:case 6:ff3_music_stop(&ff3_state,op==6);break;case 7:if(!ff3_audio_effect(&ff3_state,arg))ff3_error=6;break;case 8:ff3_audio_stop_effect(&ff3_state);break;default:ff3_error=6;}}
 static void put16(uint8_t at,uint16_t value){slot[at]=(uint8_t)value;slot[at+1]=value>>8;}
 static void put32(uint8_t at,uint32_t value){put16(at,(uint16_t)value);put16(at+2,(uint16_t)(value>>16));}
-static void publish(void){uint8_t i,index=native_published^1,*p=native_snapshot[index];for(i=0;i<216;i++)p[i]=((uint8_t*)&ff3_state)[i];p+=216;for(i=0;i<12;i++)p[i]=slot[4+i];p[12]=(uint8_t)native_pops;p[13]=native_pops>>8;native_published=index;}
+/* Publish the same immutable diagnostics, using the toolchain's sequential
+ * copy instead of redoing indexed pointer arithmetic for every byte. */
+static void publish(void){uint8_t index=native_published^1,*p=native_snapshot[index];memcpy(p,&ff3_state,216);p+=216;memcpy(p,slot+4,12);p[12]=(uint8_t)native_pops;p[13]=native_pops>>8;native_published=index;}
 /* About three source ticks of lookahead absorb note/SFX decode peaks.
  * The next packet may extend this bound by one event interval. */
 static uint8_t full(void){return ((native_tail+1)&15)==native_head||FF3_AUDIO_IS_AHEAD(prepare_due,ff3_clock_now());}

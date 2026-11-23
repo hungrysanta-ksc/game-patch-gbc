@@ -87,3 +87,35 @@ Maximum upload/preparation time fell from **155 frames (2.595 s) to 13 frames (0
 The regression gate requires maximum response <=750 ms, p95 <=600 ms and upload <=16 frames, in addition to every existing audio, state, memory, pixel and bus-write gate. This budget bounds this diagnostic workload, not all future gameplay. The first 82 requests and screenshots finish before the music plan ends; all 2,350 Hangul glyphs, 116-glyph peak cache and 1,889,280 captured pixels match the independent reference. Static-text regression: 79 requests / 67 screenshots / 12 explicit rejections. NPC regression: 2,801 requests / 81 screenshots / 312 joypad requests. Host tests: 30 passed. The three ROMs are also rebuilt byte-for-byte from the 167-file publication allowlist and explicit private inputs before publication.
 
 Current integrated ROM SHA-256: `4b2e5e124f324dbe6911686272a2080b4217477b99f7ac9ff09c72f1a86d2a1c`. Fixed ROM ends at 2556, static WRAM at CFD9 (39 bytes below D000), and text bank 14 uses 4259 bytes. Hash storage reduces the reserved stack to 1,168 bytes; stack/cell/map guards remain intact throughout the load run. This remains a single-cache page replacement, with the window hidden during transfer. Seamless scrolling, normal movement/NPC approach triggers and final sound timbre remain separate work.
+
+## 2026-11-23 audio producer regression
+
+The current integrated ROM is now
+`c9662aeec90499ffc7660d7fa262181736afe148c0e2c390babac737b729a4bb`.
+The previous hash above is the pre-producer-optimization baseline. Bounded audio
+lookups and sequential diagnostic copies reduce the shared producer cost; the
+text engine, source audio semantics, output conversion and lookahead are unchanged.
+Fixed ROM ends at 2575; static WRAM remains CFD9.
+
+The full 7,200-tick/21,366-event load run completed 321 requests, including the
+82-job coverage cycle, 82 screenshots / 1,889,280 matching pixels, and all 2,350
+Hangul glyphs. Late deadlines and underruns were zero. Actual APU output remained
+30,938 writes / hash 16366. Invalid video writes, DMA starts and LCD-off writes
+were zero. Request latency over 278 visible pages was median 351.9ms,
+p95 485.8ms and maximum 619.6ms, within the existing gates.
+
+The faster producer exposed an observer-origin race: the boot song could dispatch
+seven writes after installing the bus observer but before the automatic test
+restart was accepted. These are now counted separately as `preRestartApuWrites`.
+The tested stream starts at the actual `native_clock` reset with request 255,
+outside the timer IRQ, before the restart's first dispatch. Timer low-byte wraps
+cannot arm it. The same ROM then matches both the independent original-code
+write count and rolling hash, including the four final mute writes. An initial
+100-frame trace also matched 291 events / 511 writes after the boundary.
+
+This is an observer fix, not a sound change or an allowance for missing output.
+The verifier requires the restart boundary, rejects unresolved Lua symbols, and
+continues to check prepared states, consumed events, deadlines, queue health,
+actual APU registers, window pixels and protected memory. Raw failed traces and
+the pre-restart register sequence remain local. See [movement results](exploration.md)
+for the separate reduction in moving-screen gaps.
