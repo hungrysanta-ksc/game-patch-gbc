@@ -16,14 +16,22 @@ class Program {
   void Assert(bool p,string message){if(!p)throw new Exception(message+" field="+Bytes("field",56));}
   NativeLibrary.SetDllImportResolver(typeof(Core).Assembly,(n,a,p)=>n=="MesenCore.dll"?NativeLibrary.Load(Text("dll")):IntPtr.Zero);Directory.CreateDirectory(Text("home"));
   var frames=new List<object>();var shots=new List<object>();int script=-1,units=0,total=0;bool done=false;
+  var npcRecords=new SortedDictionary<int,string>();
+  void CollectNpc(){if(script<0||npcRecords.Count==1024)return;var log=new StringBuilder(2000000);Audit.GetScriptLog(script,log,2000000);
+   foreach(var line in log.ToString().Split('\n'))if(line.StartsWith("npc-step:")){string clean=line.TrimEnd('\r');int id=int.Parse(clean.Split(':')[1]);if(npcRecords.TryGetValue(id,out var old))Assert(old==clean,"NPC observation identity");else npcRecords.Add(id,clean);}
+  }
   try{Core.InitDll();Core.InitializeEmu(Text("home"),IntPtr.Zero,IntPtr.Zero,true,true,true,true);Audit.ConfigureVideo();Core.SetEmulationConfig(new Core.Speed{speed=0,turbo=0,rewind=100});Assert(Core.LoadRom(Text("rom"),IntPtr.Zero),"ROM load");Core.InitializeDebugger();Core.Pause();Wait(()=>Core.IsExecutionStopped()&&Core.IsPaused());
    for(int i=0;i<600&&F(26)!=0xa5;i++)Step(1);Assert(F(26)==0xa5,"Boot ready");
    if(c.TryGetProperty("fixtures",out var fixtures)){
     SetF(27,1);
     foreach(var job in fixtures.EnumerateArray()){
-     Write("field",job.GetProperty("field").GetString()!);Write("object_part1",job.GetProperty("part1").GetString()!);Write("object_part2",job.GetProperty("part2").GetString()!);SetF(20,job.GetProperty("op").GetByte());
+     Write("field",job.GetProperty("field").GetString()!);Write("object_part1",job.GetProperty("part1").GetString()!);Write("object_part2",job.GetProperty("part2").GetString()!);
+     var motion=job.TryGetProperty("motion",out var m)?Convert.FromHexString(m.GetString()!):new byte[7];SetF(73,motion[0]);SetF(74,motion[0]);SetF(32,motion[0]);SetF(33,motion[1]);for(uint j=0;j<5;j++)SetF(67+j,motion[j+2]);
+     if(job.TryGetProperty("mapProperty",out var prop)){for(uint j=0;j<1024;j++)Core.SetMemoryValue(7,0xd000+j,1);for(uint j=0;j<256;j++)Core.SetMemoryValue(7,0xd687+j,0);Core.SetMemoryValue(7,0xd687,0x24);Core.SetMemoryValue(7,0xd689,prop.GetByte());Core.SetMemoryValue(7,0xd78a,job.GetProperty("fill").GetByte());}
+     SetF(20,job.GetProperty("op").GetByte());
      for(int i=0;F(20)!=0||F(47)!=0||F(65)!=0;i++){Assert(i<1000,"Fixture timeout "+units);Step(1000,0);}
      var e=job.GetProperty("expected");foreach(var name in new[]{"field","part1","part2"}){string key=name=="field"?name:"object_"+name;Assert(Bytes(key,name=="field"?28:192)==e.GetProperty(name).GetString(),"6502 comparison "+units+" op="+job.GetProperty("op")+" "+name+" expected="+e.GetProperty(name).GetString());}
+     if(e.TryGetProperty("motion",out var expectedMotion))Assert(Mem(7,Addr("field")+32,2)+Mem(7,Addr("field")+67,5)==expectedMotion.GetString(),"NPC scheduler state "+units);
      if(e.TryGetProperty("oam",out var expectedOam))Assert(Mem(44,0,160)==expectedOam.GetString(),"Original player animation OAM "+units);
      units++;if(units%500==0)Console.WriteLine("units="+units);
     }
@@ -34,21 +42,28 @@ class Program {
      Assert(F(16)==0&&F(39)==0&&Read("asset_error")==0&&Read("text_error")==0&&Read("npc_error")==0&&Read("ff3_error")==0&&Read("text_transfer_fault")==0,"Runtime fault");
      Assert(Num("native_underruns",2)==0&&Num("native_max_late",2)==0,"Audio timing late="+Num("native_max_late",2)+" underruns="+Num("native_underruns",2));
      foreach(uint a in new uint[]{0xd7f0,0xd940,0xdb60,0xdca0})Assert(Mem(7,a,16)==new string('a',0)+string.Concat(Enumerable.Repeat("a7",16)),"Memory guard "+a);
-     var timing=Core.GetTimingInfo(7);frames.Add(new{frame=timing.frame,clock=timing.clock,rate=timing.rate,timer=Num("native_clock",2),consumed=Bytes("native_consumed",12),done=Read("native_done"),late=Num("native_max_late",2),underruns=Num("native_underruns",2),field=Bytes("field",64),scroll=Mem(7,0xff42,2),hardware=Mem(7,0xff10,20)});
+     var timing=Core.GetTimingInfo(7);frames.Add(new{frame=timing.frame,clock=timing.clock,rate=timing.rate,timer=Num("native_clock",2),consumed=Bytes("native_consumed",12),done=Read("native_done"),late=Num("native_max_late",2),underruns=Num("native_underruns",2),field=Bytes("field",75),scroll=Mem(7,0xff42,2),hardware=Mem(7,0xff10,20)});
      if(total%600==0)Console.WriteLine("frame="+total+" ticks="+Num("native_ticks",4)+" mode="+F(19));
+     if(total%4==0)CollectNpc();
     }
     void Until(Func<bool> f,string name,int limit=400){for(int i=0;!f();i++){Assert(i<limit,"Timeout "+name);Frame();}}
     void Run(int n){for(int i=0;i<n;i++)Frame();}
     void Keys(string k){Audit.SetInputOverrides(0,new Audit.Buttons{A=(byte)(k.Contains('A')?1:0),B=(byte)(k.Contains('B')?1:0),Up=(byte)(k.Contains('U')?1:0),Down=(byte)(k.Contains('D')?1:0),Left=(byte)(k.Contains('L')?1:0),Right=(byte)(k.Contains('R')?1:0)});}
     void Release(){Keys("");Until(()=>F(36)==0,"release");Run(3);}
-    void Shot(string label){int stable=0;uint last=0;for(int i=0;stable<3;i++){Assert(i<200,"Stable screenshot "+label);Frame();uint draws=(uint)(F(34)|(F(35)<<8));stable=F(64)==0&&F(47)==0&&F(65)==0&&draws==last?stable+1:0;last=draws;}Audit.TakeScreenshot();shots.Add(new{label,field=Bytes("field",56),part1=Bytes("object_part1",192),part2=Bytes("object_part2",192),oam=Mem(44,0,160),vram=Mem(43,0,16384),palette=Mem(45,0,128),state=Bytes("ff3_game_state",1024),cells=Bytes("text_cells",320),visible=Read("text_visible"),more=Read("text_more"),textId=Num("npc_text_id",2),scroll=Mem(7,0xff42,2),frame=Core.GetTimingInfo(7).frame});}
+    // Controlled pixel checkpoint, separate from normal-play timing evidence.
+    // Pause only at a completed loop; never write positions, NPC state or RNG.
+    void Shot(string label){SetF(27,1);Until(()=>F(64)==0&&F(72)==0&&F(47)==0&&F(65)==0,"checkpoint idle");Run(2);
+     SetF(20,6);Until(()=>F(20)==0&&F(47)==0&&F(65)==0,"checkpoint publish");Run(2);
+     Audit.TakeScreenshot();shots.Add(new{label,controlledCheckpoint=true,field=Bytes("field",75),part1=Bytes("object_part1",192),part2=Bytes("object_part2",192),oam=Mem(44,0,160),vram=Mem(43,0,16384),palette=Mem(45,0,128),state=Bytes("ff3_game_state",1024),cells=Bytes("text_cells",320),visible=Read("text_visible"),more=Read("text_more"),textId=Num("npc_text_id",2),scroll=Mem(7,0xff42,2),frame=Core.GetTimingInfo(7).frame});
+     uint due=(Num("native_clock",2)+68)&65535;SetF(50,(byte)due);SetF(51,(byte)(due>>8));SetF(27,0);
+    }
     void Walk(string key,int x,int y){Keys(key);Until(()=>Math.Abs((((F(0)+7)&63)*16+F(2))-x*16)+Math.Abs((((F(1)+7)&63)*16+F(3))-y*16)<=12,"approach "+key+" to "+x+","+y);Release();Until(()=>F(5)==0,"finish step");Assert(((F(0)+7)&63)==x&&((F(1)+7)&63)==y,"Walk endpoint");}
     Run(5);Shot("entry");Keys("A");Until(()=>F(36)==16,"distant A sampled");Run(6);Release();Assert(F(19)==0&&Read("text_visible")==0,"Distant talk rejected");
     Walk("U",10,7);Keys("U");Run(25);Release();Assert(F(5)==0&&((F(1)+7)&63)==7&&F(38)>0,"NPC blocks movement");Shot("front-npc");
     if(c.TryGetProperty("profileOnly",out var profile)&&profile.GetBoolean()){done=true;return;}
     for(int cycle=0;cycle<3;cycle++){
      Keys("A");Until(()=>F(19)==2&&Read("text_visible")!=0,"front talk");Release();Shot("dialogue-"+cycle);
-     string position=Bytes("field",7);Keys("D");Run(20);Assert(Bytes("field",7)==position,"Dialogue freezes movement");Release();
+     string position=Bytes("field",7),npcs=Bytes("object_part1",192);byte beforeFrame=F(73);Keys("D");Run(20);Assert((byte)(F(73)-beforeFrame)>=15&&(byte)(F(73)-beforeFrame)<=25,"Dialogue frame clock advances");Assert(Bytes("field",7)==position&&Bytes("object_part1",192)==npcs,"Dialogue freezes player and NPC movement");Release();
      for(int pages=0;F(19)==2;pages++){Assert(pages<20,"Dialogue page limit");byte before=Read("text_page");Keys(cycle==1?"B":"A");Until(()=>F(19)==0||Read("text_page")!=before||Read("text_visible")==0,"acknowledge");Release();}
      Assert(Read("text_visible")==0&&Read("npc_active")==0,"Return to exploration");Shot("return-"+cycle);
      Walk("D",10,10);Walk("R",11,10);Walk("L",10,10);Shot("walked-back-"+cycle);Walk("U",10,7);
@@ -58,6 +73,6 @@ class Program {
     while(Read("native_done")==0){Walk("D",10,10);Walk("U",10,7);if(total>8500)throw new Exception("Audio schedule timeout");}
     done=true;Shot("completed");
    }
-  }finally{if(script>=0){var log=new StringBuilder(2000000);Audit.GetScriptLog(script,log,2000000);File.WriteAllText(Text("output")+".lua.log",log.ToString());}File.WriteAllText(Text("output"),JsonSerializer.Serialize(new{romSha256=Text("romSha256"),coreSha256=Text("coreSha256"),done,units,frames,shots}));Core.Stop();Core.Release();}
+  }finally{if(script>=0){CollectNpc();File.WriteAllLines(Text("output")+".npc.log",npcRecords.Values);var log=new StringBuilder(8000000);Audit.GetScriptLog(script,log,8000000);File.WriteAllText(Text("output")+".lua.log",log.ToString());}File.WriteAllText(Text("output"),JsonSerializer.Serialize(new{romSha256=Text("romSha256"),coreSha256=Text("coreSha256"),done,units,frames,shots}));Core.Stop();Core.Release();}
  }
 }

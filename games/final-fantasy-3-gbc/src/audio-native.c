@@ -11,6 +11,9 @@
 #ifdef FF3_SCENE
 #include "field-scene.h"
 #endif
+#ifdef FF3_EXPLORATION
+#include "exploration.h"
+#endif
 volatile uint8_t native_ready=0,native_request=0,native_argument=0,native_playing=0,native_done=0,native_busy=0,native_irq_busy=0,native_pop_enabled=1;
 volatile uint16_t native_clock=0,native_max_late=0,native_underruns=0,native_pops=0;
 volatile uint32_t native_ticks=0,native_events=0;
@@ -94,7 +97,15 @@ ff3_engine_init();while(preparing&&!full())prepare();if(!ff3_error)dispatch_due(
 #ifdef FF3_TEXT_AUDIO
 /* Fixed-bank cooperative service. Text code may call from any mapped bank;
  * the timer consumer never calls the producer or changes ROM/WRAM banks. */
-void ff3_native_service(void) NONBANKED {uint8_t op,arg;native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_playing){op=native_request;arg=native_argument;start(0);native_request=op;native_argument=arg;}while(preparing&&!full())prepare();native_busy=0;}
+void ff3_native_service(void) NONBANKED {uint8_t op,arg;native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_playing){op=native_request;arg=native_argument;start(0);native_request=op;native_argument=arg;}while(preparing&&!full()){
+ prepare();
+#ifdef FF3_EXPLORATION
+ /* Preserve the three-tick queue target, but let a due exploration picture
+  * run after two ticks are already queued. Resume filling on the next call.
+  * Commands, event deadlines and the IRQ consumer are unchanged. */
+ if(field.ready&&!field.pause&&!field.mode&&(int16_t)(prepare_due-ff3_clock_now())>136&&(int16_t)(ff3_clock_now()-field.deadline)>=0)break;
+#endif
+ }native_busy=0;}
 void ff3_native_begin(void) NONBANKED {uint8_t i;NR52_REG=128;NR50_REG=0x77;NR51_REG=0xff;NR10_REG=0;NR30_REG=0;for(i=0;i<16;i++)((volatile uint8_t*)0xff30)[i]=ff3_resource_byte(6,4112u+i);NR30_REG=128;silence();set_interrupts(VBL_IFLAG|TIM_IFLAG);native_busy=1;
 #ifdef FF3_EXPLORATION
 start(0);

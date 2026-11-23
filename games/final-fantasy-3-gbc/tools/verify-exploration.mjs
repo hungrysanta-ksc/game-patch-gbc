@@ -1,13 +1,14 @@
 import fs from 'node:fs/promises';import {execFile} from 'node:child_process';import {promisify} from 'node:util';
 import {ROOT,input,hash,check} from './source.mjs';import {fieldFixtures} from './exploration-source.mjs';import {nativeReference} from './native-reference.mjs';
 import {makeMapAssets} from './map-assets.mjs';import {makeObjectAssets} from './object-assets.mjs';import {addTextAssets} from './korean-text.mjs';import {prepareDialogue} from './dialogue-build.mjs';
+import {npcOriginal as npcMotionOriginal} from './npc-motion-source.mjs';
 import {fieldPixels} from './exploration-pixels.mjs';import {screenshotRgb} from './map-pixels.mjs';import {windowRgb,textPage} from './text-reference.mjs';import {expandDialogue} from './dialogue-reference.mjs';import {npcOriginal} from './dialogue-source.mjs';import {sourceInitialState} from './state-source.mjs';
 const {data,local}=await input(),units=process.argv.includes('--units'),dir=ROOT+'/build/exploration',rom=dir+'/ff3-exploration.gbc',report=JSON.parse(await fs.readFile(dir+'/report.json')),romSha256=hash(await fs.readFile(rom)),coreSha256=hash(await fs.readFile(local.mesenCore));
 check(romSha256===report.romSha256&&coreSha256==='1ba99d2c848e007c60cbd7fceca058440758eb44837a93a6724d29d72723c994','Artifact identity');
 const symbols={};for(const m of(await fs.readFile(dir+'/ff3-exploration.noi','utf8')).matchAll(/DEF _(\w+) (0x[0-9a-f]+)/gi))symbols[m[1]]=Number(m[2]);
 const out=ROOT+'/evidence/exploration';await fs.mkdir(out,{recursive:true});const tag=units?'units':'play',output=out+'/'+tag+'.json',configPath=output+'.config.json';let home;
 if(process.argv.includes('--reuse')){const c=JSON.parse(await fs.readFile(configPath));check(c.romSha256===romSha256,'Stale artifact');home=c.home;}
-else{home=await fs.mkdtemp(ROOT+'/.local/mesen-exploration-'+tag+'-');const auditPath=ROOT+'/tools/text-audio-audit.lua',audit=(await fs.readFile(auditPath,'utf8')).replaceAll('__IRQ_BUSY__',String(symbols.native_irq_busy)).replaceAll('__NATIVE_CLOCK__',String(symbols.native_clock)).replaceAll('__NATIVE_REQUEST__',String(symbols.native_request))+'\n'+(await fs.readFile(ROOT+'/tools/exploration-audit.lua','utf8')).replaceAll('__FIELD_RENDER_BUSY__',String(symbols.field+64)).replaceAll('__NATIVE_BUSY__',String(symbols.native_busy));
+else{home=await fs.mkdtemp(ROOT+'/.local/mesen-exploration-'+tag+'-');const auditPath=ROOT+'/tools/text-audio-audit.lua',audit=(await fs.readFile(auditPath,'utf8')).replaceAll('__IRQ_BUSY__',String(symbols.native_irq_busy)).replaceAll('__NATIVE_CLOCK__',String(symbols.native_clock)).replaceAll('__NATIVE_REQUEST__',String(symbols.native_request))+'\n'+(await fs.readFile(ROOT+'/tools/exploration-audit.lua','utf8')).replaceAll('__FIELD_RENDER_BUSY__',String(symbols.field+64)).replaceAll('__NATIVE_BUSY__',String(symbols.native_busy)).replaceAll('__NATIVE_TICKS__',String(symbols.native_ticks))+'\n'+(await fs.readFile(ROOT+'/tools/npc-motion-audit.lua','utf8')).replaceAll('__FIELD__',String(symbols.field)).replaceAll('__PART1__',String(symbols.object_part1)).replaceAll('__PART2__',String(symbols.object_part2)).replaceAll('__NPC_BUSY__',String(symbols.field+72));
  check(!/__[A-Z][A-Z_]*__/.test(audit),'Unresolved audit symbol');await fs.writeFile(configPath,JSON.stringify({dll:local.mesenCore,home,rom,romSha256,coreSha256,symbols,fixtures:units?fieldFixtures(data):undefined,auditPath,audit,output}));
  try{const r=await promisify(execFile)(local.dotnet||'dotnet',[ROOT+'/tools/VerifyExploration/bin/Release/net8.0/VerifyExploration.dll',configPath],{cwd:ROOT,timeout:1200000,maxBuffer:8e6});await fs.writeFile(output+'.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(output+'.log',(e.stdout||'')+(e.stderr||''));throw e;}}
 const actual=JSON.parse(await fs.readFile(output));check(actual.done&&actual.romSha256===romSha256&&actual.coreSha256===coreSha256,'Run identity/completion');
@@ -22,11 +23,24 @@ if(!units){
  check(!bad&&!off&&!badDma&&writes>1000&&apuHash===expectedHash&&apuWrites===end.gbWrites+4,'Video/APU bus audit '+JSON.stringify({writes,bad,off,apuHash,expectedHash,apuWrites,expectedApuWrites:end.gbWrites+4,badDma}));
  const fieldAudit=[...log.matchAll(/field-audit:(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1);check(fieldAudit,'Field bus audit');const [oamDmas,badOam,scrollWrites,badScroll,peak]=fieldAudit.slice(1).map(Number);check(oamDmas>7000&&!badOam&&scrollWrites>100&&!badScroll&&peak<=10,'OAM/scroll bus budget');
  const assets=await addTextAssets(data,makeObjectAssets(data,makeMapAssets(data,{verify:false}),{verify:false}),local.dialogue,{verify:false});await prepareDialogue(data,assets,local.dialogue);
+ const np=assets.groups.properties[29],nl=assets.groups.layout[assets.groups.selection[29][0]],nt=assets.groups.collision[np[0]>>5];let npcTransitions=0,npcPixels=0,npcReservations=0,npcFirstTick,npcFirstTalks;
+ const npcLog=await fs.readFile(output+'.npc.log','utf8');
+ for(const m of npcLog.matchAll(/npc-step:(\d+):([0-9a-f]+):([0-9a-f]+):([0-9a-f]+):([0-9a-f]+):([0-9a-f]+):([0-9a-f]+)/g)){
+  check(Number(m[1])===npcTransitions+1,'NPC trace sequence');const [f,a,b,g,x,y]=m.slice(2).map(h=>Buffer.from(h,'hex')),e=npcMotionOriginal(data,9,f,a,b,nl,nt,np[3]);
+  if(!npcTransitions){npcFirstTick=f.readUInt16LE(32);npcFirstTalks=f.readUInt16LE(30);}
+  check(e.part1.equals(x)&&e.part2.equals(y)&&e.motion.equals(Buffer.concat([g.subarray(32,34),g.subarray(67,72)])),'Live original NPC transition '+npcTransitions);
+  for(let i=0;i<192;i+=16){if(a[i]&&(a[i+6]!==x[i+6]||a[i+7]!==x[i+7]))npcPixels++;if(a[i]&&(a[i+2]!==x[i+2]||a[i+3]!==x[i+3]))npcReservations++;}npcTransitions++;
+ }
+ check(npcTransitions===1024&&npcPixels>100&&npcReservations>10,'Live NPC motion coverage');
+ const npcTiming=[...log.matchAll(/npc-time:(\d+),(\d+),(\d+)/g)].at(-1),lastField=Buffer.from(actual.frames.at(-1).field,'hex');check(npcTiming,'NPC timing observation');
+ const [logicalFrames,maxStepUs,totalStepUs]=npcTiming.slice(1).map(Number);check(logicalFrames===lastField.readUInt16LE(32)-npcFirstTick+1-(lastField.readUInt16LE(30)-npcFirstTalks),'One NPC update per non-dialogue logic frame');
+ result.npcMotion={transitions:npcTransitions,pixelChanges:npcPixels,reservations:npcReservations,logicalFrames,maxStepSeconds:maxStepUs/1e6,totalStepSeconds:totalStepUs/1e6};
  const d=assets.dialogue.diagnostic,state=sourceInitialState(data),selection=npcOriginal(data,d.world,d.npc,[...state.subarray(0x20,0x30)]),event=assets.dialogue.events[selection.event],id=512+selection.dialogue[event.commands[0].operand];
  const page=textPage(expandDialogue(assets,id,{names:d.names,shown:0,gil:0,variable:0,item:166}),0),screens=(await fs.readdir(home+'/Screenshots')).filter(n=>n.endsWith('.png')).sort();check(screens.length===actual.shots.length,'Screenshot count');
  for(const [i,s]of actual.shots.entries()){let pixels=fieldPixels(data,assets,report,s);if(s.visible){check(s.textId===id,'Original selected NPC text');const cells=Buffer.from(s.cells,'hex');page.cells.forEach((v,i)=>check(cells.readUInt16LE(i*2)===v,'Original translated window cells'));pixels=windowRgb(pixels,page,assets.text.glyphs);}const image=screenshotRgb(await fs.readFile(home+'/Screenshots/'+screens[i]));check(image.equals(pixels),'Source-derived screen pixels '+s.label);}
  check(actual.shots.length===12,'Three complete input dialogue cycles');
- const tail=actual.frames.filter(s=>s.frame>=actual.shots.find(s=>s.label==='walked-back-2').frame+5),first=tail[0],last=tail.at(-1),fb=Buffer.from(first.field,'hex'),lb=Buffer.from(last.field,'hex');
+ // Compare normal movement time; the final controlled screenshot pauses logic.
+ const tail=actual.frames.filter(s=>s.frame>=actual.shots.find(s=>s.label==='walked-back-2').frame+5&&!Buffer.from(s.field,'hex')[27]),first=tail[0],last=tail.at(-1),fb=Buffer.from(first.field,'hex'),lb=Buffer.from(last.field,'hex');
  const logicSeconds=((lb.readUInt16LE(32)-fb.readUInt16LE(32))&65535)/60.0988,elapsedSeconds=(last.clock-first.clock)/last.rate,logicDriftSeconds=logicSeconds-elapsedSeconds;
  check(Math.abs(logicDriftSeconds)<0.2,'Logical movement clock drift '+logicDriftSeconds);
  const performance={maxBackgroundSeconds:lb.readUInt16LE(56)/4096,maxObjectsSeconds:lb.readUInt16LE(58)/4096,maxPublishSeconds:lb.readUInt16LE(60)/4096,maxRenderSeconds:lb.readUInt16LE(62)/4096,logicDriftSeconds,logicObservationSeconds:elapsedSeconds};
@@ -44,11 +58,24 @@ if(!units){
  gaps.sort((a,b)=>a-b);check(gaps.length>1000,'Sustained movement samples');
  performance.actualCommit={count,maxSeconds:maxUs/1e6,meanSeconds:sumUs/count/1e6,p95UpperSeconds:percentile(.95),histogramMilliseconds:bins};
  performance.movingScroll={movingFrames,changedFrames,maxUnchangedFrames:maxUnchanged,intervals:gaps.length,p95SampledGapSeconds:gaps[Math.ceil(gaps.length*.95)-1],maxSampledGapSeconds:gaps.at(-1)};
+ // A delayed timer ISR must not silently slow the whole soundtrack. Compare
+ // its wrapping counter against the emulator master clock after restart.
+ const clockFrames=actual.frames.slice(actual.frames.findIndex(f=>Buffer.from(f.consumed,'hex').readUInt32LE(0)>=8));
+ check(clockFrames.length>7000,'Timer observation span');const clockFirst=clockFrames[0];let timerTicks=0,previousTimer=clockFirst.timer,minClockDrift=0,maxClockDrift=0;
+ for(const f of clockFrames.slice(1)){timerTicks+=(f.timer-previousTimer)&65535;previousTimer=f.timer;const drift=timerTicks/4096-(f.clock-clockFirst.clock)/f.rate;minClockDrift=Math.min(minClockDrift,drift);maxClockDrift=Math.max(maxClockDrift,drift);}
+ check(Math.max(Math.abs(minClockDrift),Math.abs(maxClockDrift))<.0005&&maxClockDrift-minClockDrift<.0005,'Audio timer/master-clock drift');
+ performance.audioClock={ticks:timerTicks,minDriftSeconds:minClockDrift,maxDriftSeconds:maxClockDrift};
+ const strip=[...log.matchAll(/strip-time:(\d+),(\d+),(\d+),(\d+)/g)].at(-1);check(strip,'Background strip timing');
+ // This fills the invisible ring margin after a picture can already commit.
+ // Bound it by the existing 55 ms starvation budget, not the distinct 35 ms
+ // preparation-to-SCX budget; the latter remains independently enforced.
+ const [stripCount,stripMaxUs,stripSumUs,stripBad]=strip.slice(1).map(Number);check(!stripBad&&stripCount>100&&stripMaxUs<=55000,'Background strip starvation');
+ performance.backgroundTransfer={count:stripCount,maxSeconds:stripMaxUs/1e6,meanSeconds:stripSumUs/stripCount/1e6};
  const producer=[...log.matchAll(/producer-time:(\d+),(\d+),(\d+),(\d+)/g)].at(-1);check(producer,'Independent audio producer timing');
  const [producerCalls,producerMaxUs,producerSumUs,producerInvalid]=producer.slice(1).map(Number);check(!producerInvalid&&producerCalls>1000,'Producer observation coverage');
  performance.audioProducer={calls:producerCalls,maxSeconds:producerMaxUs/1e6,totalSeconds:producerSumUs/1e6};
  check(maxUs<=35000&&performance.maxRenderSeconds<=.020,'Movement preparation/commit regression');
- check(maxUnchanged<=3&&gaps.at(-1)<=.055&&performance.movingScroll.p95SampledGapSeconds<=.035,'Moving scroll starvation regression');
+ check(maxUnchanged<=3&&gaps.at(-1)<=.055&&performance.movingScroll.p95SampledGapSeconds<=.035,'Moving scroll starvation regression '+JSON.stringify(performance));
  check(producerMaxUs<=55000,'Audio producer monopolization regression');
  result={...result,sourceTicks:end.ticks,sourceEvents:end.events,videoWrites:writes,invalidVideoWrites:bad,lcdOff:off,actualApuHash:apuHash,actualApuWrites:apuWrites,preRestartApuWrites,maxWriteLine:maxLy,dmaStarts,badDma,oamDmas,badOam,scrollWrites,badScroll,peakSpritesPerLine:peak,shots:actual.shots.length,pixels:actual.shots.length*160*144,performance,home};
 }

@@ -1,4 +1,5 @@
 import {stateCpu} from './state-source.mjs';
+import {npcSprites,npcFixtures,npcAnimationFixtures,npcDeferredFixtures} from './npc-motion-source.mjs';
 // Only input/output adaptation. All expected decisions execute untouched ROM.
 export const fieldAddresses=[0x29,0x2a,0x35,0x36,0x33,0x34,0xa5,0x43,0x44,0x45,0xab,0x84,0x85];
 export function fieldOriginal(rom,op,input,part1=Buffer.alloc(192),part2=Buffer.alloc(192)){
@@ -38,9 +39,8 @@ export function fieldFixtures(rom){
   const c=stateCpu(rom);fieldAddresses.forEach((address,i)=>c.m[address]=s[i]);c.y=0;c.call(0xd8d3);const records=[];
   const push=(x,y,t,f,p)=>{if(x<=-8||x>=160||y<=-8||y>=144)return;records.push(y+16,x+8,t,8+p+(f&1)+((f&64)?32:0)+((f&128)?64:0)+((f&32)?128:0));};
   for(let q=0;q<4;q++){const i=0x200+q*4;push(c.m[i+3]-40,c.m[i]+1-48,192+c.m[i+1],c.m[i+2],2);}
-  const n=stateCpu(rom);n.banks=[0x3a,0x3b,0x3e,0x3f];n.m[0x40]=80;n.m[0x41]=76;n.m[0x80]=a[14];n.m[0x81]=a[15];n.m[0x7105]=b[5];n.m[0x7101]=b[1];n.call(0xaead);
-  for(let q=0;q<4;q++){const i=0x200+q*4;push(x+n.m[i+3]-80,y+n.m[i]-76,n.m[i+1],n.m[i+2],0);}
+  for(const sprite of npcSprites(rom,s,a,b,0))push(...sprite,0);
   const oam=Buffer.alloc(160);Buffer.from(records).copy(oam);cases.at(-1).expected.oam=oam.toString('hex');edge++;
  }
- return cases;
+ return [...cases,...npcAnimationFixtures(rom),...npcFixtures(rom),...npcDeferredFixtures(rom)];
 }

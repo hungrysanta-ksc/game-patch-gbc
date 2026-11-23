@@ -25,6 +25,7 @@ export const files=[
  'docs/exploration.md','src/exploration.h','src/exploration.c','src/exploration-render.c','src/exploration-video.c','src/exploration-viewer.c',
  'tools/exploration-assets.mjs','tools/exploration-source.mjs','tools/exploration-pixels.mjs','tools/exploration-audit.lua','tools/build-exploration-verifier.mjs','tools/verify-exploration.mjs',
  'tools/VerifyExploration/VerifyExploration.csproj','tools/VerifyExploration/Program.cs','tools/VerifyExploration/Audit.cs',
+ 'docs/npc-motion.md','src/npc-motion.c','tools/npc-motion-source.mjs','tools/npc-motion-audit.lua',
  'docs/port-plan.md','docs/audio-design.md','docs/audio-validation.md','docs/vgz-assessment.md','docs/timed-audio.md','docs/localization-inputs.md','docs/audio-backlog.md','docs/audio-control.md','docs/audio-channel.md',
  'spec/source.json','spec/toolchain.json','spec/port-policy.json',
  'src/audio-player.c','src/vgm-player.c','src/audio-control.c','src/audio-control.h','src/audio-control-test.c','src/audio-channel.c','src/audio-channel.h','src/audio-channel-test.c','tests/audio.test.mjs','tests/vgm.test.mjs','tests/timed-stream.test.mjs',
