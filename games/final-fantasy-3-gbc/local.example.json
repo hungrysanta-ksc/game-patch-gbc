@@ -7,5 +7,10 @@
     "font": "D:/private/fonts/7x7_comp.fnt",
     "bindings": "D:/private/text-bindings.json",
     "translationDir": "D:/private/textasset"
+  },
+  "dialogue": {
+    "font": "D:/private/fonts/7x7_comp.fnt",
+    "bindings": "D:/private/dialogue-bindings.json",
+    "translationDir": "D:/private/textasset"
   }
 }
