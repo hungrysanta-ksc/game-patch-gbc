@@ -29,7 +29,10 @@
     "build:dialogue": "node tools/build-text.mjs --dialogue",
     "verify:dialogue": "node tools/verify-dialogue.mjs",
     "build:dialogue-audio": "node tools/build-text.mjs --audio",
-    "verify:dialogue-audio": "node tools/verify-text-audio.mjs"
+    "verify:dialogue-audio": "node tools/verify-text-audio.mjs",
+    "build:exploration": "node tools/build-text.mjs --explore",
+    "verify:exploration": "node tools/verify-exploration.mjs",
+    "verify:exploration-units": "node tools/verify-exploration.mjs --units"
   },
   "engines": {
     "node": ">=20"
