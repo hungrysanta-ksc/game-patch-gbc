@@ -11,7 +11,7 @@ const pairOffset=(pair,cpu)=>16+pair*16384+(cpu&16383);
 const word=(c,a)=>c.m[a]|c.m[a+1]<<8;
 function battleCpu(rom){const c=new Driver6502(rom);c.banks=[0x2e,0x2f,0x3e,0x3f];return c;}
 export function tilePixels(bytes){check(bytes.length%16===0,'Whole NES tiles');return Array.from({length:bytes.length/16},(_,t)=>Uint8Array.from({length:64},(_,i)=>((bytes[t*16+(i>>3)]>>(7-(i&7)))&1)|(((bytes[t*16+(i>>3)+8]>>(7-(i&7)))&1)<<1)));}
-export function monsterGraphic(rom,id){
+export function monsterGraphic(rom,id,{externalTiles}={}){
  check(id>=0&&id<255,'Monster ID');const property=rom[0x5cb10+id],type=property>>5,index=property&31;
  const c=battleCpu(rom);c.m[0x7d73]=property;c.x=0;
  let begin,bytes,w,h,map,flip=false,attrBegin,attrBytes;
@@ -28,8 +28,9 @@ export function monsterGraphic(rom,id){
  }
  check(begin>=16&&begin+bytes<=rom.length,'Graphics source range');const gfx=tilePixels(rom.subarray(begin,begin+bytes));
  const foreign=map?[...new Set(map)].filter(t=>t!==0&&t<0x70):[];
- if(foreign.length)return {id,type,index,w,h,source:{begin,bytes,attrBegin,attrBytes},unresolved:{kind:'boss-external-tile',tiles:foreign}};
- const tiles=map?Array.from(map,t=>t===0?new Uint8Array(64):gfx[t-0x70]):gfx;check(tiles.every(Boolean),'Boss source tile bounds');
+ if(foreign.some(t=>!externalTiles?.has(t)))return {id,type,index,w,h,source:{begin,bytes,attrBegin,attrBytes},unresolved:{kind:'boss-external-tile',tiles:foreign}};
+ for(const t of foreign)check(externalTiles.get(t).length===64,'External tile pixel count');
+ const tiles=map?Array.from(map,t=>t===0?new Uint8Array(64):t<0x70?externalTiles.get(t):gfx[t-0x70]):gfx;check(tiles.every(Boolean),'Boss source tile bounds');
  if(flip)for(let i=0;i<tiles.length;i++)tiles[i]=Uint8Array.from({length:64},(_,p)=>tiles[i][(p&~7)+7-(p&7)]);
  // A143 never stores its OR result. A07F consumes $7F, so the bitmap does
  // not invert palettes on this path. Preserve the original missing store.

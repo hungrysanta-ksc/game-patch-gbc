@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/battle-display-budget.md','tools/battle-display-source.mjs','tools/audit-battle-display.mjs','tests/battle-display.test.mjs',
  'docs/composition-window.md','src/composition-window.h','src/composition-window.c','src/composition-window-video.c','src/composition-window-probe.c',
  'tests/composition-window.test.mjs','tools/composition-window-assets.mjs','tools/build-composition-window.mjs','tools/verify-composition-window.mjs','tools/composition-window-audit.lua',
  'tools/VerifyCompositionWindow/Program.cs','tools/VerifyCompositionWindow/VerifyCompositionWindow.csproj',
