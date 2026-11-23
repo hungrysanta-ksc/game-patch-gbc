@@ -1,6 +1,7 @@
 #include <gb/cgb.h>
 #include <string.h>
 #include "platform.h"
+#include "game-state.h"
 #include "resource-assets.h"
 extern volatile uint16_t native_clock;
 uint8_t ff3_game_state[1024];
@@ -22,7 +23,7 @@ void ff3_platform_init(void){
  /* Keep WRAM bank 1 selected: changing SVBK would also switch the live stack.
   * Banks 2..7 need a separate stack-safe access layer before they can be used. */
  SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);platform_error=0;platform_checks=0;
- memset(ff3_game_state,0,sizeof(ff3_game_state));
+ ff3_state_init(ff3_game_state);
  memset((void*)FF3_STACK_GUARD,0xa7,16);
 }
 void ff3_platform_check(void){uint8_t i,saved=CURRENT_BANK;platform_checks++;

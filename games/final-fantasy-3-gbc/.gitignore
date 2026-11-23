@@ -11,6 +11,7 @@ local.json
 *.zip
 *.wav
 *.sav
+*.srm
 *.mss
 bin/
 obj/

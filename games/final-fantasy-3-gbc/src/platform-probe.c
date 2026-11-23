@@ -1,14 +1,19 @@
 /* Diagnostic bank-call/load regression using the actual original-ROM assets.
- * Bank 9 runs a fixed-bank wrapper that maps 1..7, then resumes bank 9. */
+ * Bank 9 calls state code in 10 and fixed wrappers for 1..7, then resumes 9. */
 #pragma bank 9
 #include "platform.h"
+#include "game-state.h"
 #include "resource-assets.h"
 volatile uint16_t platform_probe_cases;
 volatile uint8_t platform_probe_failures,platform_negative_cases;
 static uint8_t probe_bank=1,probe_tail;
+/* Isolated diagnostic state; never the gameplay RNG or its seed policy. */
+static FF3FieldRng probe_rng;
 void ff3_platform_probe(void) BANKED {
  uint8_t buffer[16],i;uint16_t sum=0,offset;
  if(CURRENT_BANK!=9){platform_probe_failures=1;return;}
+ ff3_field_random(&probe_rng);
+ if(CURRENT_BANK!=9){platform_probe_failures=3;return;}
  if(!platform_probe_cases){
   /* Actual scheduler expression: overdue, limit and 16-bit wrap cases. */
   if(FF3_AUDIO_IS_AHEAD(0u,1u)||FF3_AUDIO_IS_AHEAD(65535u,0u)||

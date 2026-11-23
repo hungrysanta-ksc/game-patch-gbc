@@ -10,8 +10,8 @@
     },
     {
       "path": ".gitignore",
-      "bytes": 105,
-      "sha256": "0eabde24281480646f75603dd97a29775dad8f2dfa648375624e639b2e7963bf",
+      "bytes": 111,
+      "sha256": "ad36514fc7d3d0bc2fcead53b2b416067cb5479122212eba9e522ed67fa528f2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -22,8 +22,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 11604,
-      "sha256": "05c4212a2da1ec663a37015261e9b4ff16b805249cd173ef5aef0e0264ff4b81",
+      "bytes": 12014,
+      "sha256": "c926dc3186622a3994f375b8e1371288cfa03ddc2d7d840f0dddefed8ea15bac",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -40,14 +40,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 904,
-      "sha256": "60761fbc52780c1fcd99518d9ad7d78024259166d3702fb1a19809988d489178",
+      "bytes": 1127,
+      "sha256": "fe46164e37587b708921fd76cbb0d0e70ea30e68f55040b5cb5aa462ef3160d8",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 20713,
-      "sha256": "53385e3e3c070d2cee14bfda64e41eec9921ce8d9fe6531e2f76a6be6ba130e0",
+      "bytes": 21211,
+      "sha256": "8571b78ae0f7e890ee647e33edcee854470354d820639e6b805ce47182e334be",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -94,8 +94,8 @@
     },
     {
       "path": "docs/platform-foundation.md",
-      "bytes": 9724,
-      "sha256": "6905a17dec3abdb8f0c42cc2c928c4bd0d8dcac8565db6e8ea74ad2903ec85de",
+      "bytes": 10204,
+      "sha256": "acac2c406c95fd9e970b3e99d99277952b75d456a27aea9cb3bcfc2b5800adc3",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -106,20 +106,92 @@
     },
     {
       "path": "src/platform.h",
-      "bytes": 1271,
-      "sha256": "e894cdf7430366319d9c80ab46183b4a04a8a565e3e38c848e9fc79590c92b84",
+      "bytes": 1270,
+      "sha256": "8936172004f73b57cd2f1e5aff8f3d3e739fd613454214acf60970fbab14f57e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/platform.c",
-      "bytes": 1705,
-      "sha256": "30837f276dd93ecbfef873abf3a929637b26a4ff26fa5a0bfaabc40ec76ace5a",
+      "bytes": 1712,
+      "sha256": "2973df55236c2e059d49f1bfd9e1e86133cbee8528b65fbdaf466d4c489fce22",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/platform-probe.c",
-      "bytes": 2047,
-      "sha256": "9703fc54f7a90867c2d2f1b13d37507a724b575be553e506f204984fe4686535",
+      "bytes": 2269,
+      "sha256": "beb7f759f776aab3b5c1fff77c98d72fece63cda6e9ddbb62591e0ab6bd31e2d",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/state-save-rng.md",
+      "bytes": 12515,
+      "sha256": "d41e827db44896aaf71e01639d64162681bb3c9f8159f67055235c40da583061",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/game-state.h",
+      "bytes": 1793,
+      "sha256": "b25fbcf45e38dbb77a87893e00e39904918e5249d6847d7b9f5cef8720cd25a9",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/game-state.c",
+      "bytes": 2880,
+      "sha256": "1a356fdc503722c169f6a0a7dcb46e3caa5ce3962376a1d42a7d69f7dab00c21",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/game-save.c",
+      "bytes": 758,
+      "sha256": "d7e10b0727fd2a232dabaa4e6c6d69264c351fbbbf62d82dfb793bbe15619a28",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/game-state-test.c",
+      "bytes": 4025,
+      "sha256": "70c6a0258d47187e2505209f56fcd7a210e7abeacef2dd1c4e83fdedf3d3472c",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/state-source.mjs",
+      "bytes": 4754,
+      "sha256": "f02c4999e39ac1fde4ac7a2f092e6edd1a50fbbc0c45d881ff1c0769ba9fb84a",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-state.mjs",
+      "bytes": 4196,
+      "sha256": "d351282b28d5ab3baa25cf84d49ecf89574e1f43ec0548270508479a4f28d315",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-state-verifier.mjs",
+      "bytes": 839,
+      "sha256": "d01c332f7e4f889f0fe2bd33fa6d1e34ba953864c917c9954a94b58c2383e6ba",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-state.mjs",
+      "bytes": 4961,
+      "sha256": "7d0bf043a86de621c31f4c1ce4d5a6ff37f8f892b9bae8996cf9d7670358a296",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyNative/Core.cs",
+      "bytes": 1745,
+      "sha256": "4e97891bffff5979fa15447c2dee2d4d793ae0d8444ed410ea078316b7ac8562",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyState/VerifyState.csproj",
+      "bytes": 293,
+      "sha256": "ad9ee6103501fb8e1e539f6660f7ba49b28f0c266c4d0768511ea964b8a8c7f3",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyState/Program.cs",
+      "bytes": 3195,
+      "sha256": "7012478fa9e612efbca69c654351c9271c50e8b947caedb877bf28f8810b3191",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -322,8 +394,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 3181,
-      "sha256": "893d5d46ccfdf73947b895cfdbffd3fa323209daf33a7cf6ca36bddbad662324",
+      "bytes": 3498,
+      "sha256": "f89fd2c0a846459c99d88aab23c0ff86165f36b72e8b8021bb502f05698c70f3",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -532,8 +604,8 @@
     },
     {
       "path": "tools/build-native.mjs",
-      "bytes": 8067,
-      "sha256": "11b1a818a9a4091d73b9bff7f73b83e0429dda951dccf51034da10bc75ffd7df",
+      "bytes": 8656,
+      "sha256": "7ea1bbdc352293009de0acfb558c61b4505986fdd764d6a0f6cdf566dc8707ed",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -556,8 +628,8 @@
     },
     {
       "path": "tools/verify-native.mjs",
-      "bytes": 7593,
-      "sha256": "3c9d1c024edef06c92415ed21f240956cfdbf8ab0525210d5d9560f4e4e52804",
+      "bytes": 7897,
+      "sha256": "e1b2fdd042dd1d6837cdba8979cf1f6ee51288bbcb53d1d88c787aed0b015217",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -568,8 +640,8 @@
     },
     {
       "path": "tools/VerifyNative/Program.cs",
-      "bytes": 7368,
-      "sha256": "ad2174a01b6e9b038ef882136225b493cb7facdd295b6a051d42dda435fca8c3",
+      "bytes": 5631,
+      "sha256": "a40f2f69251d805a7d1d6d3f221076f7712fb42777601747a2156db589b7e37e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]

@@ -7,8 +7,8 @@ uint8_t ff3_resource_copy(void *dest,uint8_t bank,uint16_t offset,uint16_t count
 uint16_t ff3_clock_now(void) NONBANKED;
 void ff3_platform_init(void);
 void ff3_platform_check(void);
-/* Original persistent-state byte layout, NES $6000..63FF. Reserved only:
- * zeroed diagnostics are not the original new-game initializer or a save. */
+/* Original persistent-state layout, NES $6000..63FF. Boot diagnostics run
+ * 3A/8E76 initialization before name entry, message speed or map entry. */
 extern uint8_t ff3_game_state[1024];
 extern volatile uint8_t platform_error;
 extern volatile uint16_t platform_checks;
