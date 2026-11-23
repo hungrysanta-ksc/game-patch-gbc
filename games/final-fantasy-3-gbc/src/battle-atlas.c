@@ -6,6 +6,9 @@
 #include "text-vblank.h"
 #include "memory.h"
 #include "scene-assets.h"
+#ifdef FF3_BATTLE_TIMELINE
+#include "battle-timeline.h"
+#endif
 void ff3_native_service(void) NONBANKED;
 /* Closed-window scratch only. No field, audio or persistent GameState bytes
  * are borrowed. Unlike the exploration cache this atlas owns no WRAM 3..5. */
@@ -26,6 +29,10 @@ static uint8_t ready(void) NONBANKED {uint8_t ly=LY_REG;return ly>=144&&ly<=149&
  * restore the interrupted ROM bank before re-enabling timer interrupts. */
 static void transfer_irq(void) NONBANKED {uint8_t saved;Transfer *t;
  if(!transfer_pending)return;
+#ifdef FF3_BATTLE_TIMELINE
+ /* This IRQ precedes publication. Never use the due publication's budget. */
+ {extern volatile uint16_t native_clock;if(battle_active&&(battle_entry==255||(int16_t)(native_clock-battle_due)>=0))return;}
+#endif
  __asm ei __endasm;
  while(transfer_index<transfer_count&&ready()){
   t=transfers+transfer_index;
@@ -85,8 +92,40 @@ static void open(void){
  if(!ff3_text_open_source(SCENE_TEXT_SOURCE))scene_error=10;
 }
 static void close(void){if(!window_owned){scene_error=9;return;}scene_phase=7;ff3_text_close();if(!ff3_wram_copy(6,1600,scene_keys,256,0))scene_error=3;last_frame[1]=255;window_owned=0;}
+#ifdef FF3_BATTLE_TIMELINE
+static void play(void){uint8_t n,page=active_page^1,visual;SceneBattleFrame item;
+ if(window_owned||battle_active){scene_error=12;return;}
+ scene_page=0;if(!loaded)preload();prepare(page);if(scene_error)return;
+ ff3_scene_rom_copy(7,scene_frames_data,&frame,sizeof(frame));ff3_scene_rom_copy(frame.bank,frame.palette,scene_palette,96);
+ ff3_battle_start(page);
+ while(battle_entry==255&&!scene_error){ff3_native_service();__asm halt __endasm;}
+ active_page=page;active_frame=0;read_frame(0,&item);visual=item.visual;
+ for(n=1;n<SCENE_FRAME_COUNT&&!scene_error;n++){
+  read_frame(n,&item);if(item.visual==visual)continue;
+  page=active_page^1;scene_page=n;prepare(page);if(scene_error)return;
+  ff3_battle_supply(n,page);
+  while(battle_entry<n&&battle_active&&!scene_error){ff3_native_service();__asm halt __endasm;}
+  active_page=page;active_frame=n;visual=item.visual;
+ }
+ while(battle_active&&!scene_error){ff3_native_service();__asm halt __endasm;}
+ scene_page=active_frame;scene_frames+=SCENE_FRAME_COUNT;
+}
+#endif
 void ff3_scene_run(void) BANKED {
+#ifdef FF3_BATTLE_TIMELINE
+ if(scene_request==5)play();else
+#endif
  if(scene_request==1)show();else if(scene_request==2)open();else if(scene_request==3){scene_phase=6;if(!window_owned||!text_more||!ff3_text_next())scene_error=10;}else if(scene_request==4)close();else scene_error=9;
  scene_phase=0;scene_request=0;
 }
-void ff3_scene_begin(void) BANKED {memset(scene_keys,255,256);memset(scene_pins,0,128);CRITICAL{add_VBL(transfer_irq);}}
+void ff3_scene_begin(void) BANKED {
+ memset(scene_keys,255,256);memset(scene_pins,0,128);
+#ifdef FF3_BATTLE_TIMELINE
+ /* Shared palette is invariant across the complete timeline. Load once at
+  * boot with LCD off; the Korean window owns only BG palette 7 thereafter. */
+ if(LCDC_REG&128){scene_error=14;return;}
+ ff3_scene_rom_copy(7,scene_frames_data,&frame,sizeof(frame));ff3_scene_rom_copy(frame.bank,frame.palette,scene_palette,96);
+ set_bkg_palette(0,7,(const palette_color_t*)scene_palette);set_sprite_palette(0,4,(const palette_color_t*)(scene_palette+64));
+#endif
+ CRITICAL{add_VBL(transfer_irq);}
+}

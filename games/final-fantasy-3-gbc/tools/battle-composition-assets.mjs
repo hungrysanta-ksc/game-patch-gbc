@@ -1,5 +1,6 @@
 // Original consumers plus explicitly labelled presentation/diagnostic adapters.
 import {check,hash} from './source.mjs';
+import {nativeTiming} from './native-plan.mjs';
 import {Driver6502} from './driver6502.mjs';
 import {segment} from './state-source.mjs';
 import {recordTransfers} from './battle-display-source.mjs';
@@ -15,7 +16,7 @@ function draw(pixels,quads,palettes){
  }
 }
 function quads(c,start,count,chr){return Array.from({length:count},(_,i)=>{const at=start+i*4,attr=c.m[at+2],tile=c.m[at+1];return {x:c.m[at+3],y:c.m[at]+1,tile,palette:attr&3,slot:(at-0x200)/4,pixels:Uint8Array.from({length:64},(_,p)=>chr[tile][(attr&128?7-(p>>3):p>>3)*8+(attr&64?7-(p&7):p&7)])};});}
-export function originalBattleFrames(rom,{monster=6,paletteIds=[143,152],scriptId=29}={}){
+export function originalBattleFrames(rom,{monster=6,paletteIds=[143,152],scriptId=29,includeClear=false}={}){
  const b=battleInventory(rom),formation=b.formations.find(f=>f.palettes.join()===paletteIds.join()&&f.slots.some(s=>s.id===monster&&s.max));check(formation,'Original enemy/palette reference');
  const g=monsterGraphic(rom,monster);check(!g.unresolved,'Enemy graphics');const colors=paletteIds.map(id=>palette(rom,id)),base=new Uint16Array(width*height),sw=g.w*8,sh=g.h*8,w=g.type>=6?96:sw*7/8,h=g.type>=6?64:sh*7/8;
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const sx=Math.floor((x+.5)*sw/w),sy=Math.floor((y+.5)*sh/h),t=(sy>>3)*g.w+(sx>>3),v=g.tiles[t][(sy&7)*8+(sx&7)];base[(y+24)*width+x]=v?colors[g.attrs[t]].readUInt16LE(v*2):0;}
@@ -32,10 +33,22 @@ export function originalBattleFrames(rom,{monster=6,paletteIds=[143,152],scriptI
   const frame=rom[script.begin+at]===255?rom[script.begin+at+1]&127:rom[script.begin+at]&127;
   frames.push({byteIndex:at,frame,sourceDurationFrames:4,sourceOamSha256:hash(Buffer.from(c.m.subarray(0x200,0x300))),pixels,partial,magicObjects:magic.length});at+=rom[script.begin+at]===255?2:1;
  }
- return {frames,objPalette,party,base,source:{monster,paletteIds,exampleFormation:formation.id,scriptId,jobs:[0,1,2,3],partyPaletteIds:partyIds,sourceSize:[sw,sh],candidateSize:[w,h],scope:'Original hit-script order and source pixel consumers; diagnostic enemy anchor (0,24), target center (56,56), standing party; no source reachability claim. General 7/8 and 96x64 art remain candidates.'}};
+ let timeline;
+ if(includeClear){
+  // Run the entire original non-reflect hit loop; intercept only hardware waits.
+  c.m.set(partyRaw,0x2a0);c.m[0x7e88]=scriptId;segment(c,0xb696,0xb6ca);c.m[0x7e9a]=64;c.m[0x90]=1;c.m[0x7dd9]=80;c.m[0x7dda]=80;
+  const waits=[],step=c.step.bind(c);c.step=function(){if(this.pc===0xf8c5||this.pc===0xf8b0){waits.push({wait:this.pc,index:this.m[0x7e9c],oam:Buffer.from(this.m.subarray(0x200,0x300))});this.pc=((this.pop()|(this.pop()<<8))+1)&65535;}else step();};c.call(0xb6f3);
+  const groups=[];for(const w of waits){let g=groups.at(-1);if(!g||g.index!==w.index||g.wait!==w.wait){g={index:w.index,wait:w.wait,count:0,hash:hash(w.oam)};groups.push(g);}check(g.hash===hash(w.oam),'Original hold changed OAM');g.count++;}
+  check(groups.length===frames.length+1&&groups.at(-1).wait===0xf8b0&&groups.at(-1).count===1,'Original hit clear boundary');
+  let elapsed=0;const entries=frames.map((f,i)=>{const g=groups[i];check(g.index===f.byteIndex&&g.wait===0xf8c5&&g.hash===f.sourceOamSha256&&g.count===4,'Original hit hold/order');const e={frame:i,sourceFrame:f.frame,sourceByteIndex:f.byteIndex,sourceStart:elapsed,sourceDuration:g.count};elapsed+=g.count;return e;});
+  check(waits.at(-1).oam.subarray(160).equals(partyRaw),'Original clear retains party');check(waits.at(-1).oam.subarray(0,160).every((v,i)=>i%4!==0||v>=0xf0),'Original clear hides effect');
+  const pixels=base.slice();draw(pixels,party,partyPalettes);frames.push({byteIndex:null,frame:null,sourceDurationFrames:0,sourceOamSha256:hash(waits.at(-1).oam),pixels,partial:base.slice(),magicObjects:0});entries.push({frame:frames.length-1,sourceFrame:null,sourceByteIndex:null,sourceStart:elapsed,sourceDuration:0});
+  timeline={source:'33/B6F3 hit loop, 33/B7A9 four F8C5 waits, 33/B70B clear then F8B0',waits:waits.length,entries:entries.map(e=>({...e,timerOffset:Math.ceil(e.sourceStart*nativeTiming.timerHz*nativeTiming.sourceRateDenominator/nativeTiming.sourceRateNumerator)})),timing:nativeTiming};
+ }
+ return {frames,objPalette,party,base,timeline,source:{monster,paletteIds,exampleFormation:formation.id,scriptId,jobs:[0,1,2,3],partyPaletteIds:partyIds,sourceSize:[sw,sh],candidateSize:[w,h],scope:'Original hit-script order and source pixel consumers; diagnostic enemy anchor (0,24), target center (56,56), standing party; no source reachability claim. General 7/8 and 96x64 art remain candidates.'}};
 }
-export function battleCompositionAssets(rom){
- const source=originalBattleFrames(rom),paletteOptions={width,height,maxPalettes:7},palettes=pixelCompositionPalettes(source.frames.map(f=>f.pixels),source.objPalette,paletteOptions),partialPalettes=pixelCompositionPalettes(source.frames.map(f=>f.partial),source.objPalette,paletteOptions),jobs=[],keys=new Map(),frames=[],comparison=[],blocks=[],blockKeys=new Map(),visuals=new Map();
+export function battleCompositionAssets(rom,{timeline=false}={}){
+ const source=originalBattleFrames(rom,{includeClear:timeline}),paletteOptions={width,height,maxPalettes:7},palettes=pixelCompositionPalettes(source.frames.map(f=>f.pixels),source.objPalette,paletteOptions),partialPalettes=pixelCompositionPalettes(source.frames.map(f=>f.partial),source.objPalette,paletteOptions),jobs=[],keys=new Map(),frames=[],comparison=[],blocks=[],blockKeys=new Map(),visuals=new Map();
  for(const [index,f]of source.frames.entries()){
   const c=compilePixelComposition(f.pixels,source.objPalette,{width,height,palettes}),partial=compilePixelComposition(f.partial,source.objPalette,{width,height,palettes:partialPalettes}),words=compositionWords(c),ids=[];
   check(words.every((v,i)=>v===f.pixels[i]),'Original battle pixels');
@@ -45,11 +58,11 @@ export function battleCompositionAssets(rom){
    const key=bytes.toString('hex');let id=keys.get(key);if(id===undefined){id=jobs.length;keys.set(key,id);jobs.push({bytes,expected:bytes,static:true});}ids.push(id);
   }
   const rgb=Buffer.alloc(160*144*3);for(let y=0;y<144;y++)for(let x=0;x<160;x++){const v=words[y*width+x],r=v&31,g=(v>>5)&31,b=v>>10;rgb.set([Math.min(240,(r*26+g*4+b*2)>>2),Math.min(240,(g*24+b*8)>>2),Math.min(240,(r*6+g*4+b*22)>>2)],(y*160+x)*3);}
-  comparison.push({frame:f.frame,byteIndex:f.byteIndex,sourceDurationFrames:4,full:c.stats,partial:partial.stats,partialPlusPartyObjects:partial.stats.objects+24,partialPlusPartyPeak:Math.max(...Array.from({length:144},(_,y)=>partial.sprites.filter(q=>y>=q.y&&y<q.y+8).length+source.party.filter(q=>y>=q.y&&y<q.y+8).length))});
+  comparison.push({frame:f.frame,byteIndex:f.byteIndex,sourceDurationFrames:f.sourceDurationFrames,full:c.stats,partial:partial.stats,partialPlusPartyObjects:partial.stats.objects+24,partialPlusPartyPeak:Math.max(...Array.from({length:144},(_,y)=>partial.sprites.filter(q=>y>=q.y&&y<q.y+8).length+source.party.filter(q=>y>=q.y&&y<q.y+8).length))});
   const maps=[Buffer.alloc(608),Buffer.alloc(608)];for(let i=0;i<399;i++){maps[0][(i/21|0)*32+i%21]=ids[i];maps[1][(i/21|0)*32+i%21]=c.attributes[i];}
   const blockIds=[];for(const map of maps)for(let at=0;at<608;at+=16){const bytes=map.subarray(at,at+16),key=bytes.toString('hex');let id=blockKeys.get(key);if(id===undefined){id=blocks.length;blockKeys.set(key,id);blocks.push(bytes);}blockIds.push(id);}
   const visualKey=hash(Buffer.concat([...maps,c.objGraphics,c.oam]));if(!visuals.has(visualKey))visuals.set(visualKey,visuals.size);
-  frames.push({label:'original hit '+f.frame,trace:index,scroll:[0,0],ids,attributes:c.attributes,palette:Buffer.concat([c.bgPalette,c.objPalette]),rgb,stats:c.stats,sourceFrame:f.frame,sourceByteIndex:f.byteIndex,sourceOamSha256:f.sourceOamSha256,sourceDurationFrames:4,atlas:{blocks:Buffer.from(blockIds),maps:Buffer.concat(maps),objects:c.objGraphics,oam:c.oam,visual:visuals.get(visualKey)}});
+  frames.push({label:'original hit '+f.frame,trace:index,scroll:[0,0],ids,attributes:c.attributes,palette:Buffer.concat([c.bgPalette,c.objPalette]),rgb,stats:c.stats,sourceFrame:f.frame,sourceByteIndex:f.byteIndex,sourceOamSha256:f.sourceOamSha256,sourceDurationFrames:f.sourceDurationFrames,atlas:{blocks:Buffer.from(blockIds),maps:Buffer.concat(maps),objects:c.objGraphics,oam:c.oam,visual:visuals.get(visualKey)}});
  }
  for(let i=0;i<frames.length;i++)check(new Set([...frames[i].ids,...frames[(i+1)%frames.length].ids]).size<=128,'Battle active/next cache union');
  for(const f of frames){const spans=Buffer.alloc((visuals.size+1)*8);for(let v=0;v<=visuals.size;v++){
@@ -58,5 +71,5 @@ export function battleCompositionAssets(rom){
   }}f.atlas.spans=spans;
  }
  check(jobs.length<=128&&blocks.length<=255,'Resident battle atlas limit');
- return {jobs,frames,blocks:Buffer.concat(blocks),bgTiles:Buffer.concat(jobs.map(j=>j.expected.subarray(0,16))),palettes:palettes.length,battle:{source:source.source,comparison,hostComposed:true,residentBgTiles:jobs.length,mapBlocks:blocks.length,uniqueVisuals:visuals.size,scope:'Precompiled diagnostic frame atlas; not live battle composition or a scalable all-formation atlas'}};
+ return {jobs,frames,blocks:Buffer.concat(blocks),bgTiles:Buffer.concat(jobs.map(j=>j.expected.subarray(0,16))),palettes:palettes.length,battle:{source:source.source,...(timeline?{timeline:source.timeline}:{}),comparison,hostComposed:true,residentBgTiles:jobs.length,mapBlocks:blocks.length,uniqueVisuals:visuals.size,scope:'Precompiled diagnostic frame atlas; not live battle composition or a scalable all-formation atlas'}};
 }
