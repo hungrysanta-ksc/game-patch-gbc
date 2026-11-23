@@ -1,6 +1,8 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/npc-composition.md','src/npc-composition-probe.c','tests/npc-composition.test.mjs',
+ 'tools/npc-composition.mjs','tools/npc-composition-source.mjs','tools/build-npc-composition.mjs','tools/audit-npc-composition.mjs',
  'docs/render-budgets.md','src/render-budget-probe.c','tests/render-budget.test.mjs',
  'tools/render-budget-source.mjs','tools/render-budget-pixels.mjs','tools/render-budget.mjs',
  'tools/build-render-budget.mjs','tools/verify-render-budget.mjs','tools/VerifyRenderBudget/VerifyRenderBudget.csproj','tools/VerifyRenderBudget/Program.cs',
