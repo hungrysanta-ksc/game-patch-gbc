@@ -3,6 +3,17 @@
 local mem=emu.memType.gameboyDebug
 local writes,bad,off,apuhash,apuwrites,maxly=0,0,0,0,0,0
 local dma,baddma=0,0
+-- The boot song can still dispatch between installing this observer and the
+-- producer accepting request 255. Anchor the APU trace to the actual restart,
+-- before its first dispatch, instead of depending on the boot's frame phase.
+-- start() clears native_clock outside the timer IRQ; an ordinary low-byte
+-- clock wrap has native_irq_busy set and must not arm this one-shot boundary.
+local started,restarts,prefixWrites=false,0,0
+emu.addMemoryCallback(function(address,value)
+ if not started and value==0 and emu.read(__NATIVE_REQUEST__,mem)==255 and emu.read(__IRQ_BUSY__,mem)==0 then
+  started=true;restarts=restarts+1
+ end
+end,emu.callbackType.write,__NATIVE_CLOCK__,__NATIVE_CLOCK__,emu.cpuType.gameboy)
 local function video(address,value)
   writes=writes+1
   local ly=emu.read(0xff44,mem)
@@ -19,8 +30,10 @@ end,emu.callbackType.write,0xff55,0xff55,emu.cpuType.gameboy)
 emu.addMemoryCallback(function(address,value) if (value&128)==0 then off=off+1 end end,emu.callbackType.write,0xff40,0xff40,emu.cpuType.gameboy)
 emu.addMemoryCallback(function(address,value)
  if emu.read(__IRQ_BUSY__,mem)~=0 then
+  if not started then prefixWrites=prefixWrites+1;return end
   apuhash=(((apuhash<<1)|(apuhash>>15))~(((address-0xff10)<<8)|value))&65535
   apuwrites=apuwrites+1
  end
 end,emu.callbackType.write,0xff10,0xff23,emu.cpuType.gameboy)
 emu.addEventCallback(function() emu.log(string.format("audit:%d,%d,%d,%d,%d,%d,%d,%d",writes,bad,off,apuhash,apuwrites,maxly,dma,baddma)) end,emu.eventType.codeBreak)
+emu.addEventCallback(function() emu.log(string.format("audit-origin:%d,%d",restarts,prefixWrites)) end,emu.eventType.codeBreak)

@@ -44,3 +44,22 @@ emu.addEventCallback(function()
  local bins={};for i=1,1000 do if latencyBins[i] then table.insert(bins,i.."="..latencyBins[i]) end end
  emu.log(string.format("movement-latency:%d,%d,%d,%d;%s",latencyCount,latencyMax,latencySum,latencyBad,table.concat(bins,",")))
 end,emu.eventType.codeBreak)
+
+-- Observe the producer separately from display preparation. This includes
+-- filling the existing lookahead, without altering the queue or guest clock.
+local producerStart=nil
+local producerCount,producerMax,producerSum,producerBad=0,0,0,0
+emu.addMemoryCallback(function(address,value)
+ local state=emu.getState()
+ if value==1 then
+  if producerStart~=nil then producerBad=producerBad+1 end
+  producerStart=state.masterClock
+ elseif producerStart~=nil then
+  local us=math.floor(((state.masterClock-producerStart)&0xffffffff)*1000000/state.clockRate+0.5)
+  producerStart=nil;producerCount=producerCount+1;producerSum=producerSum+us
+  if us>producerMax then producerMax=us end
+ end
+end,emu.callbackType.write,__NATIVE_BUSY__,__NATIVE_BUSY__,emu.cpuType.gameboy)
+emu.addEventCallback(function()
+ emu.log(string.format("producer-time:%d,%d,%d,%d",producerCount,producerMax,producerSum,producerBad))
+end,emu.eventType.codeBreak)

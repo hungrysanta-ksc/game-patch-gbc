@@ -22,8 +22,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 15906,
-      "sha256": "c21df5a9d77e8b9708256189334cc285101cd943ff3517af792d1ce10716c05b",
+      "bytes": 15973,
+      "sha256": "12effc5a49ef4a2df4ff398e1b77449ac12e869cdfaf14ad1e37528eaf530774",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -46,8 +46,8 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 26109,
-      "sha256": "d79ae43c18a4097ab6c4f059ecc32291699d4bfced092980d95609c2361f7d72",
+      "bytes": 26228,
+      "sha256": "d672c64fd0e2044926055b0a7c6d982b8ee7e2d23350d5fc1b62af48cbe7801d",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -502,8 +502,8 @@
     },
     {
       "path": "docs/dialogue-audio.md",
-      "bytes": 13677,
-      "sha256": "6b0136b93b2764d2917da685e47d3e551cdf4d276a40098fee4fa22d9f28be3b",
+      "bytes": 15652,
+      "sha256": "70c8d1b222eddc97e086cbe69a3e6395f661af6c59d9bef02b6b66bd1b2a1390",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -520,20 +520,20 @@
     },
     {
       "path": "tools/text-audio-assets.mjs",
-      "bytes": 3019,
-      "sha256": "896d99ea3f0aa10faa661d66517f36a975e52656b11114de8d817e83a82b9b2c",
+      "bytes": 3174,
+      "sha256": "fee10cac1595f63b48ce1645175762223340856eee9fcb5c63b5932234754240",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/text-audio-audit.lua",
-      "bytes": 1423,
-      "sha256": "7a20fef77a48e9ba56d94f1212325fec8590f38e846fdd16036d59073ed555c6",
+      "bytes": 2324,
+      "sha256": "5fa45831a1a12b073225e6beb7f78dc6bdd520b8d203aac275155360aa36daae",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/verify-text-audio.mjs",
-      "bytes": 10326,
-      "sha256": "dc998e4ce3b7d4ab22fbcd84ad55b031265a564b401ca4dd5f7d0c95ba2250b6",
+      "bytes": 10825,
+      "sha256": "1d493c292a9bf5db9e99566196d21e02e9050afe6a65e9380280ab212d52bd60",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -556,8 +556,8 @@
     },
     {
       "path": "docs/exploration.md",
-      "bytes": 13379,
-      "sha256": "9548e75d010b1a3582b92dfbe0e23b0151f6f84063e17398d582e1b36753201c",
+      "bytes": 17724,
+      "sha256": "3ed23d5ace9f3543ac0ae902ff0ce10f30a6431d8b40cec8f74c21ed5e6534f3",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -610,8 +610,8 @@
     },
     {
       "path": "tools/exploration-audit.lua",
-      "bytes": 2349,
-      "sha256": "3908da2cad3abdeced6cdcbde053f857cc65d4fa6311fa77215538eacd8a664b",
+      "bytes": 3276,
+      "sha256": "f7fae49f050ccfe3f0a60e0d0cb95b0fdf9c05a88b6bbe30c9f38f64cb179be4",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -622,8 +622,8 @@
     },
     {
       "path": "tools/verify-exploration.mjs",
-      "bytes": 8684,
-      "sha256": "05396fc080318a3263b1c874e6c674d2a37ad0dc0c5ad260d134885c2da2ad54",
+      "bytes": 9760,
+      "sha256": "ed546e644143e14e91f7629008f84e240d43e6c9b0bba10bc342cd5509ff4b3a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -940,14 +940,14 @@
     },
     {
       "path": "docs/audio-native.md",
-      "bytes": 10764,
-      "sha256": "feaadb1c56c72ff7971b301f73a89bd9cdebc2ef6261bf936724dd106b6b6397",
+      "bytes": 11853,
+      "sha256": "aca206f40ec94e474eccc0008d9f70c8a7c799e0bb9f42075924b8b17c985d9d",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/field-audio.md",
-      "bytes": 10886,
-      "sha256": "e50a4f54def3ec334c9efa2d8c4db3d8243e088012a8b9f1d88281d36cfd0ee2",
+      "bytes": 11496,
+      "sha256": "ed0997f9fd07c1a650689cac6414bc442305106b2947279bd1e09c64f7812641",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1030,8 +1030,8 @@
     },
     {
       "path": "src/audio-native.c",
-      "bytes": 8832,
-      "sha256": "dc4b3682981e71465357d0e21148f854828d1a1b10a64ec0785806828bc07369",
+      "bytes": 9733,
+      "sha256": "35c8606061b63069d0cb21d4d06f5d62cf3ca1716c0c81dbb8cef6dadbff576c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1054,8 +1054,8 @@
     },
     {
       "path": "tools/build-native.mjs",
-      "bytes": 8656,
-      "sha256": "7ea1bbdc352293009de0acfb558c61b4505986fdd764d6a0f6cdf566dc8707ed",
+      "bytes": 8816,
+      "sha256": "89fd698188f71daad1cb3d471cab14c6fed53bb08b2f1bce780df3d5e49f4b88",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1066,8 +1066,8 @@
     },
     {
       "path": "tools/native-reference.mjs",
-      "bytes": 3806,
-      "sha256": "528f335ee445eb0823dc101f9dd9570a89d426d367221b174994514d1ddade7c",
+      "bytes": 3837,
+      "sha256": "9575b9fac24c2ed3f07f12b9ade9da10568474fb77bc4ce12a31166d9d07580c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
