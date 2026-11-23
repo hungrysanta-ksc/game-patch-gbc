@@ -21,7 +21,8 @@ uint8_t ff3_resource_copy(void *dest,uint8_t bank,uint16_t offset,uint16_t count
 uint16_t ff3_clock_now(void) NONBANKED {uint16_t t;CRITICAL{t=native_clock;}return t;}
 void ff3_platform_init(void){
  /* Keep WRAM bank 1 selected: changing SVBK would also switch the live stack.
-  * Banks 2..7 need a separate stack-safe access layer before they can be used. */
+  * Text/exploration builds use memory.c's bounded stack-safe storage access;
+  * this native/scene boot path continues to keep bank 1 mapped. */
  SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);platform_error=0;platform_checks=0;
  ff3_state_init(ff3_game_state);
  memset((void*)FF3_STACK_GUARD,0xa7,16);

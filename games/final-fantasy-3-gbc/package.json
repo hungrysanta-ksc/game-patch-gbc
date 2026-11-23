@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "verify:memory": "node tools/verify-memory.mjs",
     "build:audio": "node tools/build-audio.mjs",
     "build:timed": "node tools/build-timed.mjs",
     "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs",

@@ -1,8 +1,8 @@
 # FF3 한글 GBC 이식: 현재 구현 순서
 
 2026-11-23, PR 15 회고 반영. **앞으로의 우선순위는 이 문서 한 곳에서 관리한다.**
-각 기능 문서의 수치와 “다음 작업”은 해당 PR 당시 기록이다. [회고](retrospective-pr15.md)와
-[전체 진척](progress.md)은 PR 15 기준이다. [이전 로드맵 원문](https://github.com/hungrysanta-ksc/game-patch-gbc/blob/aeeedf69c071a597c06237c0e6ebcb0ce6440264/games/final-fantasy-3-gbc/docs/implementation-roadmap.md)은 Git 이력에 보존한다.
+각 기능 문서의 수치와 “다음 작업”은 해당 PR 당시 기록이다. [회고](retrospective-pr15.md)는
+PR 15 기준선을 보존하고 [전체 진척](progress.md)은 후속 결과를 갱신한다. [이전 로드맵 원문](https://github.com/hungrysanta-ksc/game-patch-gbc/blob/aeeedf69c071a597c06237c0e6ebcb0ce6440264/games/final-fantasy-3-gbc/docs/implementation-roadmap.md)은 Git 이력에 보존한다.
 
 ## 유지하는 방향과 바꾸는 순서
 
@@ -55,6 +55,13 @@ R1과 R2를 먼저 닫고 R3에 착수한다. 그 뒤 R4/R5와 전투 계산의 
 번갈아 연결한다. 동행 NPC 자체의 조사 결과는 [이벤트 이동 기록](event-motion.md)에 보존하지만
 그것만을 연속 확장하면서 전투 위험을 다시 미루지 않는다. R2는 최악 자산의 예산 검증이며
 모든 마법 그림을 완성하는 작업이 아니다. R5도 전 메뉴를 다 끝내야 R6에 들어간다는 뜻은 아니다.
+
+R1 후속: [메모리 수명·은행 접근](memory-lifetimes.md)에서 현재 실행기의 재배치와 소유권 계약을
+구현했다. 오디오 진단 스냅샷을 은행 2로 옮겨 탐색 고정 WRAM 여유를 54→484바이트로 확보하고,
+은행 1의 스택/IRQ/DMA를 보존하는 접근 경로를 검증했다. 실제 메뉴/전투 전환 자체의 완료는 아니다.
+다음 구현은 **R2 밀집 객체·최악 전투 자산 예산**이며, 이 결과에 따라 활성 전투 작업 공간의
+구체적 크기를 확정한다. R4–R6의 모드 연결 때는 위 R1의 소유권·중단/재진입 조건을 실제 입력으로
+추가 검증해야 한다. 추가 WRAM 은행에 일반 C 포인터를 그대로 넘기지 않는다.
 
 ## 전체 작업 범위와 이후 순서
 
