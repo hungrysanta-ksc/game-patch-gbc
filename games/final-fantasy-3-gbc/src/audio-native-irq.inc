@@ -112,7 +112,9 @@ static void dispatch_due(void) __naked {
  or a
  jp z,90100$
  xor a
+#ifndef FF3_EXPLORATION
  ldh (_TAC_REG),a
+#endif
  ldh (_NR12_REG),a
  ldh (_NR22_REG),a
  ldh (_NR32_REG),a
