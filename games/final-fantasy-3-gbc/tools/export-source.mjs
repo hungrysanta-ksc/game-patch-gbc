@@ -1,6 +1,9 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/composition-cache.md','src/composition-cache.h','src/composition-cache.c','src/composition-cache-video.c','tests/composition-cache.test.mjs',
+ 'tools/composition-cache-assets.mjs','tools/build-composition-cache.mjs','tools/verify-composition-cache.mjs','tools/composition-cache-audit.lua',
+ 'tools/VerifyCompositionCache/VerifyCompositionCache.csproj','tools/VerifyCompositionCache/Program.cs',
  'docs/composition-kernel.md','src/composition-kernel.h','src/composition-kernel.c','src/composition-kernel-probe.c','tests/composition-kernel.test.mjs',
  'tools/composition-kernel.mjs','tools/build-composition-kernel.mjs','tools/verify-composition-kernel.mjs','tools/composition-kernel-audit.lua',
  'tools/VerifyCompositionKernel/VerifyCompositionKernel.csproj','tools/VerifyCompositionKernel/Program.cs',

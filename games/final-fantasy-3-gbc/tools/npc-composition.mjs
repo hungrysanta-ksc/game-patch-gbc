@@ -17,15 +17,21 @@ function partition(colors,palette,objPalettes){const residual=colors.filter(c=>!
 // Failure is explicit; the heuristic is not a proof that no hardware fit exists.
 function choosePalettes(cells,objPalettes){
  const candidates=new Map();for(const values of cells){const colors=[...new Set(values)].sort((a,b)=>a-b);function select(start,p){if(p.length===Math.min(4,colors.length)){candidates.set(p.join(),p);return;}for(let i=start;i<colors.length;i++)select(i+1,[...p,colors[i]]);}select(0,[]);}
- const choices=[...candidates.values()].map(p=>({p,cost:cells.map(values=>partition([...new Set(values)],p,objPalettes)?.length??1000)})),cost=Array(360).fill(1000),selected=[];
- while(selected.length<8){let best,gain=0;for(const c of choices){if(selected.includes(c))continue;const g=c.cost.reduce((sum,v,i)=>sum+Math.max(0,cost[i]-v),0);if(g>gain){gain=g;best=c;}}if(!best)break;selected.push(best);for(let i=0;i<360;i++)cost[i]=Math.min(cost[i],best.cost[i]);}
+ const choices=[...candidates.values()].map(p=>({p,cost:cells.map(values=>partition([...new Set(values)],p,objPalettes)?.length??1000)})),cost=Array(cells.length).fill(1000),selected=[];
+ while(selected.length<8){let best,gain=0;for(const c of choices){if(selected.includes(c))continue;const g=c.cost.reduce((sum,v,i)=>sum+Math.max(0,cost[i]-v),0);if(g>gain){gain=g;best=c;}}if(!best)break;selected.push(best);for(let i=0;i<cells.length;i++)cost[i]=Math.min(cost[i],best.cost[i]);}
  check(cost.every(c=>c<1000),'No lossless global palette cover');return selected.map(c=>[...c.p,...Array(4-c.p.length).fill(c.p[0])]);
 }
-export function compileComposition(scene){
+export function sharedCompositionPalettes(scenes){
+ check(scenes.length&&scenes.every(s=>s.objPalette.equals(scenes[0].objPalette)),'Shared OBJ palette contract');const cells=[];
+ for(const scene of scenes){const pixels=composePixels(scene);for(let ty=0;ty<18;ty++)for(let tx=0;tx<20;tx++)cells.push(Array.from({length:64},(_,i)=>pixels[(ty*8+(i>>3))*160+tx*8+(i&7)]));}
+ return choosePalettes(cells,Array.from({length:2},(_,p)=>Array.from({length:4},(_,i)=>scenes[0].objPalette.readUInt16LE((p*4+i)*2))));
+}
+export function compileComposition(scene,{palettes}={}){
  const pixels=composePixels(scene),objPalettes=[],cells=[];
  for(let i=0;i<2;i++)objPalettes.push(Array.from({length:4},(_,j)=>scene.objPalette.readUInt16LE((i*4+j)*2)));
  for(let ty=0;ty<18;ty++)for(let tx=0;tx<20;tx++)cells.push(Array.from({length:64},(_,i)=>pixels[(ty*8+(i>>3))*160+tx*8+(i&7)]));
- const bgPalettes=choosePalettes(cells,objPalettes),patterns=[],patternIds=new Map(),map=Buffer.alloc(360),attributes=Buffer.alloc(360),sprites=[],objTiles=[],lines=new Uint8Array(144);
+ const bgPalettes=palettes??choosePalettes(cells,objPalettes),patterns=[],patternIds=new Map(),map=Buffer.alloc(360),attributes=Buffer.alloc(360),sprites=[],objTiles=[],lines=new Uint8Array(144);
+ check(bgPalettes.length>0&&bgPalettes.length<=8&&bgPalettes.every(p=>p.length===4&&p.every(v=>Number.isInteger(v)&&v>=0&&v<=32767)),'Composition palette format');
  for(let ty=0;ty<18;ty++)for(let tx=0;tx<20;tx++){
   const values=cells[ty*20+tx],colors=[...new Set(values)];let best;
   for(let p=0;p<bgPalettes.length;p++){
