@@ -18,7 +18,7 @@
     "verify:memory": "node tools/verify-memory.mjs",
     "build:audio": "node tools/build-audio.mjs",
     "build:timed": "node tools/build-timed.mjs",
-    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs tests/render-budget.test.mjs tests/npc-composition.test.mjs tests/composition-kernel.test.mjs tests/composition-cache.test.mjs tests/composition-input.test.mjs",
+    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs tests/render-budget.test.mjs tests/npc-composition.test.mjs tests/composition-kernel.test.mjs tests/composition-cache.test.mjs tests/composition-input.test.mjs tests/composition-window.test.mjs",
     "test:vgm": "node --test tests/vgm.test.mjs tests/timed-stream.test.mjs",
     "verify:timed": "node tools/verify-timed.mjs",
     "build:control": "node tools/build-control.mjs",
@@ -47,7 +47,9 @@
     "verify:exploration": "node tools/verify-exploration.mjs",
     "verify:exploration-units": "node tools/verify-exploration.mjs --units",
     "build:event-motion": "node tools/build-text.mjs --event",
-    "verify:event-motion": "node tools/verify-event-motion.mjs"
+    "verify:event-motion": "node tools/verify-event-motion.mjs",
+    "build:composition-window": "node tools/build-composition-window.mjs",
+    "verify:composition-window": "node tools/verify-composition-window.mjs"
   },
   "engines": {
     "node": ">=20"
