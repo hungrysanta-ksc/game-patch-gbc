@@ -45,7 +45,11 @@ export async function addTextAssets(rom,assets,config,{verify=true}={}){
  for(const id of glyphUsage)check(id===255||glyphs.subarray(id*16,id*16+16).some(v=>v),'Empty selected glyph '+id);
  const chunks=(b,n)=>Array.from({length:Math.ceil(b.length/n)},(_,i)=>Buffer.from(b.subarray(i*n,(i+1)*n)));
  const pairs=bindings.entries.map((b,i)=>[b.id,i]).sort((a,b)=>a[0]-b[0]),index=Buffer.alloc(pairs.length*4);pairs.forEach(([id,handle],i)=>{index.writeUInt16LE(id,i*4);index.writeUInt16LE(handle,i*4+2);});
- Object.assign(assets.groups,{sourceTextPointers:[Buffer.from(rom.subarray(0x30010,0x30d70))],sourceTextBlocks:chunks(rom.subarray(0x30010,0x3e010),16384),koreanText:messages,textGlyphs:chunks(glyphs,16384),textBindings:[index]});
+ // Window palette entries 0 and 1 are equal; index 1 also occludes NPC pixels.
+ // This is the former runtime transform, performed once when packing. Retain
+ // unmodified glyphs for the independent pixel/VRAM reference.
+ const opaque=Buffer.from(glyphs);for(let i=0;i<opaque.length;i+=2)opaque[i]|=(~opaque[i+1])&255;
+ Object.assign(assets.groups,{sourceTextPointers:[Buffer.from(rom.subarray(0x30010,0x30d70))],sourceTextBlocks:chunks(rom.subarray(0x30010,0x3e010),16384),koreanText:messages,textGlyphs:chunks(opaque,16384),textBindings:[index]});
  for(const kind of textKinds.slice(objectKinds.length))for(const [id,bytes]of assets.groups[kind].entries())assets.provenance.push({kind,id,bytes:bytes.length,sha256:hash(bytes),source:kind==='sourceTextPointers'?[{offset:0x30010,bytes:3424}]:kind==='sourceTextBlocks'?[{offset:0x30010+id*16384,bytes:bytes.length}]:kind==='textGlyphs'?[{offset:0x1b710,bytes:2304},{privateFontSha256:fontSha256,bytes:18800}]:[{privateBindingsSha256:hash(await fs.readFile(config.bindings)),...(kind==='koreanText'?{sourceId:bindings.entries[id].id,sourceSha256:analysis.entries[bindings.entries[id].id].sha256}:{} )}],consumer:'3F/EE9A..F387 source; src/text-window.c GBC adapter'});
  assets.text={analysis,bindings,sourceIds:bindings.entries.map(b=>b.id),fontSha256,fontGlyphs:2350,usedGlyphs:glyphUsage.size,glyphs,messages};return assets;
 }
