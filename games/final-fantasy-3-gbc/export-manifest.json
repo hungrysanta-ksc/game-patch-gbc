@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "docs/event-motion.md",
-      "bytes": 7391,
-      "sha256": "c178e42ec666ee2a051d21936bcccafbc6b40b44e6e270f00eaa8b111966084b",
+      "bytes": 7661,
+      "sha256": "f8fefaa2119ffeb6d2e7316d29424657c85b25c805af7d5fe3e260e9176bc7ba",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -46,8 +46,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 16327,
-      "sha256": "16cac0783ab70209b1c74e793e0cd1be2a9aa591b5d58d7811125baac20c055d",
+      "bytes": 16819,
+      "sha256": "45ccf654bc67f29c146d37936ffbcb96a4cad3f2153fcd7042ffb887bed1bb6b",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -70,8 +70,20 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 27381,
-      "sha256": "5a276b35f55e21ce796401c2c6f566e4701860fd1ce19cd053e0154f9880b812",
+      "bytes": 12133,
+      "sha256": "564af0cfacc8a8390ad0b0bfcbde927d41156bb1982778c2625c191fc1893e4f",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/retrospective-pr15.md",
+      "bytes": 9872,
+      "sha256": "28efc4ba61259a7414e155127896066a7a70c812fe1008bf86d469bdda9bc772",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/progress.md",
+      "bytes": 5073,
+      "sha256": "c0eba206a559d63a016b550f06e5d8562ea48a89425d2ce25213bb874142d905",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -760,8 +772,8 @@
     },
     {
       "path": "spec/port-policy.json",
-      "bytes": 2095,
-      "sha256": "037d272dda3b0455dad16b1aa94c51ecd69eb69da0545af53a5dce2d014f6505",
+      "bytes": 2104,
+      "sha256": "d4d4b5a6e39b9075bdb155d6b5bbdaf7f024c5a29e62723b1f977773f8a09242",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -892,8 +904,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 5812,
-      "sha256": "7f270e889c75d9f0360ee018100d3158c0bc9c333c3c9de486056a010735b425",
+      "bytes": 5860,
+      "sha256": "7fdd333fd17df78b599a1cade647bda763cb4c0f53bec278dbe94d2cf5e5165e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

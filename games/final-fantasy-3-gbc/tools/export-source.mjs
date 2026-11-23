@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
  'docs/event-motion.md','tools/event-motion-source.mjs','tools/event-motion-audit.lua','tools/verify-event-motion.mjs',
  '.gitattributes','.gitignore','AGENTS.md','README.md','THIRD-PARTY-NOTICES.md','local.example.json','package.json',
- 'docs/implementation-roadmap.md','docs/development-skills.md','tools/survey-source.mjs',
+ 'docs/implementation-roadmap.md','docs/retrospective-pr15.md','docs/progress.md','docs/development-skills.md','tools/survey-source.mjs',
  'docs/data-registry.md','spec/data-registry.json','tools/register-data.mjs','tools/registry-core.mjs','tests/registry.test.mjs',
  'docs/platform-foundation.md','src/platform-call.h','src/platform.h','src/platform.c','src/platform-probe.c',
  'docs/state-save-rng.md','src/game-state.h','src/game-state.c','src/game-save.c','src/game-state-test.c',
