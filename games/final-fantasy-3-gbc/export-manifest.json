@@ -22,8 +22,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 12014,
-      "sha256": "c926dc3186622a3994f375b8e1371288cfa03ddc2d7d840f0dddefed8ea15bac",
+      "bytes": 12400,
+      "sha256": "ab22838c64f0cf7bc19e1841cb08e4a3404df6b86038300280ae1f1c05fe1b0e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -40,14 +40,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 1127,
-      "sha256": "fe46164e37587b708921fd76cbb0d0e70ea30e68f55040b5cb5aa462ef3160d8",
+      "bytes": 1243,
+      "sha256": "2af76fbc65b85a634c5a0cabf8dffb9bf6ada0bca0aef891d21e5cd29d4102e8",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 21211,
-      "sha256": "8571b78ae0f7e890ee647e33edcee854470354d820639e6b805ce47182e334be",
+      "bytes": 21741,
+      "sha256": "4c3f954fdf07b32b949bfe9f7cd4181135cea7372945236f85fa57cfab623907",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -64,8 +64,8 @@
     },
     {
       "path": "docs/data-registry.md",
-      "bytes": 9239,
-      "sha256": "821bc8c7b313f5b8d1ac93587f6131ec10eae8ae8220843f05bbb5c9fc03131c",
+      "bytes": 9766,
+      "sha256": "bee76997d2ff5c202596e27f9cd36ae723a51f0a97ed5ae1cf7dcb6d1c97da7a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -192,6 +192,90 @@
       "path": "tools/VerifyState/Program.cs",
       "bytes": 3195,
       "sha256": "7012478fa9e612efbca69c654351c9271c50e8b947caedb877bf28f8810b3191",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/map-assets.md",
+      "bytes": 10125,
+      "sha256": "bd19f10346f9b597a8ce037ed2ce0da62f5afa9a84c2c76de5c5b5129ce17df7",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/assets.h",
+      "bytes": 539,
+      "sha256": "2ca9cdde200ebf24feca5e4104e356dc5d8f3677e55db663da9554629b0151de",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/assets.c",
+      "bytes": 1217,
+      "sha256": "ff006422fb32f8750da07206dba02d167469bfb8f42e0a7d52f7a78e8a8b8651",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/map-display.h",
+      "bytes": 627,
+      "sha256": "0ecbf55ed6ef638e404b7b59deffb9147d3284ea09db675ed0eeb4df359f333c",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/map-display.c",
+      "bytes": 2488,
+      "sha256": "101a5709f19392db7c06939e23e371ce2254882bd21e73f147d9557ec8a361df",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/map-viewer.c",
+      "bytes": 1642,
+      "sha256": "3f08fe78b585f51a240c17b8021cf0381df28e2a79b9e24df440699483ba9893",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/map-assets.mjs",
+      "bytes": 6899,
+      "sha256": "a8f837b1cc0e5150fb97b6b3704443551b6ad1b25caaeba4fde17b72566b5f52",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/map-pixels.mjs",
+      "bytes": 2344,
+      "sha256": "1db33485f83111aa31d8e1ab94a8f4e2bf85bddd06dcd5890e2f8297f8692a70",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-maps.mjs",
+      "bytes": 3852,
+      "sha256": "c1677d3f8315add52bc36dd0066ab341b53687e3ef18d5e1d342c9f002041da5",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-maps-verifier.mjs",
+      "bytes": 835,
+      "sha256": "6877bd47d6013d39d88fe3fe0b031a8d655a1bb3ce06f53d3e8160dcfebce411",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-maps.mjs",
+      "bytes": 5602,
+      "sha256": "6e04024236e29f7d7e8851cd43d543c3ef1fc2d7551753120cfa908cab70adcf",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyMaps/VerifyMaps.csproj",
+      "bytes": 293,
+      "sha256": "ad9ee6103501fb8e1e539f6660f7ba49b28f0c266c4d0768511ea964b8a8c7f3",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyMaps/Program.cs",
+      "bytes": 3191,
+      "sha256": "76742a51c4e44dae34605198b43b4dfbffecdd03a87a812af9d9d15cf6ccae68",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/maps.test.mjs",
+      "bytes": 1823,
+      "sha256": "d01b5cde53c7f10eebc6d2f9832f8d4dce976243bef78e8161ac0cc7b42756aa",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -394,8 +478,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 3498,
-      "sha256": "f89fd2c0a846459c99d88aab23c0ff86165f36b72e8b8021bb502f05698c70f3",
+      "bytes": 3828,
+      "sha256": "54b9bcb0292d088dfd4bac76d3d2a14599fb7cdd20fbce14a2496ba53eb7bc93",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -502,8 +586,8 @@
     },
     {
       "path": "tools/field-source.mjs",
-      "bytes": 5564,
-      "sha256": "d067e0614856bf9ec386fd82b03ee44c9a20b8ce560a01a62b47202d6a8ea535",
+      "bytes": 5754,
+      "sha256": "85947febc59ffb39a29ea87fccda484a1c6e118b4f15cdb4ca8c52b146744c62",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
