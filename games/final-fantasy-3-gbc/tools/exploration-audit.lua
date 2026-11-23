@@ -17,3 +17,30 @@ emu.addMemoryCallback(function(address,value)
  if (emu.read(0xff41,fieldmem)&3)~=1 then badscroll=badscroll+1 end
 end,emu.callbackType.write,0xff42,0xff43,emu.cpuType.gameboy)
 emu.addEventCallback(function() emu.log(string.format("field-audit:%d,%d,%d,%d,%d",oamdmas,badoam,scrollwrites,badscroll,peak)) end,emu.eventType.codeBreak)
+
+-- Wall-clock guest cycles from preparation entry to the actual SCX commit,
+-- including the asynchronous VBlank wait. Do not count only CPU preparation.
+local startClock=nil
+local latencyCount,latencyMax,latencySum,latencyBad=0,0,0,0
+local latencyBins={}
+emu.addMemoryCallback(function(address,value)
+ if value==1 then
+  if startClock~=nil then latencyBad=latencyBad+1 end
+  startClock=emu.getState().masterClock
+ end
+end,emu.callbackType.write,__FIELD_RENDER_BUSY__,__FIELD_RENDER_BUSY__,emu.cpuType.gameboy)
+emu.addMemoryCallback(function(address,value)
+ local state=emu.getState()
+ if startClock==nil then latencyBad=latencyBad+1;return end
+ local delta=(state.masterClock-startClock)&0xffffffff
+ local us=math.floor(delta*1000000/state.clockRate+0.5)
+ local bin=math.ceil(us/1000)
+ latencyBins[bin]=(latencyBins[bin] or 0)+1
+ latencyCount=latencyCount+1;latencySum=latencySum+us
+ if us>latencyMax then latencyMax=us end
+ startClock=nil
+end,emu.callbackType.write,0xff43,0xff43,emu.cpuType.gameboy)
+emu.addEventCallback(function()
+ local bins={};for i=1,1000 do if latencyBins[i] then table.insert(bins,i.."="..latencyBins[i]) end end
+ emu.log(string.format("movement-latency:%d,%d,%d,%d;%s",latencyCount,latencyMax,latencySum,latencyBad,table.concat(bins,",")))
+end,emu.eventType.codeBreak)
