@@ -7,7 +7,7 @@ check(romSha256===report.romSha256&&coreSha256==='1ba99d2c848e007c60cbd7fceca058
 const symbols={};for(const m of(await fs.readFile(dir+'/ff3-exploration.noi','utf8')).matchAll(/DEF _(\w+) (0x[0-9a-f]+)/gi))symbols[m[1]]=Number(m[2]);
 const out=ROOT+'/evidence/exploration';await fs.mkdir(out,{recursive:true});const tag=units?'units':'play',output=out+'/'+tag+'.json',configPath=output+'.config.json';let home;
 if(process.argv.includes('--reuse')){const c=JSON.parse(await fs.readFile(configPath));check(c.romSha256===romSha256,'Stale artifact');home=c.home;}
-else{home=await fs.mkdtemp(ROOT+'/.local/mesen-exploration-'+tag+'-');const auditPath=ROOT+'/tools/text-audio-audit.lua',audit=(await fs.readFile(auditPath,'utf8')).replace('__IRQ_BUSY__',String(symbols.native_irq_busy))+'\n'+await fs.readFile(ROOT+'/tools/exploration-audit.lua','utf8');
+else{home=await fs.mkdtemp(ROOT+'/.local/mesen-exploration-'+tag+'-');const auditPath=ROOT+'/tools/text-audio-audit.lua',audit=(await fs.readFile(auditPath,'utf8')).replace('__IRQ_BUSY__',String(symbols.native_irq_busy))+'\n'+(await fs.readFile(ROOT+'/tools/exploration-audit.lua','utf8')).replaceAll('__FIELD_RENDER_BUSY__',String(symbols.field+64));
  await fs.writeFile(configPath,JSON.stringify({dll:local.mesenCore,home,rom,romSha256,coreSha256,symbols,fixtures:units?fieldFixtures(data):undefined,auditPath,audit,output}));
  try{const r=await promisify(execFile)(local.dotnet||'dotnet',[ROOT+'/tools/VerifyExploration/bin/Release/net8.0/VerifyExploration.dll',configPath],{cwd:ROOT,timeout:1200000,maxBuffer:8e6});await fs.writeFile(output+'.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(output+'.log',(e.stdout||'')+(e.stderr||''));throw e;}}
 const actual=JSON.parse(await fs.readFile(output));check(actual.done&&actual.romSha256===romSha256&&actual.coreSha256===coreSha256,'Run identity/completion');
@@ -29,6 +29,22 @@ if(!units){
  const logicSeconds=((lb.readUInt16LE(32)-fb.readUInt16LE(32))&65535)/60.0988,elapsedSeconds=(last.clock-first.clock)/last.rate,logicDriftSeconds=logicSeconds-elapsedSeconds;
  check(Math.abs(logicDriftSeconds)<0.2,'Logical movement clock drift '+logicDriftSeconds);
  const performance={maxBackgroundSeconds:lb.readUInt16LE(56)/4096,maxObjectsSeconds:lb.readUInt16LE(58)/4096,maxPublishSeconds:lb.readUInt16LE(60)/4096,maxRenderSeconds:lb.readUInt16LE(62)/4096,logicDriftSeconds,logicObservationSeconds:elapsedSeconds};
+ // The CPU counter ends at enqueue. Independently measure through the actual
+ // VBlank SCX write, and also catch stalls before preparation starts.
+ const latency=[...log.matchAll(/movement-latency:(\d+),(\d+),(\d+),(\d+);([\d=,]+)/g)].at(-1);check(latency,'Actual scroll commit latency audit');
+ const [count,maxUs,sumUs,invalid]=latency.slice(1,5).map(Number),bins=latency[5].split(',').map(s=>s.split('=').map(Number)).sort((a,b)=>a[0]-b[0]);
+ check(!invalid&&count===scrollWrites/2&&bins.reduce((s,b)=>s+b[1],0)===count,'Complete latency pairing/histogram');
+ const percentile=p=>{let n=0;for(const [ms,hits]of bins)if((n+=hits)>=Math.ceil(count*p))return ms/1000;throw Error('Latency percentile');};
+ const gaps=[];let lastChange,unchanged=0,maxUnchanged=0,movingFrames=0,changedFrames=0;
+ for(let i=1;i<actual.frames.length;i++){const a=actual.frames[i-1],b=actual.frames[i],af=Buffer.from(a.field,'hex'),bf=Buffer.from(b.field,'hex');
+  if(af[5]&&bf[5]&&!af[19]&&!bf[19]){movingFrames++;if(a.scroll===b.scroll){unchanged++;maxUnchanged=Math.max(maxUnchanged,unchanged);}else{changedFrames++;unchanged=0;if(lastChange)gaps.push((b.clock-lastChange.clock)/b.rate);lastChange=b;}}
+  else{unchanged=0;lastChange=undefined;}
+ }
+ gaps.sort((a,b)=>a-b);check(gaps.length>1000,'Sustained movement samples');
+ performance.actualCommit={count,maxSeconds:maxUs/1e6,meanSeconds:sumUs/count/1e6,p95UpperSeconds:percentile(.95),histogramMilliseconds:bins};
+ performance.movingScroll={movingFrames,changedFrames,maxUnchangedFrames:maxUnchanged,intervals:gaps.length,p95SampledGapSeconds:gaps[Math.ceil(gaps.length*.95)-1],maxSampledGapSeconds:gaps.at(-1)};
+ check(maxUs<=35000&&performance.maxRenderSeconds<=.020,'Movement preparation/commit regression');
+ check(maxUnchanged<=4&&gaps.at(-1)<=.085,'Moving scroll starvation regression');
  result={...result,sourceTicks:end.ticks,sourceEvents:end.events,videoWrites:writes,invalidVideoWrites:bad,lcdOff:off,actualApuHash:apuHash,actualApuWrites:apuWrites,maxWriteLine:maxLy,dmaStarts,badDma,oamDmas,badOam,scrollWrites,badScroll,peakSpritesPerLine:peak,shots:actual.shots.length,pixels:actual.shots.length*160*144,performance,home};
 }
 await fs.writeFile(out+'/'+tag+'-result.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));

@@ -22,7 +22,7 @@ class Program {
     SetF(27,1);
     foreach(var job in fixtures.EnumerateArray()){
      Write("field",job.GetProperty("field").GetString()!);Write("object_part1",job.GetProperty("part1").GetString()!);Write("object_part2",job.GetProperty("part2").GetString()!);SetF(20,job.GetProperty("op").GetByte());
-     for(int i=0;F(20)!=0;i++){Assert(i<1000,"Fixture timeout "+units);Step(1000,0);}
+     for(int i=0;F(20)!=0||F(47)!=0||F(65)!=0;i++){Assert(i<1000,"Fixture timeout "+units);Step(1000,0);}
      var e=job.GetProperty("expected");foreach(var name in new[]{"field","part1","part2"}){string key=name=="field"?name:"object_"+name;Assert(Bytes(key,name=="field"?28:192)==e.GetProperty(name).GetString(),"6502 comparison "+units+" op="+job.GetProperty("op")+" "+name+" expected="+e.GetProperty(name).GetString());}
      if(e.TryGetProperty("oam",out var expectedOam))Assert(Mem(44,0,160)==expectedOam.GetString(),"Original player animation OAM "+units);
      units++;if(units%500==0)Console.WriteLine("units="+units);
@@ -32,16 +32,16 @@ class Program {
     script=Audit.LoadScript("exploration-audit",Text("auditPath"),Text("audit"),-1);Assert(script>=0,"Audit script");Put("native_request",255);
     void Frame(){Step(1);total++;for(int g=0;Read("native_irq_busy")!=0;g++){Assert(g<20000,"IRQ never yields");Step(17,0);}
      Assert(F(16)==0&&F(39)==0&&Read("asset_error")==0&&Read("text_error")==0&&Read("npc_error")==0&&Read("ff3_error")==0&&Read("text_transfer_fault")==0,"Runtime fault");
-     Assert(Num("native_underruns",2)==0&&Num("native_max_late",2)==0,"Audio timing");
+     Assert(Num("native_underruns",2)==0&&Num("native_max_late",2)==0,"Audio timing late="+Num("native_max_late",2)+" underruns="+Num("native_underruns",2));
      foreach(uint a in new uint[]{0xd7f0,0xd940,0xdb60,0xdca0})Assert(Mem(7,a,16)==new string('a',0)+string.Concat(Enumerable.Repeat("a7",16)),"Memory guard "+a);
-     var timing=Core.GetTimingInfo(7);frames.Add(new{frame=timing.frame,clock=timing.clock,rate=timing.rate,timer=Num("native_clock",2),consumed=Bytes("native_consumed",12),done=Read("native_done"),late=Num("native_max_late",2),underruns=Num("native_underruns",2),field=Bytes("field",64),hardware=Mem(7,0xff10,20)});
+     var timing=Core.GetTimingInfo(7);frames.Add(new{frame=timing.frame,clock=timing.clock,rate=timing.rate,timer=Num("native_clock",2),consumed=Bytes("native_consumed",12),done=Read("native_done"),late=Num("native_max_late",2),underruns=Num("native_underruns",2),field=Bytes("field",64),scroll=Mem(7,0xff42,2),hardware=Mem(7,0xff10,20)});
      if(total%600==0)Console.WriteLine("frame="+total+" ticks="+Num("native_ticks",4)+" mode="+F(19));
     }
     void Until(Func<bool> f,string name,int limit=400){for(int i=0;!f();i++){Assert(i<limit,"Timeout "+name);Frame();}}
     void Run(int n){for(int i=0;i<n;i++)Frame();}
     void Keys(string k){Audit.SetInputOverrides(0,new Audit.Buttons{A=(byte)(k.Contains('A')?1:0),B=(byte)(k.Contains('B')?1:0),Up=(byte)(k.Contains('U')?1:0),Down=(byte)(k.Contains('D')?1:0),Left=(byte)(k.Contains('L')?1:0),Right=(byte)(k.Contains('R')?1:0)});}
     void Release(){Keys("");Until(()=>F(36)==0,"release");Run(3);}
-    void Shot(string label){int stable=0;uint last=0;for(int i=0;stable<3;i++){Assert(i<200,"Stable screenshot "+label);Frame();uint draws=(uint)(F(34)|(F(35)<<8));stable=F(64)==0&&draws==last?stable+1:0;last=draws;}Audit.TakeScreenshot();shots.Add(new{label,field=Bytes("field",56),part1=Bytes("object_part1",192),part2=Bytes("object_part2",192),oam=Mem(44,0,160),vram=Mem(43,0,16384),palette=Mem(45,0,128),state=Bytes("ff3_game_state",1024),cells=Bytes("text_cells",320),visible=Read("text_visible"),more=Read("text_more"),textId=Num("npc_text_id",2),scroll=Mem(7,0xff42,2),frame=Core.GetTimingInfo(7).frame});}
+    void Shot(string label){int stable=0;uint last=0;for(int i=0;stable<3;i++){Assert(i<200,"Stable screenshot "+label);Frame();uint draws=(uint)(F(34)|(F(35)<<8));stable=F(64)==0&&F(47)==0&&F(65)==0&&draws==last?stable+1:0;last=draws;}Audit.TakeScreenshot();shots.Add(new{label,field=Bytes("field",56),part1=Bytes("object_part1",192),part2=Bytes("object_part2",192),oam=Mem(44,0,160),vram=Mem(43,0,16384),palette=Mem(45,0,128),state=Bytes("ff3_game_state",1024),cells=Bytes("text_cells",320),visible=Read("text_visible"),more=Read("text_more"),textId=Num("npc_text_id",2),scroll=Mem(7,0xff42,2),frame=Core.GetTimingInfo(7).frame});}
     void Walk(string key,int x,int y){Keys(key);Until(()=>Math.Abs((((F(0)+7)&63)*16+F(2))-x*16)+Math.Abs((((F(1)+7)&63)*16+F(3))-y*16)<=12,"approach "+key+" to "+x+","+y);Release();Until(()=>F(5)==0,"finish step");Assert(((F(0)+7)&63)==x&&((F(1)+7)&63)==y,"Walk endpoint");}
     Run(5);Shot("entry");Keys("A");Until(()=>F(36)==16,"distant A sampled");Run(6);Release();Assert(F(19)==0&&Read("text_visible")==0,"Distant talk rejected");
     Walk("U",10,7);Keys("U");Run(25);Release();Assert(F(5)==0&&((F(1)+7)&63)==7&&F(38)>0,"NPC blocks movement");Shot("front-npc");

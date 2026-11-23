@@ -30,5 +30,17 @@ export function fieldFixtures(rom){
   for(let q=0;q<4;q++){const at=0x200+q*4,a=c.m[at+2];oam[q*4]=c.m[at]+1-48+16;oam[q*4+1]=c.m[at+3]-40+8;oam[q*4+2]=192+c.m[at+1];oam[q*4+3]=10+(a&1)+((a&64)?32:0)+((a&128)?64:0)+((a&32)?128:0);}
   cases.at(-1).expected.oam=oam.toString('hex');
  }
+ // Newly optimized full-quad and clipped paths: every screen-edge boundary,
+ // all four original directions/palette selectors, and both priority halves.
+ let edge=0;for(const x of [-16,-8,-7,0,151,152,159,160])for(const y of [-16,-8,-7,0,135,136,143,144]){
+  const s=Buffer.alloc(28),a=Buffer.alloc(192),b=Buffer.alloc(192);s[0]=s[1]=3;s[4]=8;
+  a[0]=1;a[4]=(88+x)>>4;a[6]=(88+x)&15;a[5]=(99+y)>>4;a[7]=(99+y)&15;a.writeUInt16LE(0xb41a+(edge%4)*16,14);b[5]=((edge>>2)&3)*64;b[1]=[0,0x14,0x24,0x34][edge>>4];add(6,s,a,b);
+  const c=stateCpu(rom);fieldAddresses.forEach((address,i)=>c.m[address]=s[i]);c.y=0;c.call(0xd8d3);const records=[];
+  const push=(x,y,t,f,p)=>{if(x<=-8||x>=160||y<=-8||y>=144)return;records.push(y+16,x+8,t,8+p+(f&1)+((f&64)?32:0)+((f&128)?64:0)+((f&32)?128:0));};
+  for(let q=0;q<4;q++){const i=0x200+q*4;push(c.m[i+3]-40,c.m[i]+1-48,192+c.m[i+1],c.m[i+2],2);}
+  const n=stateCpu(rom);n.banks=[0x3a,0x3b,0x3e,0x3f];n.m[0x40]=80;n.m[0x41]=76;n.m[0x80]=a[14];n.m[0x81]=a[15];n.m[0x7105]=b[5];n.m[0x7101]=b[1];n.call(0xaead);
+  for(let q=0;q<4;q++){const i=0x200+q*4;push(x+n.m[i+3]-80,y+n.m[i]-76,n.m[i+1],n.m[i+2],0);}
+  const oam=Buffer.alloc(160);Buffer.from(records).copy(oam);cases.at(-1).expected.oam=oam.toString('hex');edge++;
+ }
  return cases;
 }

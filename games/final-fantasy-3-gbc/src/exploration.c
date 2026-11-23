@@ -5,7 +5,7 @@
 #include "platform.h"
 #include "exploration-config.h"
 volatile FF3Exploration __at(0xdb70) field;
-typedef char field_reservation[sizeof(FF3Exploration)<=144?1:-1];
+typedef char field_reservation[sizeof(FF3Exploration)<=80?1:-1];
 void ff3_field_front(void) BANKED {
  uint8_t x=7,y=7,d=field.direction;
  if(d&1)x=8;else if(d&2)x=6;else if(d&4)y=8;else y=6;
