@@ -7,6 +7,7 @@
 #include "exploration-config.h"
 #include "text-vblank.h"
 #include "platform.h"
+#include "memory.h"
 void ff3_native_begin(void) NONBANKED;void ff3_native_service(void) NONBANKED;
 extern volatile uint8_t native_request,native_argument;
 uint16_t dialogue_name_state[24];
@@ -19,6 +20,7 @@ static void dialogue_clock(void){while((int16_t)(ff3_clock_now()-field.deadline)
 static void event_pixels(void){field.event_busy=2;ff3_npc_pixels();field.event_busy=0;}
 void main(void){uint8_t k,pressed,old=0,i,was,catchup;
  cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);
+ ff3_memory_init();
  memset((void*)0xd7f0,0xa7,16);memset((void*)0xd940,0xa7,16);memset((void*)0xdb60,0xa7,16);memset((void*)0xdca0,0xa7,16);
  ff3_state_init(ff3_game_state);memcpy(dialogue_name_state,dialogue_names,sizeof(dialogue_name_state));
  text_context.state=ff3_game_state;text_context.names=dialogue_name_state;text_context.item=0xa6;
@@ -28,6 +30,7 @@ void main(void){uint8_t k,pressed,old=0,i,was,catchup;
  ff3_field_init();ff3_field_render(1);ff3_field_video_init();ff3_text_video_init();
  ff3_native_begin();text_idle=ff3_native_service;native_argument=FIELD_SONG;native_request=2;deadline();field.ready=0xa5;
  while(1){ff3_native_service();
+  if(memory_probe_request){memory_probe_request=0;ff3_memory_probe();}
   if(field.request){switch(field.request){case 1:ff3_field_front();break;case 2:field.result=ff3_field_touch();break;case 3:field.result=ff3_field_talk();break;case 4:field.result=ff3_field_terrain();break;case 5:ff3_field_pixel();break;case 6:npc_draw_valid=0;ff3_field_render(0);break;case 7:ff3_npc_pixels();break;case 8:ff3_npc_schedule();break;case 9:ff3_npc_pixels();ff3_npc_schedule();ff3_field_render(0);break;case 10:npc_execution[0]+=ff3_npc_command(npc_execution[1]);break;case 11:ff3_npc_frame();break;}field.request=0;}
   if(field.pause||field.error||asset_error||text_error||npc_error||field.video_fault){__asm halt __endasm;continue;}
   if((int16_t)(ff3_clock_now()-field.deadline)<0){__asm halt __endasm;continue;}

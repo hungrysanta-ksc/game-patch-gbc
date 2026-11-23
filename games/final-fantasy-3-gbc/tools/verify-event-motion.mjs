@@ -1,3 +1,4 @@
+import {memoryAudit,checkMemoryAudit} from './memory-audit.mjs';
 import fs from 'node:fs/promises';import {execFile} from 'node:child_process';import {promisify} from 'node:util';
 import {ROOT,input,check,hash} from './source.mjs';import {eventFixtures,eventOriginal} from './event-motion-source.mjs';
 import {npcOriginal as pixelsOriginal} from './npc-motion-source.mjs';import {npcRecord} from './dialogue-source.mjs';
@@ -9,7 +10,7 @@ const symbols={};for(const m of(await fs.readFile(dir+'/ff3-exploration.noi','ut
 const out=ROOT+'/evidence/event-motion';await fs.mkdir(out,{recursive:true});const output=out+(units?'/units.json':'/play.json'),configPath=output+'.config.json';let home;
 if(process.argv.includes('--reuse')){const config=JSON.parse(await fs.readFile(configPath));check(config.romSha256===romSha256,'Stale artifact');home=config.home;}
 else{home=await fs.mkdtemp(ROOT+'/.local/mesen-event-');const auditPath=ROOT+'/tools/text-audio-audit.lua';
- let audit=(await fs.readFile(auditPath,'utf8'))+'\n'+await fs.readFile(ROOT+'/tools/exploration-audit.lua','utf8')+'\n'+await fs.readFile(ROOT+'/tools/event-motion-audit.lua','utf8');
+ let audit=((await fs.readFile(auditPath,'utf8'))+await memoryAudit())+'\n'+await fs.readFile(ROOT+'/tools/exploration-audit.lua','utf8')+'\n'+await fs.readFile(ROOT+'/tools/event-motion-audit.lua','utf8');
  const names={IRQ_BUSY:symbols.native_irq_busy,NATIVE_CLOCK:symbols.native_clock,NATIVE_REQUEST:symbols.native_request,FIELD_RENDER_BUSY:symbols.field+64,NATIVE_BUSY:symbols.native_busy,NATIVE_TICKS:symbols.native_ticks,FIELD:symbols.field,PART1:symbols.object_part1,PART2:symbols.object_part2,EXECUTION:symbols.npc_execution,PC:symbols.npc_pc,ACTIVE:symbols.npc_active,TEXT_ID:symbols.npc_text_id,VISIBLE:symbols.text_visible,EVENT_BUSY:symbols.field+75};
  for(const[k,v]of Object.entries(names))audit=audit.replaceAll('__'+k+'__',String(v));check(!/__[A-Z_]+__/.test(audit),'Audit symbols');
  await fs.writeFile(configPath,JSON.stringify({dll:local.mesenCore,home,rom,romSha256,coreSha256,symbols,fixtures:units?eventFixtures(data):undefined,eventRoute:!units,auditPath,audit,output}));
@@ -50,4 +51,5 @@ else{
  }
  Object.assign(result,{commands,pixelSteps:pixels,retries,waits,ends,maxLogicDriftSeconds:maxDrift,maxCommandSeconds:maxCommand,sourceTicks:end.ticks,sourceEvents:end.events,actualApuWrites:a[4],apuHash:a[3],peakSpritesPerLine:v[4],screens:7,pixels:7*160*144,audioClock:{min,max}});
 }
+if(!units){result.memory={...actual.memory,...checkMemoryAudit(await fs.readFile(output+'.lua.log','utf8'))};check(!result.memory.fault&&result.memory.untouchedBytes>=128,'Stack headroom');}
 await fs.writeFile(output.replace('.json','-result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));

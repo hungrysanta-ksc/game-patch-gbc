@@ -1,6 +1,8 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/memory-lifetimes.md','src/memory.h','src/memory.c','src/memory-probe.c',
+ 'tools/memory-layout.mjs','tools/memory-audit.lua','tools/memory-audit.mjs','tools/verify-memory.mjs',
  'docs/event-motion.md','tools/event-motion-source.mjs','tools/event-motion-audit.lua','tools/verify-event-motion.mjs',
  '.gitattributes','.gitignore','AGENTS.md','README.md','THIRD-PARTY-NOTICES.md','local.example.json','package.json',
  'docs/implementation-roadmap.md','docs/retrospective-pr15.md','docs/progress.md','docs/development-skills.md','tools/survey-source.mjs',

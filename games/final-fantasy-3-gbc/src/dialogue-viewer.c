@@ -7,6 +7,7 @@
 #include "text-vblank.h"
 #ifdef FF3_TEXT_AUDIO
 #include "platform.h"
+#include "memory.h"
 void ff3_native_begin(void) NONBANKED;
 void ff3_native_service(void) NONBANKED;
 #define text_game_state ff3_game_state
@@ -21,6 +22,9 @@ volatile uint8_t dialogue_flag,dialogue_set;
 volatile uint32_t number_value;
 void main(void){uint8_t previous=0,keys,pressed,i,example=0;
  cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);memset((void*)0xd7f0,0xa7,16);memset((void*)0xdb60,0xa7,16);
+ #ifdef FF3_TEXT_AUDIO
+ ff3_memory_init();
+ #endif
  ff3_state_init(text_game_state);memcpy(dialogue_name_state,dialogue_names,sizeof(dialogue_name_state));
  text_context.state=text_game_state;text_context.names=dialogue_name_state;text_context.item=0xa6;text_context.variable_gil[0]=200;
  memset(shadow_OAM,0,160);
@@ -34,6 +38,7 @@ void main(void){uint8_t previous=0,keys,pressed,i,example=0;
  while(1){
   #ifdef FF3_TEXT_AUDIO
   ff3_native_service();
+  if(memory_probe_request){memory_probe_request=0;ff3_memory_probe();}
   #endif
   if(text_request){asset_error=0;text_error=0;
    if(text_request==1){ff3_text_close();npc_active=0;ff3_text_open_source(text_selection);}

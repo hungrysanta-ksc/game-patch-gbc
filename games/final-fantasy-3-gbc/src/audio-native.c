@@ -8,6 +8,10 @@
 #include "audio-output.h"
 #include "native-assets.h"
 #include "platform.h"
+#ifdef FF3_TEXT_AUDIO
+#include "memory.h"
+#include "text-vblank.h"
+#endif
 #ifdef FF3_SCENE
 #include "field-scene.h"
 #endif
@@ -21,7 +25,12 @@ uint16_t native_source_hash=0,native_gb_hash=0;
 volatile uint8_t native_consumed[12];
 /* Publish an immutable completed-event snapshot. Debugger observations must
  * not require the producer to become idle at a particular timer phase. */
+#ifdef FF3_TEXT_AUDIO
+const uint8_t native_snapshot_bank=FF3_WRAM_DIAGNOSTICS;
+static uint8_t snapshot_due;
+#else
 uint8_t native_snapshot[2][232];
+#endif
 volatile uint8_t native_published=0;
 uint8_t native_queue[16][64];
 volatile uint8_t native_head=0,native_tail=0;
@@ -48,9 +57,20 @@ static void text(const char *p){while(*p)putchar(*p++);}
 static void command(uint8_t op,uint8_t arg){switch(op){case 2:case 3:if(!ff3_music_request(&ff3_state,arg,op==3))ff3_error=6;break;case 4:ff3_music_resume(&ff3_state);break;case 5:case 6:ff3_music_stop(&ff3_state,op==6);break;case 7:if(!ff3_audio_effect(&ff3_state,arg))ff3_error=6;break;case 8:ff3_audio_stop_effect(&ff3_state);break;default:ff3_error=6;}}
 static void put16(uint8_t at,uint16_t value){slot[at]=(uint8_t)value;slot[at+1]=value>>8;}
 static void put32(uint8_t at,uint32_t value){put16(at,(uint16_t)value);put16(at+2,(uint16_t)(value>>16));}
-/* Publish the same immutable diagnostics, using the toolchain's sequential
- * copy instead of redoing indexed pointer arithmetic for every byte. */
-static void publish(void){uint8_t index=native_published^1,*p=native_snapshot[index];memcpy(p,&ff3_state,216);p+=216;memcpy(p,slot+4,12);p[12]=(uint8_t)native_pops;p[13]=native_pops>>8;native_published=index;}
+/* Publish one immutable completed-event record. Banked storage is diagnostic
+ * only; it never moves the audio queue, engine or IRQ state out of fixed RAM. */
+static void publish(void){uint8_t index=native_published^1;
+#ifdef FF3_TEXT_AUDIO
+ uint16_t offset=(uint16_t)index*FF3_WRAM_SNAPSHOT_BYTES,zero=0;
+ if(!ff3_wram_copy(FF3_WRAM_DIAGNOSTICS,offset,&ff3_state,216,1)||
+    !ff3_wram_copy(FF3_WRAM_DIAGNOSTICS,offset+216,slot+4,12,1)||
+    !ff3_wram_copy(FF3_WRAM_DIAGNOSTICS,offset+228,(void*)&native_pops,2,1)||
+    !ff3_wram_copy(FF3_WRAM_DIAGNOSTICS,offset+230,&zero,2,1)){memory_fault=1;ff3_error=27;return;}
+#else
+ uint8_t *p=native_snapshot[index];memcpy(p,&ff3_state,216);p+=216;memcpy(p,slot+4,12);p[12]=(uint8_t)native_pops;p[13]=native_pops>>8;
+#endif
+ native_published=index;
+}
 /* About three source ticks of lookahead absorb note/SFX decode peaks.
  * The next packet may extend this bound by one event interval. */
 static uint8_t full(void){return ((native_tail+1)&15)==native_head||FF3_AUDIO_IS_AHEAD(prepare_due,ff3_clock_now());}
@@ -86,14 +106,28 @@ static void prepare(void){uint8_t end=0,advanced=0;
  if(ff3_error){preparing=0;native_playing=0;TAC_REG=0;silence();return;}
  /* RAM snapshots are diagnostics, not audio work. Sample every eight logical
   * ticks; consumed output metadata still covers every queued event. */
- if(advanced&&(!(native_ticks&7)||end))publish();
+ if(advanced&&(!(native_ticks&7)||end)){
+#ifdef FF3_TEXT_AUDIO
+  snapshot_due=1;
+#else
+  publish();
+#endif
+ }
  native_tail=(native_tail+1)&15;
 }
 static void start(uint8_t test){uint8_t i;CRITICAL{TAC_REG=0;IF_REG&=~TIM_IFLAG;native_clock=0;native_head=native_tail=0;}silence();memset(&ff3_state,0,sizeof(ff3_state));ff3_backend_reset();native_ticks=native_events=0;native_source_hash=native_gb_hash=0;native_underruns=native_pops=native_max_late=0;native_done=0;for(i=0;i<12;i++)native_consumed[i]=0;prepare_due=next_vm=0;next_sweep=34;fraction=0;sweep_fraction=16;automatic=test;plan_index=pop_active=0;preparing=native_playing=1;native_request=0;
 #ifdef FF3_SCENE
 ff3_scene_init();
 #endif
-ff3_engine_init();while(preparing&&!full())prepare();if(!ff3_error)dispatch_due();if(native_playing){CRITICAL{TIMA_REG=TMA_REG=128;IF_REG&=~TIM_IFLAG;TAC_REG=5;}}}
+ff3_engine_init();
+#ifdef FF3_TEXT_AUDIO
+snapshot_due=0;
+#endif
+while(preparing&&!full())prepare();
+#ifdef FF3_TEXT_AUDIO
+if(snapshot_due){publish();snapshot_due=0;}
+#endif
+if(!ff3_error)dispatch_due();if(native_playing){CRITICAL{TIMA_REG=TMA_REG=128;IF_REG&=~TIM_IFLAG;TAC_REG=5;}}}
 #ifdef FF3_TEXT_AUDIO
 /* Fixed-bank cooperative service. Text code may call from any mapped bank;
  * the timer consumer never calls the producer or changes ROM/WRAM banks. */
@@ -105,7 +139,19 @@ void ff3_native_service(void) NONBANKED {uint8_t op,arg;native_busy=1;if(native_
   * Commands, event deadlines and the IRQ consumer are unchanged. */
  if(field.ready&&!field.pause&&!field.mode&&(int16_t)(prepare_due-ff3_clock_now())>136&&(int16_t)(ff3_clock_now()-field.deadline)>=0)break;
 #endif
- }native_busy=0;}
+ }
+ /* Diagnostics must not extend the refill loop by consuming its queue lead.
+  * Publish the latest completed event only after refill/yield. All consumed
+  * events are still observed independently; no game tick is skipped. */
+ if(snapshot_due&&!text_transfer_busy
+#ifdef FF3_EXPLORATION
+  /* Diagnostic copies are lower priority than a due movement picture.
+   * Require ~4.9ms until its logic deadline; coalesce pending observations
+   * under load. This never coalesces music/game ticks or output packets. */
+  &&(!field.ready||field.pause||field.mode||(!field.speed&&(int16_t)(field.deadline-ff3_clock_now())>20))
+#endif
+ ){publish();snapshot_due=0;}
+ native_busy=0;}
 void ff3_native_begin(void) NONBANKED {uint8_t i;NR52_REG=128;NR50_REG=0x77;NR51_REG=0xff;NR10_REG=0;NR30_REG=0;for(i=0;i<16;i++)((volatile uint8_t*)0xff30)[i]=ff3_resource_byte(6,4112u+i);NR30_REG=128;silence();set_interrupts(VBL_IFLAG|TIM_IFLAG);native_busy=1;
 #ifdef FF3_EXPLORATION
 start(0);

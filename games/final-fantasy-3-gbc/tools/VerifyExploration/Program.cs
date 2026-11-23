@@ -12,6 +12,8 @@ class Program {
   byte F(uint n)=>Core.GetMemoryValue(7,Addr("field")+n);void SetF(uint n,byte v)=>Core.SetMemoryValue(7,Addr("field")+n,v);
   string Mem(int type,uint a,int n){var b=new byte[n];Core.GetMemoryValues(type,a,a+(uint)n-1,b);return Convert.ToHexString(b).ToLowerInvariant();}
   string Bytes(string k,int n)=>Mem(7,Addr(k),n);
+ object MemoryResult(){uint floor=0xdcb0,untouched=0;while(floor+untouched<0xe000&&Core.GetMemoryValue(39,floor+untouched-0xc000)==0x5a)untouched++;return new{stackFloor=floor,stackBytes=0xe000-floor,untouchedBytes=untouched,watermarkUsedBytes=0xe000-floor-untouched,fault=Read("memory_fault"),probeDone=Read("memory_probe_done"),probeFailures=Num("memory_probe_failures",2),probeCases=Num("memory_probe_cases",2)};}
+
   void Write(string k,string hex){var b=Convert.FromHexString(hex);for(int i=0;i<b.Length;i++)Core.SetMemoryValue(7,Addr(k)+(uint)i,b[i]);}
   void Assert(bool p,string message){if(!p)throw new Exception(message+" field="+Bytes("field",56));}
   NativeLibrary.SetDllImportResolver(typeof(Core).Assembly,(n,a,p)=>n=="MesenCore.dll"?NativeLibrary.Load(Text("dll")):IntPtr.Zero);Directory.CreateDirectory(Text("home"));
@@ -24,7 +26,15 @@ class Program {
   }
   try{Core.InitDll();Core.InitializeEmu(Text("home"),IntPtr.Zero,IntPtr.Zero,true,true,true,true);Audit.ConfigureVideo();Core.SetEmulationConfig(new Core.Speed{speed=0,turbo=0,rewind=100});Assert(Core.LoadRom(Text("rom"),IntPtr.Zero),"ROM load");Core.InitializeDebugger();Core.Pause();Wait(()=>Core.IsExecutionStopped()&&Core.IsPaused());
    for(int i=0;i<600&&F(26)!=0xa5;i++)Step(1);Assert(F(26)==0xa5,"Boot ready");
-   if(c.TryGetProperty("fixtures",out var fixtures)){
+   if(c.TryGetProperty("memoryProbe",out var probe)&&probe.GetBoolean()){
+    SetF(27,1);Step(4);script=Audit.LoadScript("memory-audit",Text("auditPath"),Text("audit"),-1);Assert(script>=0,"Memory audit");
+    string state=Bytes("ff3_game_state",1024),map=Mem(39,0x1000,0x7f0),objects=Bytes("object_part1",192)+Bytes("object_part2",192);
+    Put("memory_probe_request",1);for(int i=0;Read("memory_probe_done")!=0xa5;i++){Assert(i<1500,"Memory probe timeout");Step(1);}
+    Assert(Num("memory_probe_failures",2)==0&&Num("memory_probe_cases",2)==2167,"Memory cases");
+    Assert(Bytes("ff3_game_state",1024)==state&&Mem(39,0x1000,0x7f0)==map&&Bytes("object_part1",192)+Bytes("object_part2",192)==objects,"Protected original state");
+    Assert(Num("native_underruns",2)==0&&Num("native_max_late",2)==0,"Probe audio continuity");
+    done=true;return;
+   }else if(c.TryGetProperty("fixtures",out var fixtures)){
     SetF(27,1);
     foreach(var job in fixtures.EnumerateArray()){
      Write("field",job.GetProperty("field").GetString()!);Write("object_part1",job.GetProperty("part1").GetString()!);Write("object_part2",job.GetProperty("part2").GetString()!);
@@ -32,7 +42,9 @@ class Program {
      var motion=job.TryGetProperty("motion",out var m)?Convert.FromHexString(m.GetString()!):new byte[7];SetF(73,motion[0]);SetF(74,motion[0]);SetF(32,motion[0]);SetF(33,motion[1]);for(uint j=0;j<5;j++)SetF(67+j,motion[j+2]);
      if(job.TryGetProperty("mapProperty",out var prop)){for(uint j=0;j<1024;j++)Core.SetMemoryValue(7,0xd000+j,1);for(uint j=0;j<256;j++)Core.SetMemoryValue(7,0xd687+j,0);Core.SetMemoryValue(7,0xd687,0x24);Core.SetMemoryValue(7,0xd689,prop.GetByte());Core.SetMemoryValue(7,0xd78a,job.GetProperty("fill").GetByte());}
      SetF(20,job.GetProperty("op").GetByte());
-     for(int i=0;F(20)!=0||F(47)!=0||F(65)!=0;i++){Assert(i<1000,"Fixture timeout "+units);Step(1000,0);}
+     // A stopped CPU may be inside a storage-bank copy. Restore bank 1
+     // before testing the request or reading/writing the next field fixture.
+     for(int i=0;(Core.GetMemoryValue(7,0xff70)&7)!=1||F(20)!=0||F(47)!=0||F(65)!=0;i++){Assert(i<1000,"Fixture timeout "+units);Step(1000,0);}
      var e=job.GetProperty("expected");foreach(var name in new[]{"field","part1","part2"}){string key=name=="field"?name:"object_"+name;Assert(Bytes(key,name=="field"?28:192)==e.GetProperty(name).GetString(),"6502 comparison "+units+" op="+job.GetProperty("op")+" "+name+" expected="+e.GetProperty(name).GetString());}
      if(e.TryGetProperty("motion",out var expectedMotion))Assert(Mem(7,Addr("field")+32,2)+Mem(7,Addr("field")+67,5)==expectedMotion.GetString(),"NPC scheduler state "+units);
      if(e.TryGetProperty("oam",out var expectedOam))Assert(Mem(44,0,160)==expectedOam.GetString(),"Original player animation OAM "+units);
@@ -42,7 +54,8 @@ class Program {
     done=true;
    }else{
     script=Audit.LoadScript("exploration-audit",Text("auditPath"),Text("audit"),-1);Assert(script>=0,"Audit script");Put("native_request",255);
-    void Frame(){Step(1);total++;for(int g=0;Read("native_irq_busy")!=0;g++){Assert(g<20000,"IRQ never yields");Step(17,0);}
+    void Frame(){Step(1);total++;for(int g=0;Read("native_irq_busy")!=0||(Core.GetMemoryValue(7,0xff70)&7)!=1;g++){Assert(g<20000,"IRQ never yields");Step(17,0);}
+     Assert(Read("memory_fault")==0,"Memory fault");
      Assert(F(16)==0&&F(39)==0&&Read("asset_error")==0&&Read("text_error")==0&&Read("npc_error")==0&&Read("ff3_error")==0&&Read("text_transfer_fault")==0,"Runtime fault");
      Assert(Num("native_underruns",2)==0&&Num("native_max_late",2)==0,"Audio timing late="+Num("native_max_late",2)+" underruns="+Num("native_underruns",2));
      foreach(uint a in new uint[]{0xd7f0,0xd940,0xdb60,0xdca0})Assert(Mem(7,a,16)==new string('a',0)+string.Concat(Enumerable.Repeat("a7",16)),"Memory guard "+a);
@@ -89,6 +102,6 @@ class Program {
     while(Read("native_done")==0){Walk("D",10,10);Walk("U",10,7);if(total>8500)throw new Exception("Audio schedule timeout");}
     done=true;Shot("completed");
    }
-  }finally{if(script>=0){CollectNpc();File.WriteAllLines(Text("output")+".npc.log",npcRecords.Values);File.WriteAllLines(Text("output")+".event.log",eventRecords.Values);var log=new StringBuilder(8000000);Audit.GetScriptLog(script,log,8000000);File.WriteAllText(Text("output")+".lua.log",log.ToString());}File.WriteAllText(Text("output"),JsonSerializer.Serialize(new{romSha256=Text("romSha256"),coreSha256=Text("coreSha256"),done,units,frames,shots}));Core.Stop();Core.Release();}
+  }finally{if(script>=0){CollectNpc();File.WriteAllLines(Text("output")+".npc.log",npcRecords.Values);File.WriteAllLines(Text("output")+".event.log",eventRecords.Values);var log=new StringBuilder(8000000);Audit.GetScriptLog(script,log,8000000);File.WriteAllText(Text("output")+".lua.log",log.ToString());}File.WriteAllText(Text("output"),JsonSerializer.Serialize(new{romSha256=Text("romSha256"),coreSha256=Text("coreSha256"),done,units,frames,shots,memory=MemoryResult()}));Core.Stop();Core.Release();}
  }
 }
