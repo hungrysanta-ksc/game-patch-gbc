@@ -3,8 +3,14 @@
 #include <string.h>
 #include <stddef.h>
 #include "text-window.h"
+#include "text-vblank.h"
 uint8_t text_visible,text_more,text_error,text_page,text_cache_count;
-uint16_t text_offset,text_cells[160],text_cache[128];
+uint16_t text_offset,text_cache[128];
+#ifdef FF3_TEXT_AUDIO
+uint16_t __at(0xd800) text_cells[160];
+#else
+uint16_t text_cells[160];
+#endif
 FF3TextContext text_context;
 typedef char context_abi[(sizeof(FF3TextContext)==8&&offsetof(FF3TextContext,item)==4)?1:-1];
 typedef struct {FF3Asset message,parent[3];uint16_t parent_offset[3],pending[7],last;uint8_t depth,count,pos;} Reader;
@@ -12,9 +18,8 @@ static Reader reader,saved;static uint16_t saved_offset;
 #define message reader.message
 static void checkpoint(void){saved=reader;saved_offset=text_offset;}
 static void rewind_word(void){reader=saved;text_offset=saved_offset;}
-static uint8_t tile[16],row[20];
 static const uint16_t palette[4]={RGB(1,2,8),RGB(1,2,8),RGB(12,15,23),RGB(31,31,31)};
-static uint8_t fail(uint8_t error){text_error=error;text_visible=0;text_more=0;VBK_REG=0;HIDE_WIN;return 0;}
+static uint8_t fail(uint8_t error){text_error=error;text_visible=0;text_more=0;VBK_REG=0;ff3_text_video(0);text_transfer_busy=0;return 0;}
 static uint8_t raw_word(uint16_t *value){uint8_t bytes[2];if(!ff3_asset_read(&message,text_offset,bytes,2))return fail(TEXT_FORMAT);*value=bytes[0]|((uint16_t)bytes[1]<<8);text_offset+=2;return 1;}
 static uint8_t lookup(uint16_t source_id,FF3Asset *out);
 /* 8C2C..8D6D uses 24-, then 16-, then 8-bit arithmetic. Preserve even the
@@ -27,7 +32,7 @@ void ff3_text_number(uint32_t value,uint8_t digits,uint16_t *out) BANKED {
  }
 }
 static uint8_t word(uint16_t *value){uint16_t op,arg,glyph;uint8_t slot,i,b[2];FF3Asset asset;uint32_t number;
- while(1){
+ while(1){ff3_text_service();
   if(reader.pos<reader.count){glyph=reader.pending[reader.pos++];if(glyph!=255)reader.last=glyph;*value=0x8000|glyph;return 1;}
   if(!raw_word(&op))return 0;
   if((op==0||op==10)&&reader.depth){reader.depth--;message=reader.parent[reader.depth];text_offset=reader.parent_offset[reader.depth];continue;}
@@ -55,8 +60,8 @@ static uint8_t word(uint16_t *value){uint16_t op,arg,glyph;uint8_t slot,i,b[2];F
   *value=op;return 1;
  }
 }
-static uint8_t cache(uint16_t glyph){uint8_t i;for(i=0;i<text_cache_count;i++)if(text_cache[i]==glyph)return i;if(text_cache_count==128)return 255;text_cache[text_cache_count]=glyph;return text_cache_count++;}
-static uint8_t page(void){uint8_t x=0,y=1,i,j,slot,lcdc;uint16_t w,arg,glyph;FF3Asset font;
+static uint8_t cache(uint16_t glyph){uint8_t left=text_cache_count;uint16_t *p=text_cache;ff3_text_service();while(left){if(*p++==glyph)return text_cache_count-left;left--;}if(text_cache_count==128)return 255;*p=glyph;return text_cache_count++;}
+static uint8_t page(void){uint8_t x=0,y=1,i,j,n,k;uint16_t w,arg,glyph,begin,elapsed;FF3Asset font;uint8_t *tile;
  text_more=0;text_cache_count=0;
  for(i=0;i<160;i++)text_cells[i]=255;
  for(i=0;i<20;i++){text_cells[i]=0xf8;text_cells[140+i]=0xfd;}
@@ -78,26 +83,27 @@ static uint8_t page(void){uint8_t x=0,y=1,i,j,slot,lcdc;uint16_t w,arg,glyph;FF3
  }
  // Avoid a spurious empty page when the last line exactly fills the window.
  if(text_more){checkpoint();if(!word(&w))return 0;if(w==0||w==10)text_more=0;else rewind_word();}
- for(i=0;i<160;i++)if(cache(text_cells[i])==255)return fail(TEXT_LAYOUT);
- /* Pattern staging uses only bank-1 9000..97FF. The original map owns bank 0;
-  * NPCs own bank-1 8000..8BFF. Palette 7 and map 9C00 belong to the window.
-  * LCD-off uploads are diagnostic only: no audio/frame-budget claim here. */
- lcdc=LCDC_REG;DISPLAY_OFF;LCDC_REG|=0x40;
- for(i=0;i<text_cache_count;i++){
-  glyph=text_cache[i];if(!ff3_asset_open(FF3_TEXT_GLYPHS,glyph>>10,&font)||!ff3_asset_read(&font,(glyph&1023)*16,tile,16)){LCDC_REG=lcdc;return fail(TEXT_ASSET);}
-  // Make background opaque against NPC sprites: index 0 -> 1, with equal color.
-  for(j=0;j<16;j+=2)tile[j]|=(uint8_t)~tile[j+1];
-  VBK_REG=1;set_bkg_data(i,1,tile);
+ memset(text_staging,0,256);
+ for(i=0;i<8;i++)for(j=0;j<20;j++){k=cache(text_cells[i*20+j]);if(k==255)return fail(TEXT_LAYOUT);text_staging[(uint16_t)i*32+j]=k;}
+ /* One 128-glyph cache. Hide only the window during its replacement; the LCD,
+  * map/NPC layers and timer remain running. No partially replaced page is shown. */
+ ff3_text_video(0);begin=sys_time;text_transfer_busy=1;
+ ff3_text_copy(0,0x9c00,text_staging,256);
+ memset(text_staging,0x8f,256);ff3_text_copy(1,0x9c00,text_staging,256);
+ for(i=0;i<text_cache_count;i+=n){
+  n=text_cache_count-i;if(n>16)n=16;
+  for(k=0;k<n;k++){
+   ff3_text_service();glyph=text_cache[i+k];tile=text_staging+(uint16_t)k*16;
+   if(!ff3_asset_open(FF3_TEXT_GLYPHS,glyph>>10,&font)||!ff3_asset_read(&font,(glyph&1023)*16,tile,16))return fail(TEXT_ASSET);
+   // Make background opaque against NPC sprites: index 0 -> 1, with equal color.
+   for(j=0;j<16;j+=2)tile[j]|=(uint8_t)~tile[j+1];
+  }
+  ff3_text_copy(1,0x9000u+(uint16_t)i*16,text_staging,(uint16_t)n*16);
  }
- for(i=0;i<8;i++){
-  for(j=0;j<20;j++){slot=cache(text_cells[i*20+j]);row[j]=slot;}
-  VBK_REG=0;set_win_tiles(0,i,20,1,row);
-  memset(row,0x8f,20);VBK_REG=1;set_win_tiles(0,i,20,1,row);
- }
- set_bkg_palette(7,1,palette);VBK_REG=0;WX_REG=7;WY_REG=80;
- text_visible=1;text_page++;LCDC_REG=lcdc|0xe0;return 1;
+ ff3_text_palette(palette);ff3_text_video(1);elapsed=sys_time-begin;text_transfer_frames+=elapsed;if(elapsed>text_transfer_max_frames)text_transfer_max_frames=elapsed;
+ text_transfer_busy=0;text_visible=1;text_page++;return 1;
 }
-uint8_t ff3_text_open(uint16_t id) BANKED {HIDE_WIN;text_visible=0;text_error=0;text_page=0;text_offset=0;memset(&reader,0,sizeof(reader));reader.last=65535;if(!ff3_asset_open(FF3_KOREAN_TEXT,id,&message))return fail(TEXT_ASSET);if(message.length&1)return fail(TEXT_FORMAT);return page();}
+uint8_t ff3_text_open(uint16_t id) BANKED {ff3_text_close();text_error=0;text_page=0;text_offset=0;memset(&reader,0,sizeof(reader));reader.last=65535;if(!ff3_asset_open(FF3_KOREAN_TEXT,id,&message))return fail(TEXT_ASSET);if(message.length&1)return fail(TEXT_FORMAT);return page();}
 static uint8_t lookup(uint16_t source_id,FF3Asset *out){
  FF3Asset index;uint8_t record[4];uint16_t lo=0,hi,mid,id,pointer;
  if(source_id>=1712)return fail(TEXT_SOURCE);
@@ -112,4 +118,4 @@ static uint8_t lookup(uint16_t source_id,FF3Asset *out){
 }
 uint8_t ff3_text_open_source(uint16_t source_id) BANKED {ff3_text_close();text_error=0;text_page=0;text_offset=0;memset(&reader,0,sizeof(reader));reader.last=65535;if(!lookup(source_id,&message))return 0;return page();}
 uint8_t ff3_text_next(void) BANKED {if(!text_visible)return fail(TEXT_FORMAT);if(!text_more){ff3_text_close();return 1;}return page();}
-void ff3_text_close(void) BANKED {HIDE_WIN;text_visible=0;text_more=0;}
+void ff3_text_close(void) BANKED {ff3_text_video(0);text_visible=0;text_more=0;}

@@ -20,6 +20,8 @@ export const files=[
  'docs/npc-dialogue.md','src/npc-dialogue.h','src/npc-dialogue.c','src/dialogue-viewer.c',
  'tools/dialogue-source.mjs','tools/dialogue-build.mjs','tools/dialogue-reference.mjs','tools/verify-dialogue.mjs','tools/build-dialogue-verifier.mjs',
  'tools/VerifyDialogue/VerifyDialogue.csproj','tools/VerifyDialogue/Program.cs','tests/dialogue.test.mjs',
+ 'docs/dialogue-audio.md','src/text-vblank.h','src/text-vblank.c','tools/text-audio-assets.mjs','tools/text-audio-audit.lua',
+ 'tools/verify-text-audio.mjs','tools/build-text-audio-verifier.mjs','tools/VerifyTextAudio/VerifyTextAudio.csproj','tools/VerifyTextAudio/Program.cs',
  'docs/port-plan.md','docs/audio-design.md','docs/audio-validation.md','docs/vgz-assessment.md','docs/timed-audio.md','docs/localization-inputs.md','docs/audio-backlog.md','docs/audio-control.md','docs/audio-channel.md',
  'spec/source.json','spec/toolchain.json','spec/port-policy.json',
  'src/audio-player.c','src/vgm-player.c','src/audio-control.c','src/audio-control.h','src/audio-control-test.c','src/audio-channel.c','src/audio-channel.h','src/audio-channel-test.c','tests/audio.test.mjs','tests/vgm.test.mjs','tests/timed-stream.test.mjs',

@@ -56,7 +56,7 @@ const actual=JSON.parse(await fs.readFile(output));check(actual.romSha256===romS
 const scene={world:d.world,map:d.map,x:d.x,y:d.y,phase:0,flags:0},obj=objectReference(data,assets,scene),background=objectRgb(assets,scene,obj),screenshots=(await fs.readdir(home+'/Screenshots')).filter(p=>p.endsWith('.png')).sort().map(p=>home+'/Screenshots/'+p);let shot=0,peak=0,baseVram;
 for(let i=0;i<requests.length;i++){const r=requests[i],e=expected[i],v=actual.observations[i],label=' request '+i,u16=x=>Buffer.from(x,'hex').readUInt16LE();
  check(v.error===(e.textError||0)&&(e.npcError===undefined||v.npcError===e.npcError),'Dialogue errors'+label+' '+JSON.stringify({expected:e.textError,npc:e.npcError,actual:v.error,npcActual:v.npcError}));
- check(v.bank===1&&(v.svbk&7)===1&&(v.vbk&1)===0&&!v.viewError&&v.guard==='a7'.repeat(16),'Dialogue memory/bank guard'+label+' view '+v.viewError);
+ check(!v.transferFault&&(v.lcdc&128)&&v.bank===1&&(v.svbk&7)===1&&(v.vbk&1)===0&&!v.viewError&&v.guard==='a7'.repeat(16),'Dialogue memory/bank guard'+label+' view '+v.viewError);
  check(v.state===e.state&&v.oam===obj.oam.toString('hex'),'Dialogue changed state/OAM'+label);check(u16(v.loads)===i+1,'Dialogue request/joypad edge count'+label);
  for(const [k,key]of [['npcEvent','npcEvent'],['npcActive','npcActive'],['visible','visible'],['more','more'],['page','page']])if(e[k]!==undefined)check(v[key]===e[k],k+label+' expected '+e[k]+' got '+v[key]);
  if(e.npcText!==undefined)check(u16(v.npcText)===e.npcText,'F0 string selection'+label);if(e.dialogue)check(v.dialogue===e.dialogue,'NPC copied 32 IDs'+label);

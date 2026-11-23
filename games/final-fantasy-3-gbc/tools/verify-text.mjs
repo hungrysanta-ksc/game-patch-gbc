@@ -44,7 +44,7 @@ let shot=0,peakCache=0,inputChecks=0,rejected=0;const fontCoverage=new Set();
 for(const [i,v]of actual.observations.entries()){
  const e=expected[i],r=requests[i],label=' request '+i,b=Buffer.from(v.vram,'hex'),u16=x=>Buffer.from(x,'hex').readUInt16LE();
  check(v.error===e.error,'Text error'+label+' expected '+e.error+' actual '+v.error);check(v.visible===+e.visible,'Text visibility'+label);check(u16(v.selection)===e.selected,'Text selected'+label);check(u16(v.loads)===i+2,'Text command/joypad edge count'+label);if(r.key)inputChecks++;
- check(!v.viewError&&v.bank===1&&(v.vbk&1)===0&&(v.svbk&7)===1&&v.guard==='a7'.repeat(16),'Text bank/WRAM guard'+label);
+ check(!v.transferFault&&(v.lcdc&128)&&!v.viewError&&v.bank===1&&(v.vbk&1)===0&&(v.svbk&7)===1&&v.guard==='a7'.repeat(16),'Text bank/WRAM guard'+label);
  check(v.state===initial.toString('hex')&&v.oam===obj.oam.toString('hex'),'Text changed GameState/OAM'+label);
  check(b.subarray(0x2000,0x2c00).equals(obj.graphics)&&b.subarray(0x800,0x1800).equals(Buffer.concat([tiles.subarray(2048),tiles.subarray(0,2048)])),'Text changed map/NPC patterns'+label);
  check(b.subarray(0x1800,0x1c00).equals(bgMap)&&b.subarray(0x3800,0x3c00).equals(bgAttr),'Text changed map tilemap'+label);
