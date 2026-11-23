@@ -15,7 +15,7 @@ export function npcOriginal(rom,op,f,a,b,layout,terrain,fill){
 }
 export function npcSprites(rom,f,a,b,slot){
  const c=npcCpu(rom,f,a,b);c.x=slot;
- if(f[19])c.m[0xf0]=f[74]??f[32]??0;
+ if(f[19]===1||f[19]===2)c.m[0xf0]=f[74]??f[32]??0;
  if(f[19]===2&&f[22]===slot&&!(a[slot+1]&0x30))c.m[0x700d+slot]|=128;
  c.call(0xb1ee);if(!c.m[0x26])return [];
  return Array.from({length:4},(_,q)=>{const i=0x200+q*4;return [c.m[i+3]-40,c.m[i]+1-48,(c.m[i+1]-32)&255,c.m[i+2]];});

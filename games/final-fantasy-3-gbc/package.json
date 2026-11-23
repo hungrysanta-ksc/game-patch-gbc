@@ -32,7 +32,9 @@
     "verify:dialogue-audio": "node tools/verify-text-audio.mjs",
     "build:exploration": "node tools/build-text.mjs --explore",
     "verify:exploration": "node tools/verify-exploration.mjs",
-    "verify:exploration-units": "node tools/verify-exploration.mjs --units"
+    "verify:exploration-units": "node tools/verify-exploration.mjs --units",
+    "build:event-motion": "node tools/build-text.mjs --event",
+    "verify:event-motion": "node tools/verify-event-motion.mjs"
   },
   "engines": {
     "node": ">=20"

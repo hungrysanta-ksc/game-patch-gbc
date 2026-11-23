@@ -1,6 +1,12 @@
 #pragma bank 15
 #include <string.h>
 #include "npc-dialogue.h"
+#ifdef FF3_EXPLORATION
+#include "exploration.h"
+#include "event-motion-data.h"
+uint8_t npc_execution[5];
+static uint8_t supported(uint8_t op){return op<192?((op&15)<10||(op&15)==12||(op&15)==13):(op>=240&&op<=243)||op==252||op==254||op==255;}
+#endif
 uint8_t npc_event,npc_dialogue[32],npc_error,npc_active,npc_world;
 uint16_t npc_pc,npc_text_id;
 static uint8_t record[64],*game;
@@ -27,9 +33,46 @@ uint8_t ff3_npc_start(uint8_t world,uint8_t id,uint8_t *state) BANKED {
  if(npc_event>=254||!read(0x600+(uint16_t)npc_event*2,p,2))return fail(31);
  scan=p[0]|((uint16_t)p[1]<<8);if(scan<0x8000||scan>=0xc000)return fail(31);npc_pc=scan-0x8000;scan=npc_pc;
  // Reject a partially supported event before displaying or mutating any flags.
- while(1){if(!read(scan++,&op,1))return 0;if(op==255)break;if(op<240||op>243)return fail(32);if(!read(scan++,&arg,1))return 0;if(op==240&&arg>=32)return fail(31);}
- npc_active=1;return ff3_npc_resume();
+ while(1){if(!read(scan++,&op,1))return 0;if(op==255)break;
+#ifdef FF3_EXPLORATION
+  if(!supported(op))return fail(32);if(op<228)continue;
+#else
+  if(op<240||op>243)return fail(32);
+#endif
+  if(!read(scan++,&arg,1))return 0;if(op==240&&arg>=32)return fail(31);}
+ npc_active=1;
+#ifdef FF3_EXPLORATION
+ npc_execution[0]=0;return 1;
+#else
+ return ff3_npc_resume();
+#endif
 }
+#ifdef FF3_EXPLORATION
+/* D219 fetch/repeat + A000 command. One call per field logic frame. FE repeats
+ * the PREVIOUS command, and consumes its own frame without dispatching it. */
+uint8_t ff3_npc_frame(void) BANKED {
+ uint8_t *e=npc_execution,op,arg;
+ if(text_visible)return fail(33);if(!npc_active)return !npc_error;
+ if(e[0])e[0]--;
+ else{if(!read(npc_pc,&op,1))return 0;
+  /* D24F reads one byte ahead even for FF at BFFF: C000 is fixed code. */
+  if(npc_pc==0x3fff)arg=EVENT_FIXED_LOOKAHEAD;else if(!read(npc_pc+1,&arg,1))return 0;
+  if(op==254){e[0]=arg-1;npc_pc+=2;return 1;}
+  e[1]=op;e[2]=arg;npc_pc+=(op>=228&&op<=252)?2:1;
+ }
+ op=e[1];arg=e[2];if(!supported(op))return fail(32);
+ if(op<192){e[0]+=ff3_npc_command(op);return !field.error;}
+ if(op==252){if(!(e[4]&128)){e[4]=128;e[3]=arg;}if(e[3]--){npc_pc-=2;}else e[4]=0;return 1;}
+ if(op==255){npc_active=0;return 1;}
+ if(op==242||op==243){ff3_npc_flag(game,arg,op==242);return 1;}
+ if(op==240||op==241){if(op==240&&arg>=32)return fail(31);arg=op==240?npc_dialogue[arg]:arg;
+  /* $76=0 is no pending dialogue, not string zero. */
+  if(!arg)return 1;npc_text_id=op==240?(npc_world?768u:512u)+arg:arg;
+  if(!ff3_text_open_source(npc_text_id))return fail(34);return 1;
+ }
+ return fail(32);
+}
+#endif
 uint8_t ff3_npc_resume(void) BANKED {uint8_t op,arg;if(text_visible)return fail(33);if(!npc_active)return !npc_error;
  while(1){if(!read(npc_pc++,&op,1))return 0;if(op==255){npc_active=0;return 1;}if(!read(npc_pc++,&arg,1))return 0;
   if(op==240||op==241){npc_text_id=op==240?(npc_world?768u:512u)+npc_dialogue[arg]:arg;if(!ff3_text_open_source(npc_text_id))return fail(34);return 1;}

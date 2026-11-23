@@ -54,7 +54,7 @@ static uint8_t npc_object(uint8_t *o,uint8_t n,uint8_t i){
   /* A walking phase can shift one pixel left/up; retain the edge candidates. */
   if(field.face!=i&&(px<=-16||px>=161||py<=-16||py>=145))return n;
   pose=(((uint16_t)a[15]<<8)|a[14])-0xb41a;
-  base=i;type=a[1]&0xf0;clock=field.mode?field.dialogue_frame:field.frame;
+  base=i;type=a[1]&0xf0;clock=(field.mode==1||field.mode==2)?field.dialogue_frame:field.frame;
   if(!type)phase=((a[6]|a[7])<<1)&8;
   else if(!(type&0x40))phase=0;
   else{if(type&128)clock=(type&16)?clock<<1:clock>>1;phase=clock&8;if((type&0x50)==0x50&&(clock&16))base-=8;}
@@ -71,7 +71,7 @@ static uint8_t objects(uint8_t *o){
  if(phase){if(field.suby)px--;else py--;}
  n=quad(o,n,px,py,192,field_player_poses+pose,field.current);
  if(!field.mode&&npc_draw_valid)swap_npc_draw();
- for(slot=0;slot<12;slot++){i=(!field.mode&&(field.frame&1))?176-slot*16:slot*16;if(!object_part1[i])continue;
+ for(slot=0;slot<12;slot++){i=((field.mode==0||field.mode==3)&&(field.frame&1))?176-slot*16:slot*16;if(!object_part1[i])continue;
   n=npc_object(o,n,i);
  }
  if(!field.mode&&npc_draw_valid)swap_npc_draw();

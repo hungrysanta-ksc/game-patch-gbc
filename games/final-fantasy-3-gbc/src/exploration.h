@@ -17,6 +17,7 @@ typedef struct {
  uint8_t npc_cursor,npc_rng,npc_tile,reserved_x,reserved_y;
  uint8_t npc_busy;
  uint8_t frame,dialogue_frame;
+ uint8_t event_busy;
 } FF3Exploration;
 extern volatile FF3Exploration __at(0xdb70) field;
 extern uint8_t __at(0xdc00) field_oam[160];
@@ -31,6 +32,7 @@ void ff3_field_tick(void) BANKED;
 void ff3_field_init(void) BANKED;
 void ff3_npc_pixels(void) BANKED;
 void ff3_npc_schedule(void) BANKED;
+uint8_t ff3_npc_command(uint8_t op) BANKED;
 uint8_t ff3_field_render(uint8_t boot) BANKED;
 void ff3_field_video_init(void) NONBANKED;
 void ff3_field_strip(uint16_t address,uint8_t stride) NONBANKED;

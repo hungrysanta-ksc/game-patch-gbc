@@ -8,4 +8,9 @@ uint8_t ff3_npc_select(uint8_t world,uint8_t id,uint8_t *state) BANKED;
 uint8_t ff3_npc_start(uint8_t world,uint8_t id,uint8_t *state) BANKED;
 uint8_t ff3_npc_resume(void) BANKED;
 void ff3_npc_flag(uint8_t *state,uint8_t id,uint8_t set) BANKED;
+#ifdef FF3_EXPLORATION
+/* $17,$70,$71,$74,$75; wait scratch persists across event entry (C72C). */
+extern uint8_t npc_execution[5];
+uint8_t ff3_npc_frame(void) BANKED;
+#endif
 #endif

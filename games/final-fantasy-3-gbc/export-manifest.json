@@ -3,6 +3,30 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "docs/event-motion.md",
+      "bytes": 7391,
+      "sha256": "c178e42ec666ee2a051d21936bcccafbc6b40b44e6e270f00eaa8b111966084b",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/event-motion-source.mjs",
+      "bytes": 3712,
+      "sha256": "4619282a4abf756492ccc72dc81c7c83da9890b335d9f87801c38a7a94eec8ac",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/event-motion-audit.lua",
+      "bytes": 883,
+      "sha256": "ed7f399d88ffdc8953f5a613addc150eb0fa17740de9efcc34fb6a2a914fc7bc",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-event-motion.mjs",
+      "bytes": 8353,
+      "sha256": "6ff1486537fdc7f4724cd8375693ec6809f03d3ce2d40f605ac9f85478c46b5b",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": ".gitattributes",
       "bytes": 14,
       "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
@@ -22,8 +46,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 16069,
-      "sha256": "e5562d383249d1ac405959307b484f51b0f3ce5521ceeb0d8a11dc90f2181f1a",
+      "bytes": 16327,
+      "sha256": "16cac0783ab70209b1c74e793e0cd1be2a9aa591b5d58d7811125baac20c055d",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -34,20 +58,20 @@
     },
     {
       "path": "local.example.json",
-      "bytes": 472,
-      "sha256": "6910a0106647b02a888c348a598027a9315bc00a0734bf11451c116668fcea96",
+      "bytes": 630,
+      "sha256": "cf2eb11755ff147e22dad4341c8908a165a19729c9ef13e7a5cd936da1e79079",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "package.json",
-      "bytes": 1967,
-      "sha256": "547605a37ccc934ba60188aa923089ac115e93f5b8e4b04eeeb867e582f0b9ff",
+      "bytes": 2095,
+      "sha256": "0d8e0756c49987509a7ec6ca2abd41eee25f9248de0b84de696bfb415a4ad2f5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 26912,
-      "sha256": "4d603e129e13663efeea743eaed6060179325e43e5d3f54570269bbf074230f9",
+      "bytes": 27381,
+      "sha256": "5a276b35f55e21ce796401c2c6f566e4701860fd1ce19cd053e0154f9880b812",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -394,8 +418,8 @@
     },
     {
       "path": "tools/build-text.mjs",
-      "bytes": 8872,
-      "sha256": "086b2583fccf9b38599a6d0e30485be0da392b420647cc508abeb6849c801b09",
+      "bytes": 9534,
+      "sha256": "dcb319d27e35bd1c8427f4b263b00a737de9bfb3488be2bb9046e149a1335071",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -436,14 +460,14 @@
     },
     {
       "path": "src/npc-dialogue.h",
-      "bytes": 497,
-      "sha256": "4118ef9e2790c2dc9915c60440a32c441de205c03378745dc212934660685a60",
+      "bytes": 672,
+      "sha256": "2d9dee707773922088384fea8b5414dae1cde0f48e8015b358e37c853fc7ab54",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/npc-dialogue.c",
-      "bytes": 2734,
-      "sha256": "3cc589753f0fc9202a947af0c7531d24374c3d6c77f25680a2f6f0a4e61113bd",
+      "bytes": 4409,
+      "sha256": "ca8d88ea1c9f7ed51a51c08b0445f7c1c5641088fe722c23a0f3892867d556b9",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -562,8 +586,8 @@
     },
     {
       "path": "src/exploration.h",
-      "bytes": 1684,
-      "sha256": "903cf7efab5b82bcf64f997f9ebb2ddf1e5c6f36e9e4a62e4273a768cfb7d955",
+      "bytes": 1749,
+      "sha256": "ec983c95723f534f335e9dfa21f9b16ca7348010a2b677c8d68e78bca8e52aab",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -574,8 +598,8 @@
     },
     {
       "path": "src/exploration-render.c",
-      "bytes": 6792,
-      "sha256": "2282b3552d2cd52bdf5ba1aedc0d18e38e4ca45800c5520aeb5bc9c9ac072fa1",
+      "bytes": 6831,
+      "sha256": "348faf8100c0425fa623792bd0091486e42ea04b2db65ebb600a49a2276c5f7d",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -586,26 +610,26 @@
     },
     {
       "path": "src/exploration-viewer.c",
-      "bytes": 4043,
-      "sha256": "1a436d8c915daaee089a2f7dfcfe54d37414ccc48180350b57ff8bfacf472fbf",
+      "bytes": 4854,
+      "sha256": "e6c829299c1e6e73cd32aa7cefbce6034d4a3bfb97faea5eb8b6c093b1a36fb5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/exploration-assets.mjs",
-      "bytes": 2130,
-      "sha256": "7bb08f345a7e7a7dfa3419ea3bbb352b92f5d570360262d5accdcaedba92a822",
+      "bytes": 2204,
+      "sha256": "e4efbff2c84ed14989d24c796ea15a6191194ce417ffe4f601983692f8499c71",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/exploration-source.mjs",
-      "bytes": 4298,
-      "sha256": "d5b3b6b3d810f59fe1a62f0e05bef86a68334290079c8fb5963b22134885357c",
+      "bytes": 4377,
+      "sha256": "dcadc8480b17c019b84210f2d7a1913409a80da46d0da34a5464ad3827ac4a61",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/exploration-pixels.mjs",
-      "bytes": 2930,
-      "sha256": "a9b197635ac2baf9db780143678d39e8697888548c39e962f5ed3b87b69a01e0",
+      "bytes": 2977,
+      "sha256": "894148b419f443c5c38786768761340c74733fd0a3c3e681cc03647d80d07597",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -634,8 +658,8 @@
     },
     {
       "path": "tools/VerifyExploration/Program.cs",
-      "bytes": 9416,
-      "sha256": "ca9d8d6f08f7e694593c2613b7d876a18972fcf6acd1e0624695dd11e000bdff",
+      "bytes": 11495,
+      "sha256": "0891af0318d499c00ec13194a364cf9957b2fdc48b807670b5cc8659848d382a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -652,14 +676,14 @@
     },
     {
       "path": "src/npc-motion.c",
-      "bytes": 2719,
-      "sha256": "d04764f999c55ec2879edc2286cfbbcf9103c0034031e570287000ce11ff6832",
+      "bytes": 3619,
+      "sha256": "910ba2e3a53203526842d7512f6905309f2ddc9ee991aa4ded6ca4a6326bb569",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/npc-motion-source.mjs",
-      "bytes": 7264,
-      "sha256": "9293f877f96013967ffd63cf211c706e24264c746c03a1950f90ed392c964e43",
+      "bytes": 7279,
+      "sha256": "db567b47d8c3ee2aae186fad446a63893c8b502c625b817e42363ae1dd3d9e50",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -700,8 +724,8 @@
     },
     {
       "path": "docs/localization-inputs.md",
-      "bytes": 3175,
-      "sha256": "397e62409dbca1edc754a4054dc9ad82479787b4c13e4ef7da67796a26658c2c",
+      "bytes": 3495,
+      "sha256": "0a78380876de6c0fe761d4dc226a37d709b61dae731acd091da6a8fcc379bf65",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -868,8 +892,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 5692,
-      "sha256": "32b8bb1a3ba0c98491dcc05fdc89837b81a77bd9b50f0d313d44b1f61662c3a5",
+      "bytes": 5812,
+      "sha256": "7f270e889c75d9f0360ee018100d3158c0bc9c333c3c9de486056a010735b425",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
