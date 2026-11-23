@@ -11,5 +11,10 @@ uint8_t ff3_text_open_source(uint16_t source_id) BANKED;
 uint8_t ff3_text_next(void) BANKED;
 void ff3_text_close(void) BANKED;
 extern uint8_t text_visible,text_more,text_error,text_page,text_cache_count;
-extern uint16_t text_offset,text_cells[160],text_cache[128];
+extern uint16_t text_offset,text_cache[128];
+#ifdef FF3_TEXT_AUDIO
+extern uint16_t __at(0xd800) text_cells[160];
+#else
+extern uint16_t text_cells[160];
+#endif
 #endif

@@ -27,7 +27,9 @@
     "build:text": "node tools/build-text.mjs",
     "verify:text": "node tools/verify-text.mjs",
     "build:dialogue": "node tools/build-text.mjs --dialogue",
-    "verify:dialogue": "node tools/verify-dialogue.mjs"
+    "verify:dialogue": "node tools/verify-dialogue.mjs",
+    "build:dialogue-audio": "node tools/build-text.mjs --audio",
+    "verify:dialogue-audio": "node tools/verify-text-audio.mjs"
   },
   "engines": {
     "node": ">=20"

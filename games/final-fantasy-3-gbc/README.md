@@ -14,7 +14,9 @@ NES 일본판 FF3의 게임 규칙과 데이터를 유지하면서 GBC용 실행
 
 [원작 문자열·한글 창](docs/text-window.md)은 원작 포인터/제어 코드를 분석하고 검수된 비공개 번역을 승인된 7×7 폰트로 맵/NPC 위에 표시합니다. `npm run build:text`로 `build/text/ff3-text-viewer.gbc`를 만듭니다. A는 다음 페이지/닫기/재열기, B는 닫기, 좌우는 검수 대사 선택입니다. `local.json.text`에 비공개 글꼴·번역·대응 파일이 필요합니다.
 
-[NPC 조건·대사 선택·이름/아이템/금액 치환](docs/npc-dialogue.md)을 후속 진단 ROM에 연결했습니다. `local.json.dialogue`의 검수된 비공개 입력으로 `npm run build:dialogue`를 실행하면 `build/dialogue/ff3-dialogue-viewer.gbc`가 생성됩니다. A/B는 NPC 대화/페이지 확인, START는 검사 플래그 전환, SELECT는 치환 예시입니다. 일반 NPC 448개의 조건을 원작 코드와 대조하며, 검수된 두 분기는 실제 이벤트와 문자열 ID를 거쳐 한글 창으로 이어집니다. 미구현 이벤트는 실행 전에 거부합니다. 정상 이동·접근 판정, 선택지, 한글 이름 입력/저장과 사운드 동시 창 갱신은 다음 범위입니다.
+[NPC 조건·대사 선택·이름/아이템/금액 치환](docs/npc-dialogue.md)을 후속 진단 ROM에 연결했습니다. `local.json.dialogue`의 검수된 비공개 입력으로 `npm run build:dialogue`를 실행하면 `build/dialogue/ff3-dialogue-viewer.gbc`가 생성됩니다. A/B는 NPC 대화/페이지 확인, START는 검사 플래그 전환, SELECT는 치환 예시입니다. 일반 NPC 448개의 조건을 원작 코드와 대조하며, 검수된 두 분기는 실제 이벤트와 문자열 ID를 거쳐 한글 창으로 이어집니다. 미구현 이벤트는 실행 전에 거부합니다. 정상 이동·접근 판정, 선택지, 한글 이름 입력/저장은 다음 범위입니다.
+
+[대사창 갱신과 원작 사운드의 동시 부하 검사](docs/dialogue-audio.md)를 추가했습니다. `npm run build:dialogue-audio`로 `build/dialogue-audio/ff3-dialogue-audio.gbc`를 만듭니다. LCD를 켜 둔 채 한글 글꼴과 창을 VBlank DMA로 갱신하고, 같은 원작 음악·효과음·페이드 순서를 창 부하 유무로 비교합니다. A/B·START·SELECT 조작은 NPC 진단 ROM과 같습니다. 원작 악보/효과음을 직접 해석하며 새 녹음은 만들지 않습니다.
 
 청취 결과에서 잡음과 음색 차이가 지적되어, 사용자 결정에 따라 **음색 조정은 보류하고 원작 로직 이식을 진행**합니다. [보류 기록](docs/audio-backlog.md)
 

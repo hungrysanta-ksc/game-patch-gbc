@@ -83,6 +83,12 @@ static void start(uint8_t test){uint8_t i;CRITICAL{TAC_REG=0;IF_REG&=~TIM_IFLAG;
 ff3_scene_init();
 #endif
 ff3_engine_init();while(preparing&&!full())prepare();if(!ff3_error)dispatch_due();if(native_playing){CRITICAL{TIMA_REG=TMA_REG=128;IF_REG&=~TIM_IFLAG;TAC_REG=5;}}}
+#ifdef FF3_TEXT_AUDIO
+/* Fixed-bank cooperative service. Text code may call from any mapped bank;
+ * the timer consumer never calls the producer or changes ROM/WRAM banks. */
+void ff3_native_service(void) NONBANKED {uint8_t op,arg;native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_playing){op=native_request;arg=native_argument;start(0);native_request=op;native_argument=arg;}while(preparing&&!full())prepare();native_busy=0;}
+void ff3_native_begin(void) NONBANKED {uint8_t i;NR52_REG=128;NR50_REG=0x77;NR51_REG=0xff;NR10_REG=0;NR30_REG=0;for(i=0;i<16;i++)((volatile uint8_t*)0xff30)[i]=ff3_resource_byte(6,4112u+i);NR30_REG=128;silence();set_interrupts(VBL_IFLAG|TIM_IFLAG);native_busy=1;start(1);native_busy=0;native_ready=0xa5;}
+#else
 void main(void){uint8_t i,keys,old=0,pressed,frame=0,selection=0x20,mode=0,op,arg;ff3_platform_init();cpu_fast();set_bkg_palette(0,1,palette);NR52_REG=128;NR50_REG=0x77;NR51_REG=0xff;NR10_REG=0;NR30_REG=0;for(i=0;i<16;i++)((volatile uint8_t*)0xff30)[i]=ff3_resource_byte(6,4112u+i);NR30_REG=128;silence();
 #ifndef FF3_SCENE
 text("FF3 NATIVE AUDIO\nORIGINAL ROM DATA\n\nSONG 32\n\nA REQUEST B STOP\nL/R SELECT ID\nSELECT SONG/SFX\nUP FADE DOWN RESUME\nSTART AUTO CHECK\n\n65 SONGS / 97 SFX\n");set_bkg_palette(0,1,palette);SHOW_BKG;DISPLAY_ON;
@@ -121,3 +127,4 @@ native_busy=0;native_ready=0xa5;
   __asm halt __endasm;
  }
 }
+#endif
