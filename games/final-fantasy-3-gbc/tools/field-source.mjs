@@ -6,6 +6,7 @@ const rgb=('666666 002A88 1412A7 3B00A4 5C007E 6E0040 6C0600 561D00 333500 0B480
 'ADADAD 155FD9 4240FF 7527FE A01ACC B71E7B B53120 994E00 6B6D00 388700 0C9300 008F32 007C8D 000000 000000 000000 '+
 'FFFEFF 64B0FF 9290FF C676FF F36AFF FE6ECC FE8170 EA9E22 BCBE00 88D800 5CE430 45E082 48CDDE 4F4F4F 000000 000000 '+
 'FFFEFF C0DFFF D3D2FF E8C8FF FBC2FF FEC4EA FECCC5 F7D8A5 E4E594 CFEF96 BDF4AB B3F3CC B5EBF2 B8B8B8 000000 000000').split(' ').map(s=>[0,2,4].map(i=>parseInt(s.slice(i,i+2),16)>>3)).map(([r,g,b])=>r|(g<<5)|(b<<10));
+export function cgbPalette(indices){const out=Buffer.alloc(indices.length*2);for(const [i,v]of indices.entries()){check(v<64,'Invalid NES color');out.writeUInt16LE(rgb[v],i*2);}return out;}
 export function fieldSource(rom){
  const id=0x16,props=rom.subarray(0x4010+id*16,0x4020+id*16),layout=rom[0xa10+id],set=rom[0xc10+id],tileset=props[0]>>5;
  const compressedOffset=0x22010+rom.readUInt16LE(0x22010+layout*2),map=Buffer.alloc(1024);let pos=compressedOffset,n=0;
