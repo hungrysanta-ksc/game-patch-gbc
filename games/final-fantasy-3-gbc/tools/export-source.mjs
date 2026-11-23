@@ -1,6 +1,9 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/render-budgets.md','src/render-budget-probe.c','tests/render-budget.test.mjs',
+ 'tools/render-budget-source.mjs','tools/render-budget-pixels.mjs','tools/render-budget.mjs',
+ 'tools/build-render-budget.mjs','tools/verify-render-budget.mjs','tools/VerifyRenderBudget/VerifyRenderBudget.csproj','tools/VerifyRenderBudget/Program.cs',
  'docs/memory-lifetimes.md','src/memory.h','src/memory.c','src/memory-probe.c',
  'tools/memory-layout.mjs','tools/memory-audit.lua','tools/memory-audit.mjs','tools/verify-memory.mjs',
  'docs/event-motion.md','tools/event-motion-source.mjs','tools/event-motion-audit.lua','tools/verify-event-motion.mjs',
