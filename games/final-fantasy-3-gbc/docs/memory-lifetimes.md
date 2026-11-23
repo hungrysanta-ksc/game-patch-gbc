@@ -149,6 +149,11 @@ IRQ 진입 은행과 시간을 읽는다. 기존 음원 APU 쓰기·원작 상�
 
 ## 근거
 
+후속 [합성 핵심 루틴 진단](composition-kernel.md)은 별도 빌드에서 `$D800..D94C`를 입력으로,
+기존 `$D950` 스테이징 중 48바이트를 출력으로 사용한다. 비재진입 커널의 고정 scratch는
+25바이트다. 이 진단의 링크/가드/은행/스택 검사는 제품의 대사·탐색 버퍼와 동시 소유가
+가능하다는 뜻이 아니다. 제품 타일 캐시를 통합할 때 위 활성 모드 소유권에 다시 배치한다.
+
 - 사양: [Pan Docs의 SVBK](https://github.com/gbdev/pandocs/blob/master/src/CGB_Registers.md#ff70--svbkwbk-cgb-mode-only-wram-bank). 고정 은행 0과 선택 창 1–7의 구분. 사이트 직접 열기/다운로드가 실패해 같은 문서의 GitHub 원문으로 확인했다.
 - 도구: [GBDK 코딩 지침](https://gbdk.org/docs/api/docs_coding_guidelines.html). 고정 4.5.0 도구의 실제 생성 코드도 별도로 검사하며, 최신 웹 문서를 ABI 증거로 대체하지 않는다.
 - 원작 구조: [고정 참조 리비전](https://github.com/everything8215/ff3/tree/1acef8117120ff891003de249b1a74bc8d94d674)의 RAM 지도와 [원작 상태/RNG 소비자 대조](state-save-rng.md). 주석 지도만으로 미래 전투 메모리 완료를 주장하지 않는다.

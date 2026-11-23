@@ -1,6 +1,9 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/composition-kernel.md','src/composition-kernel.h','src/composition-kernel.c','src/composition-kernel-probe.c','tests/composition-kernel.test.mjs',
+ 'tools/composition-kernel.mjs','tools/build-composition-kernel.mjs','tools/verify-composition-kernel.mjs','tools/composition-kernel-audit.lua',
+ 'tools/VerifyCompositionKernel/VerifyCompositionKernel.csproj','tools/VerifyCompositionKernel/Program.cs',
  'docs/npc-composition.md','src/npc-composition-probe.c','tests/npc-composition.test.mjs',
  'tools/npc-composition.mjs','tools/npc-composition-source.mjs','tools/build-npc-composition.mjs','tools/audit-npc-composition.mjs',
  'docs/render-budgets.md','src/render-budget-probe.c','tests/render-budget.test.mjs',
