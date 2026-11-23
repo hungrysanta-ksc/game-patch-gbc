@@ -53,9 +53,9 @@ function equalPixels(a,b){check(JSON.stringify(raster(a))===JSON.stringify(raste
 function quads(c,start,count){return Array.from({length:count},(_,i)=>{const p=start+i*4;return {x:c.m[p+3],y:c.m[p]+1,tile:c.m[p+1],attr:c.m[p+2],slot:(p-0x200)/4,h:8};});}
 
 export function magicDisplayAudit(rom,battle){
- const rows=[],partyCpu=cpu(rom);partyCpu.m.set([192,192,192,192],0xc0);partyCpu.m.set([40,72,104,136],0xc4);partyCpu.call(0x90d8);
+ const rows=[],partyCpu=cpu(rom,0x17);partyCpu.call(0xb4ac);check(partyCpu.m.subarray(0x7d83,0x7d87).every(v=>v===2),'Original normal party pose');partyCpu.banks=[0x32,0x33,0x3e,0x3f];partyCpu.m[0x7cf6]=0x19;partyCpu.m.set([192,192,192,192],0xc0);partyCpu.m.set([40,72,104,136],0xc4);partyCpu.call(0x90d8);
  const partyRaw=Buffer.from(partyCpu.m.subarray(0x2a0,0x300));
- const party=quads(partyCpu,0x2a0,24).map((q,i)=>({...q,x:q.x-192+128,y:q.y-[40,72,104,136][Math.floor(i/6)]+[9,33,57,81][Math.floor(i/6)],palette:0,owner:'party-'+Math.floor(i/6)}));
+ const party=quads(partyCpu,0x2a0,24).map((q,i)=>({...q,x:q.x-192+128,y:q.y-[40,72,104,136][Math.floor(i/6)]+[10,34,58,82][Math.floor(i/6)],palette:0,owner:'party-'+Math.floor(i/6)}));
  const party16=pairObjects(party);let comparisons=0,pixelComparisons=0;
  for(const script of battle.magicScripts){
   const graphicsCpu=cpu(rom),trace=recordTransfers(graphicsCpu);graphicsCpu.m[0x7e88]=script.id;graphicsCpu.call(0xaf6f);graphicsCpu.call(0xb589);

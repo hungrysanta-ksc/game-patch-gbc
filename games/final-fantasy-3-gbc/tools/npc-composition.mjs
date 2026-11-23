@@ -28,9 +28,20 @@ export function sharedCompositionPalettes(scenes,{maxPalettes=8}={}){
  return choosePalettes(cells,Array.from({length:scenes[0].objPalette.length/8},(_,p)=>Array.from({length:4},(_,i)=>scenes[0].objPalette.readUInt16LE((p*4+i)*2))),maxPalettes);
 }
 export function compileComposition(scene,{palettes}={}){
- const width=scene.width??160,height=scene.height??144,cols=width/8,rows=height/8;const pixels=composePixels(scene),objPalettes=[],cells=[];
- for(let i=0;i<scene.objPalette.length/8;i++)objPalettes.push(Array.from({length:4},(_,j)=>scene.objPalette.readUInt16LE((i*4+j)*2)));
- for(let ty=0;ty<(scene.height??144)/8;ty++)for(let tx=0;tx<(scene.width??160)/8;tx++)cells.push(Array.from({length:64},(_,i)=>pixels[(ty*8+(i>>3))*(scene.width??160)+tx*8+(i&7)]));
+ return compilePixelComposition(composePixels(scene),scene.objPalette,{width:scene.width??160,height:scene.height??144,palettes});
+}
+export function pixelCompositionPalettes(images,objPalette,{width=160,height=144,maxPalettes=8}={}){
+ check(images.length>0&&width>0&&height>0&&width%8===0&&height%8===0,'Pixel palette dimensions');check([16,32].includes(objPalette.length)&&maxPalettes>=1&&maxPalettes<=8,'Pixel palette budget');
+ const cells=new Map();for(const pixels of images){check(pixels.length===width*height,'Pixel dimensions');for(let ty=0;ty<height/8;ty++)for(let tx=0;tx<width/8;tx++){
+  const values=[...new Set(Array.from({length:64},(_,i)=>pixels[(ty*8+(i>>3))*width+tx*8+(i&7)]))].sort((a,b)=>a-b);cells.set(values.join(),values);
+ }}return choosePalettes([...cells.values()],Array.from({length:objPalette.length/8},(_,p)=>Array.from({length:4},(_,i)=>objPalette.readUInt16LE((p*4+i)*2))),maxPalettes);
+}
+export function compilePixelComposition(pixels,objPalette,{width=160,height=144,palettes}={}){
+ check(width>0&&height>0&&width%8===0&&height%8===0&&pixels.length===width*height,'Pixel composition dimensions');check(pixels.every(v=>Number.isInteger(v)&&v>=0&&v<=32767),'RGB555 pixel range');
+ check([16,32].includes(objPalette.length),'Residual palette format');
+ const cols=width/8,rows=height/8,objPalettes=[],cells=[];
+ for(let i=0;i<objPalette.length/8;i++)objPalettes.push(Array.from({length:4},(_,j)=>objPalette.readUInt16LE((i*4+j)*2)));
+ for(let ty=0;ty<rows;ty++)for(let tx=0;tx<cols;tx++)cells.push(Array.from({length:64},(_,i)=>pixels[(ty*8+(i>>3))*width+tx*8+(i&7)]));
  const bgPalettes=palettes??choosePalettes(cells,objPalettes),patterns=[],patternIds=new Map(),map=Buffer.alloc(cols*rows),attributes=Buffer.alloc(cols*rows),sprites=[],objTiles=[],lines=new Uint8Array(height);
  check(bgPalettes.length>0&&bgPalettes.length<=8&&bgPalettes.every(p=>p.length===4&&p.every(v=>Number.isInteger(v)&&v>=0&&v<=32767)),'Composition palette format');
  for(let ty=0;ty<rows;ty++)for(let tx=0;tx<cols;tx++){
@@ -51,7 +62,7 @@ export function compileComposition(scene,{palettes}={}){
  check(Math.max(...lines)<=10,'Composition scanline capacity');
  const oam=Buffer.alloc(160);sprites.forEach((s,i)=>oam.set([s.y+16,s.x+8,s.tile,8+s.palette],i*4));
  const palette=Buffer.alloc(64);bgPalettes.forEach((p,i)=>p.forEach((v,j)=>palette.writeUInt16LE(v,(i*4+j)*2)));
- return {width,height,pixels,background:Buffer.concat(patterns),map,attributes,bgPalette:palette,objPalette:scene.objPalette,objGraphics:Buffer.concat(objTiles),oam,sprites,stats:{bgTiles:patterns.length,bgPalettes:bgPalettes.length,objects:sprites.length,peak:Math.max(...lines)}};
+ return {width,height,pixels,background:Buffer.concat(patterns),map,attributes,bgPalette:palette,objPalette,objGraphics:Buffer.concat(objTiles),oam,sprites,stats:{bgTiles:patterns.length,bgPalettes:bgPalettes.length,objects:sprites.length,peak:Math.max(...lines)}};
 }
 export function compositionWords(c){
  const width=c.width??160,height=c.height??144,cols=width/8;const words=new Uint16Array(width*height);

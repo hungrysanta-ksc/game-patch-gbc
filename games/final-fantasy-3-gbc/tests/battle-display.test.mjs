@@ -36,7 +36,7 @@ test('source hit frames preserve offsets flips priority and pixels; color overla
  assert.deepEqual(full.sourceSlots,Array.from({length:12},(_,i)=>24+i).concat(Array.from({length:24},(_,i)=>40+i)));
  assert.deepEqual(r.colors.summary,{pairs:251,pairsOverFour:161,overFourTiles:452,maxResidual8:11,maxResidual16:10,envelopeOver40:17,envelopeOver10:168});
  assert.equal(r.colors.rows.filter(x=>x.monster===206).length,1);
- assert.equal(hash(Buffer.from(JSON.stringify(r.magic.rows))),'b3def16ab4aff5bfe7d68cf86e37dcab2ef66ac84c514d84d1f6831ddecc7aac');
+ assert.equal(hash(Buffer.from(JSON.stringify(r.magic.rows))),'169c065667837aab7eaef3188aae21dd95dce8b6b948a4c39fc4111d7c6ac647');
  const changed=Buffer.from(data);changed[offset(0x33,0xb724)]=0x11;
  assert.throws(()=>battleDisplayAudit(changed),/Original magic placement/);
 });
