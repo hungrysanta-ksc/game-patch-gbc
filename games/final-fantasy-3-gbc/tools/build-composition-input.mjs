@@ -1,0 +1,29 @@
+import fs from 'node:fs/promises';import {execFile} from 'node:child_process';import {promisify} from 'node:util';
+import {ROOT,input,check,hash,checkGbc} from './source.mjs';import {makeMapAssets} from './map-assets.mjs';import {makeObjectAssets} from './object-assets.mjs';
+import {sourceInputTrace,packInput,dirtyOracle,verifyDirtyPixels} from './composition-inputs.mjs';import {textAudioAssets} from './text-audio-assets.mjs';import {stateAssets} from './state-source.mjs';
+const {data,profile,local}=await input(),out=ROOT+'/build/composition-input',gen=out+'/generated';await fs.mkdir(gen,{recursive:true});
+const frames=sourceInputTrace(data,makeObjectAssets(data,makeMapAssets(data,{verify:false}),{verify:false})),jobs=[];
+for(let i=0;i<frames.length;i++){
+ for(const gap of [1,0,...(i>=3&&i%8===0?[3]:[])]){const after=frames[i],before=gap?frames[i-gap]:after,d=dirtyOracle(before,after),changes=verifyDirtyPixels(before,after,d);
+  jobs.push({kind:'source',label:after.label+' gap='+gap,input:Buffer.concat([before?packInput(before):Buffer.alloc(260),packInput(after)]),expected:d.toString('hex'),count:d.readUInt16LE(128),pixelChanged:changes,full:!!d[132],gap,source:after.source,camera:after.camera});
+ }
+}
+const sourceJobs=jobs.length,before=frames[0];
+for(const [label,after]of [['background/palette epoch',{...before,epoch:before.epoch+1}],['large camera jump',{...before,camera:[1000,1000]}],['diagonal entering edges',{...before,camera:before.camera.map(n=>(n+8)&1023)}],['negative fine wrap',{...before,camera:before.camera.map(n=>(n-1)&1023)}]]){
+ const d=dirtyOracle(before,after);jobs.push({kind:'contract-boundary',label,input:Buffer.concat([packInput(before),packInput(after)]),expected:d.toString('hex'),count:d.readUInt16LE(128),pixelChanged:verifyDirtyPixels(before,after,d),full:!!d[132],gap:1});
+}
+const sources=[],decl=[],rows=[],linked=[];let bank=16,used=0,code='';
+async function flush(){if(!code)return;const file=gen+'/bank'+bank+'.c';await fs.writeFile(file,'#pragma bank '+bank+'\n#include <stdint.h>\n'+code);sources.push(file);code='';used=0;}
+for(const [i,j]of jobs.entries()){if(used+j.input.length>16384){await flush();bank++;}const name='input'+i;decl.push('extern const uint8_t '+name+'[];');rows.push('{'+name+','+bank+'}');code+='const uint8_t '+name+'[]={'+[...j.input]+'};\n';used+=j.input.length;linked.push({name,bank,bytes:j.input});}
+await flush();const banks=2**Math.ceil(Math.log2(bank+1));check(banks<=256&&jobs.length*3<16384,'Input diagnostic capacity');
+await fs.writeFile(gen+'/input-assets.h','#include <stdint.h>\n#define INPUT_JOB_COUNT '+jobs.length+'u\ntypedef struct {const uint8_t *data;uint8_t bank;} InputJob;\nextern const InputJob input_jobs[INPUT_JOB_COUNT];\n');
+await fs.writeFile(gen+'/input-assets.c','#pragma bank 7\n#include "input-assets.h"\n'+decl.join('\n')+'\nconst InputJob input_jobs[]={'+rows.join(',')+'};\n');
+await fs.writeFile(gen+'/state-assets.h',stateAssets(data).header);const audio=await textAudioAssets(data,gen,out,0),compiler=local.gbdk+'/bin/lcc.exe',lock=JSON.parse(await fs.readFile(ROOT+'/spec/toolchain.json'));check(hash(await fs.readFile(compiler))===lock.gbdk.lccSha256,'Pinned compiler');
+const rom=out+'/ff3-composition-input.gbc';
+try{const r=await promisify(execFile)(compiler,['-msm83:gb','-DFF3_SINGLE_ENGINE','-DFF3_BANKED_RUNTIME','-DFF3_TEXT_AUDIO','-Wm-yC','-Wm-yt0x1b','-Wm-ya4','-Wm-yo'+banks,'-Wl-m','-Wl-j','-I'+gen,'-o',rom,...['platform','platform-probe','game-state','game-save','memory','audio-control','audio-channel','audio-music','audio-engine','audio-output','audio-native','text-vblank','composition-input','composition-input-probe'].map(n=>ROOT+'/src/'+n+'.c'),gen+'/input-assets.c',...audio.sources,...sources],{cwd:out,maxBuffer:8e6});await fs.writeFile(out+'/compiler.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(out+'/compiler.log',(e.stdout||'')+(e.stderr||''));throw e;}
+check(!/overflow|Multiple write/i.test(await fs.readFile(out+'/compiler.log','utf8')),'Link overlap');const bytes=await fs.readFile(rom);checkGbc(bytes,banks,0x1b,3);const symbols={};for(const m of(await fs.readFile(rom.replace('.gbc','.noi'),'utf8')).matchAll(/DEF (\w+) (0x[0-9a-f]+)/gi))symbols[m[1]]=Number(m[2]);
+check(symbols.s__HEAP<0xcf00&&symbols._input_before===0xd800&&symbols._input_after===0xda50&&symbols._input_dirty<0xd000&&symbols._text_staging===0xd950&&symbols.b_ff3_composition_dirty===13,'Input memory placement');
+for(const b of audio.banks.filter(b=>b.n!==8))check(bytes.subarray(b.n*16384,b.n*16384+b.bytes.length).equals(b.bytes),'Audio payload');const replica=symbols._ff3_audio_bank36;check((replica>>>16)===8&&bytes.subarray(8*16384+(replica&16383),8*16384+(replica&16383)+8192).equals(audio.banks[0].bytes),'Audio replica');
+for(const b of linked){const a=symbols['_'+b.name],at=b.bank*16384+(a&16383);check((a>>>16)===b.bank&&(a&65535)+b.bytes.length<=0x8000&&bytes.subarray(at,at+b.bytes.length).equals(b.bytes),'Linked source '+b.name);}
+const report={sourceSha256:profile.sha256,romSha256:hash(bytes),audio:audio.report,frames:frames.length,sourceJobs,boundaryJobs:jobs.length-sourceJobs,jobs:jobs.map(({input,...j})=>({...j,inputSha256:hash(input)})),memory:{staticWramEnd:symbols.s__HEAP,plannerRomBytes:symbols.l__CODE_13,inputBytes:520,outputBytes:133,scratchBytes:128,inputAddresses:[symbols._input_before,symbols._input_after],outputAddress:symbols._input_dirty,scratchAddress:symbols._text_staging,preservedMapStart:0xd000,preservedMapBytes:2032},scope:'Original function-boundary source inputs and GBC world-tile invalidation. No composition/upload, live guest port, collision path or integrated Korean window claim.'};
+await fs.writeFile(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify({romSha256:report.romSha256,jobs:jobs.length,memory:report.memory}));

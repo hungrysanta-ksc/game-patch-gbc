@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:composition-input": "node tools/build-composition-input.mjs",
+    "verify:composition-input": "node tools/verify-composition-input.mjs",
     "build:composition-cache": "node tools/build-composition-cache.mjs",
     "verify:composition-cache": "node tools/verify-composition-cache.mjs",
     "build:composition-kernel": "node tools/build-composition-kernel.mjs",
@@ -16,7 +18,7 @@
     "verify:memory": "node tools/verify-memory.mjs",
     "build:audio": "node tools/build-audio.mjs",
     "build:timed": "node tools/build-timed.mjs",
-    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs tests/render-budget.test.mjs tests/npc-composition.test.mjs tests/composition-kernel.test.mjs tests/composition-cache.test.mjs",
+    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs tests/render-budget.test.mjs tests/npc-composition.test.mjs tests/composition-kernel.test.mjs tests/composition-cache.test.mjs tests/composition-input.test.mjs",
     "test:vgm": "node --test tests/vgm.test.mjs tests/timed-stream.test.mjs",
     "verify:timed": "node tools/verify-timed.mjs",
     "build:control": "node tools/build-control.mjs",
