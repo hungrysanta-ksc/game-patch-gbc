@@ -18,6 +18,9 @@
 #ifdef FF3_EXPLORATION
 #include "exploration.h"
 #endif
+#ifdef FF3_COMPOSITION_CACHE
+extern volatile uint8_t cache_request;
+#endif
 volatile uint8_t native_ready=0,native_request=0,native_argument=0,native_playing=0,native_done=0,native_busy=0,native_irq_busy=0,native_pop_enabled=1;
 volatile uint16_t native_clock=0,native_max_late=0,native_underruns=0,native_pops=0;
 volatile uint32_t native_ticks=0,native_events=0;
@@ -132,6 +135,11 @@ if(!ff3_error)dispatch_due();if(native_playing){CRITICAL{TIMA_REG=TMA_REG=128;IF
 /* Fixed-bank cooperative service. Text code may call from any mapped bank;
  * the timer consumer never calls the producer or changes ROM/WRAM banks. */
 void ff3_native_service(void) NONBANKED {uint8_t op,arg;native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_playing){op=native_request;arg=native_argument;start(0);native_request=op;native_argument=arg;}while(preparing&&!full()){
+#ifdef FF3_COMPOSITION_CACHE
+ /* Same two-tick cooperative yield used by exploration. Do not hold a due
+  * display update hostage to repeatedly refilling the third lookahead tick. */
+ if(cache_request&&(int16_t)(prepare_due-ff3_clock_now())>136)break;
+#endif
  prepare();
 #ifdef FF3_EXPLORATION
  /* Preserve the three-tick queue target, but let a due exploration picture
@@ -144,6 +152,9 @@ void ff3_native_service(void) NONBANKED {uint8_t op,arg;native_busy=1;if(native_
   * Publish the latest completed event only after refill/yield. All consumed
   * events are still observed independently; no game tick is skipped. */
  if(snapshot_due&&!text_transfer_busy
+#ifdef FF3_COMPOSITION_CACHE
+  &&!cache_request
+#endif
 #ifdef FF3_EXPLORATION
   /* Diagnostic copies are lower priority than a due movement picture.
    * Require ~4.9ms until its logic deadline; coalesce pending observations
