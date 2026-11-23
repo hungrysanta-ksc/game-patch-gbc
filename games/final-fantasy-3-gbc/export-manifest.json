@@ -3,6 +3,66 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "docs/render-budgets.md",
+      "bytes": 11616,
+      "sha256": "b38dc984586c4230dea787238186a95e4df6cc55a6841c414fbe5a7fb2aa763f",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/render-budget-probe.c",
+      "bytes": 1133,
+      "sha256": "834c908501a56beab779f5fa6fb7fe77001abf739f5dba66e512152efe212992",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/render-budget.test.mjs",
+      "bytes": 2400,
+      "sha256": "886f2fef725a9f0f60567676231d4652d3cbd7c0c86d316d0363469664014b12",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/render-budget-source.mjs",
+      "bytes": 12965,
+      "sha256": "13da5564b61892d8a80f235d09daf7f0951d7b8feb8e8e557d6d37396725d5de",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/render-budget-pixels.mjs",
+      "bytes": 3698,
+      "sha256": "0066e8668f3d3d7e77aad07952a2fa51486cf394d63987f5ae0436f4164dcc59",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/render-budget.mjs",
+      "bytes": 5109,
+      "sha256": "b1c6a53d5d80e63e3b21b169c996680ba16a1839ddf94e0853a0452a0da7cd55",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-render-budget.mjs",
+      "bytes": 3536,
+      "sha256": "830802e61390347328eef85f55c46151dd2d582b2380f7ee4cdb51fa337d980f",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-render-budget.mjs",
+      "bytes": 2868,
+      "sha256": "4df9afa794d2cf309ca1e07ed35b887a09c2064c5fdd5dfd4fe3897b4bcf6b0f",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyRenderBudget/VerifyRenderBudget.csproj",
+      "bytes": 293,
+      "sha256": "ad9ee6103501fb8e1e539f6660f7ba49b28f0c266c4d0768511ea964b8a8c7f3",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyRenderBudget/Program.cs",
+      "bytes": 2349,
+      "sha256": "a8e66c13c3a9dc9c23e188a8e7f6c6a207d9056c61ecfaf22a827703f1d5a9fc",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "docs/memory-lifetimes.md",
       "bytes": 13320,
       "sha256": "0ab8b567907c659407de3303e7b69374d5b1e5261c56e75013abd697ce328a62",
@@ -94,8 +154,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 16940,
-      "sha256": "96ddd86f11d2395659b382c87a998931be2c02c2bdf72263addc09f065613e04",
+      "bytes": 17119,
+      "sha256": "0615fb0f30f80e2d9c4a10884246cdf5309a244b485e6cdbc69a36af5bd82d11",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -112,14 +172,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 2148,
-      "sha256": "5f976ab021e80ac536009eb4f3207e19998f1e909831730541b568b414eba5f7",
+      "bytes": 2368,
+      "sha256": "5e814cbd7bd95a95004b0ba62d4d33a396c96f45ff365f3f2422a978026170a2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 12925,
-      "sha256": "e57dc3291fa0a3554cf929207fdf98590dc6f635cb7b0d4290d3bd207293573f",
+      "bytes": 13823,
+      "sha256": "e40e5df9bf597e6ba340feae59cb47dfcf59da8f8245003158208b7bd8ec240c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -130,8 +190,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 5340,
-      "sha256": "e1730850aa6ea238565184ef34141eba3a51988e61c7fd057acb420bd6bf7a64",
+      "bytes": 5733,
+      "sha256": "5fcb6765ff6361d21fbd08bb312d99886dd5287dd68a125b9bf2876f8c9a42cc",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -952,8 +1012,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 6044,
-      "sha256": "674e2ff0ef0cd3d9b0f224bec1b5ef0358ceffc86d2ef9443d2a39e45f19d11f",
+      "bytes": 6382,
+      "sha256": "bd53739a00936f4e9eb316eda7bc175aa6d67585af16d9d4123bb22c79afee40",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
