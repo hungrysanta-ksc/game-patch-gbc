@@ -9,15 +9,18 @@ import {prepareDialogue,dialogueKinds} from './dialogue-build.mjs';
 import {stateAssets} from './state-source.mjs';
 import {textAudioAssets} from './text-audio-assets.mjs';
 import {explorationAssets} from './exploration-assets.mjs';
-const explore=process.argv.includes('--explore'),audio=explore||process.argv.includes('--audio'),mode=audio||process.argv.includes('--dialogue');
-const {data,profile,local}=await input(),out=ROOT+'/build/'+(explore?'exploration':audio?'dialogue-audio':mode?'dialogue':'text'),gen=out+'/generated';
+import {eventSupported} from './event-motion-source.mjs';
+const event=process.argv.includes('--event'),explore=event||process.argv.includes('--explore'),audio=explore||process.argv.includes('--audio'),mode=audio||process.argv.includes('--dialogue');
+const {data,profile,local}=await input(),config=event?local.event:mode?local.dialogue:local.text,out=ROOT+'/build/'+(event?'exploration-event':explore?'exploration':audio?'dialogue-audio':mode?'dialogue':'text'),gen=out+'/generated';
 await fs.mkdir(gen,{recursive:true});await fs.mkdir(ROOT+'/.local/compiler-tmp',{recursive:true});
-const assets=await addTextAssets(data,makeObjectAssets(data,makeMapAssets(data)),mode?local.dialogue:local.text),sources=[];
-if(mode)await fs.writeFile(gen+'/dialogue-config.h',await prepareDialogue(data,assets,local.dialogue));
+const assets=await addTextAssets(data,makeObjectAssets(data,makeMapAssets(data)),config),sources=[];
+if(mode)await fs.writeFile(gen+'/dialogue-config.h',await prepareDialogue(data,assets,config));
 const sound=audio?await textAudioAssets(data,gen,out,assets.groups.properties[assets.dialogue.diagnostic.map+(assets.dialogue.diagnostic.world?256:0)][10]):undefined;
 if(sound)sources.push(...sound.sources);
-const field=explore?explorationAssets(data,assets,sound.report.mapSong):undefined;
+const field=explore?explorationAssets(data,assets,sound.report.mapSong,{event}):undefined;
 if(field){await fs.writeFile(gen+'/exploration-config.h',field.config);await fs.writeFile(gen+'/exploration-art.h',field.art);
+ await fs.writeFile(gen+'/event-motion-data.h','/* D24F lookahead across BFFF to fixed 3E/C000. */\n#define EVENT_FIXED_LOOKAHEAD '+data[16+62*8192]+'u\n');
+ field.report.events={supportedIds:assets.dialogue.events.filter(e=>e.commands.every(c=>eventSupported(c.op))).map(e=>e.id),scope:'Opcode support only; text bindings, normal reachability and other consumers are separate',lookahead:{bank:62,cpu:49152,bytes:1,sha256:hash(data.subarray(16+62*8192,17+62*8192)),consumer:'3E/D24F'}};
  const rng=data.subarray(16+0x3f*8192+0x1e00,16+0x3f*8192+0x1f00);
  await fs.writeFile(gen+'/npc-motion-data.h','/* 3F/FE00, consumed by 3B/AFDA. */\nstatic const uint8_t npc_random[]={'+[...rng]+'};\n');
  field.report.npcRng={bank:63,cpu:65024,bytes:256,sha256:hash(rng),consumer:'3B/AFD1..AFDD; independent of encounter RNG',initial:27};
@@ -57,5 +60,5 @@ if(mode){check(symbols.l__CODE_15<16384&&symbols.b_ff3_npc_start===15,'NPC bank 
 if(sound){for(const b of sound.banks){const offset=b.n===8?(symbols._ff3_audio_bank36&0x3fff):0;check(rom.subarray(b.n*16384+offset,b.n*16384+offset+b.bytes.length).equals(b.bytes),'Linked audio bytes');}check(symbols._text_cells===0xd800&&symbols.l__CODE_8<16384,'Audio/text workspace');for(const n of ['ff3_native_service','ff3_text_copy','ff3_text_video'])check(symbols['_'+n]<0x4000,'Fixed-bank service '+n);}
 const report={dialogue:mode?assets.dialogue.comparisons:undefined,sourceSha256:profile.sha256,romSha256:hash(rom),romBanks:pack.romBanks,assetCount:pack.assets,directoryBytes:pack.directory.length,fixedRomEnd,staticWramEnd:symbols.s__HEAP,objectCodeBytes:symbols.l__CODE_13,comparisons:assets.objectComparisons,placements:197,unresolvedPlacementSlots:59,textCodeBytes:symbols.l__CODE_14,text:assets.text.analysis.summary,samples:assets.text.sourceIds.length,fontGlyphs:2350,usedGlyphs:assets.text.usedGlyphs,fixtureStart:assets.text.fixtureStart,fixtureWords,scope:audio?'Original NPC dialogue and audio VBlank load diagnostic; normal exploration and naming/save pending':mode?'Original ordinary-NPC selector and bounded event/text substitution diagnostic; normal exploration and naming/save pending':'Reviewed local Korean text on map/NPC viewer; layout controls; semantic menu/battle handlers pending'};
 report.audio=sound?.report;report.video={lcdOff:false,chunkBytes:128,stagingBytes:256,dma:true,vblankCallback:true,lastStartLine:150,windowHiddenDuringUpload:true,glyphLookupBytes:256,scriptReadAheadBytes:32,stackBytes:1168,opaqueGlyphsAtBuild:true};
-if(field){report.exploration=field.report;report.video.stackBytes=848;report.scope='Original normal-map player movement, front-NPC Korean dialogue and return; reviewed map 29 entry, ordinary NPC random motion/animation, other consumers fail explicitly';check(symbols._field===0xdb70&&symbols._field_oam===0xdc00&&symbols._field_staging===0xdbc0&&symbols.l__CODE_9<16384&&symbols.l__CODE_10<16384,'Exploration memory/bank budget');}
+if(field){report.exploration=field.report;report.video.stackBytes=848;report.scope='Original normal-map player movement, NPC/event Korean dialogue and return; reviewed development entry, ordinary and event-directed NPC motion, unsupported consumers fail explicitly';check(symbols._field===0xdb70&&symbols._field_oam===0xdc00&&symbols._field_staging===0xdbc0&&symbols.l__CODE_9<16384&&symbols.l__CODE_10<16384,'Exploration memory/bank budget');}
 await fs.writeFile(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify({...report,text:undefined,fixtureWords:undefined},null,2));

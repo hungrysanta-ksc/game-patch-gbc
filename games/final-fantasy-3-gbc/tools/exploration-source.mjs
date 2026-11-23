@@ -1,5 +1,6 @@
 import {stateCpu} from './state-source.mjs';
 import {npcSprites,npcFixtures,npcAnimationFixtures,npcDeferredFixtures} from './npc-motion-source.mjs';
+import {eventFixtures} from './event-motion-source.mjs';
 // Only input/output adaptation. All expected decisions execute untouched ROM.
 export const fieldAddresses=[0x29,0x2a,0x35,0x36,0x33,0x34,0xa5,0x43,0x44,0x45,0xab,0x84,0x85];
 export function fieldOriginal(rom,op,input,part1=Buffer.alloc(192),part2=Buffer.alloc(192)){
@@ -42,5 +43,5 @@ export function fieldFixtures(rom){
   for(const sprite of npcSprites(rom,s,a,b,0))push(...sprite,0);
   const oam=Buffer.alloc(160);Buffer.from(records).copy(oam);cases.at(-1).expected.oam=oam.toString('hex');edge++;
  }
- return [...cases,...npcAnimationFixtures(rom),...npcFixtures(rom),...npcDeferredFixtures(rom)];
+ return [...cases,...npcAnimationFixtures(rom),...npcFixtures(rom),...npcDeferredFixtures(rom),...eventFixtures(rom)];
 }

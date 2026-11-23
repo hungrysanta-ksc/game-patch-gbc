@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/event-motion.md','tools/event-motion-source.mjs','tools/event-motion-audit.lua','tools/verify-event-motion.mjs',
  '.gitattributes','.gitignore','AGENTS.md','README.md','THIRD-PARTY-NOTICES.md','local.example.json','package.json',
  'docs/implementation-roadmap.md','docs/development-skills.md','tools/survey-source.mjs',
  'docs/data-registry.md','spec/data-registry.json','tools/register-data.mjs','tools/registry-core.mjs','tests/registry.test.mjs',
