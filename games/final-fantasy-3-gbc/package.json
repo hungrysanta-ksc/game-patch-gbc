@@ -5,7 +5,7 @@
   "scripts": {
     "build:audio": "node tools/build-audio.mjs",
     "build:timed": "node tools/build-timed.mjs",
-    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs",
+    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs",
     "test:vgm": "node --test tests/vgm.test.mjs tests/timed-stream.test.mjs",
     "verify:timed": "node tools/verify-timed.mjs",
     "build:control": "node tools/build-control.mjs",
@@ -21,7 +21,9 @@
     "build:state": "node tools/build-state.mjs",
     "verify:state": "node tools/verify-state.mjs",
     "build:maps": "node tools/build-maps.mjs",
-    "verify:maps": "node tools/verify-maps.mjs"
+    "verify:maps": "node tools/verify-maps.mjs",
+    "build:objects": "node tools/build-objects.mjs",
+    "verify:objects": "node tools/verify-objects.mjs"
   },
   "engines": {
     "node": ">=20"
