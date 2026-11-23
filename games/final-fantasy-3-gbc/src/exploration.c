@@ -55,6 +55,7 @@ void ff3_field_init(void) BANKED {
  memset((void*)&field,0,sizeof(field));field.world=FIELD_WORLD;field.map=FIELD_MAP;field.rate=FIELD_RATE;
  field.x=(FIELD_START_X-7)&63;field.y=(FIELD_START_Y-7)&63;field.direction=8;field.face=0xff;
  field.target_x=FIELD_START_X;field.target_y=FIELD_START_Y;properties();field.z=field.next&3;field.current=field.next&0x34;field.next=field.current;field.property=0;
+ field.reserved_x=FIELD_START_X;field.reserved_y=FIELD_START_Y;field.npc_rng=0x1b;
 }
 void ff3_field_tick(void) BANKED {
  uint8_t d,r;field.ticks++;
@@ -76,5 +77,5 @@ void ff3_field_tick(void) BANKED {
  if(!ff3_field_terrain()){field.blocked++;return;}
  /* Poison/floor damage and guest following are pending consumers. */
  if(((ff3_game_state[0x102]|ff3_game_state[0x142]|ff3_game_state[0x182]|ff3_game_state[0x1c2])&2)||((field.next&8)&&!field.property)){field.error=5;return;}
- ff3_game_state[0x21]&=0xbf;field.speed=1;
+ ff3_game_state[0x21]&=0xbf;field.speed=1;field.reserved_x=field.target_x;field.reserved_y=field.target_y;
 }

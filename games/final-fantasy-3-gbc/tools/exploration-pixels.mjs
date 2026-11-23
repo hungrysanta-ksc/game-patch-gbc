@@ -1,4 +1,4 @@
-import {check} from './source.mjs';import {stateCpu} from './state-source.mjs';import {fieldAddresses} from './exploration-source.mjs';
+import {check} from './source.mjs';import {stateCpu} from './state-source.mjs';import {fieldAddresses} from './exploration-source.mjs';import {npcSprites} from './npc-motion-source.mjs';
 // Player tile/attribute/animation decisions execute the NES renderer. Only the
 // viewport anchor and the CGB tile/palette numbering change below.
 export function fieldOam(rom,assets,f,part1,part2){
@@ -6,14 +6,8 @@ export function fieldOam(rom,assets,f,part1,part2){
  const add=(x,y,t,a,p)=>{if(x<=-8||x>=160||y<=-8||y>=144)return;sprites.push(y+16,x+8,t,8+p+(a&1)+((a&64)?32:0)+((a&128)?64:0)+((a&32)?128:0));};
  for(let q=0;q<4;q++){const a=0x200+q*4;add(c.m[a+3]-40,c.m[a]+1-48,192+c.m[a+1],c.m[a+2],2);}
  const cameraX=((((f[0]+7)&63)*16+f[2])-72)&1023,cameraY=((((f[1]+7)&63)*16+f[3])-64)&1023;
- for(let slot=0;slot<12;slot++){const i=slot*16;if(!part1[i])continue;
-  const x=((part1[i+4]*16+part1[i+6]-cameraX+512)&1023)-512,y=((part1[i+5]*16+part1[i+7]-cameraY+512)&1023)-515;
-  if(x<=-16||x>=160||y<=-16||y>=144)continue;
-  // Use original NPC object renderer AEAD with viewport-relative coordinates.
-  const n=stateCpu(rom);n.banks=[0x3a,0x3b,0x3e,0x3f];let pose=part1.readUInt16LE(i+14);
-  if(f[19]===2&&f[22]===i&&!(part1[i+1]&0x30))pose=f[4]&1?0xb42a:f[4]&2?0xb41a:f[4]&4?0xb44a:0xb43a;
-  n.m[0x40]=80;n.m[0x41]=76;n.m[0x80]=pose&255;n.m[0x81]=pose>>8;n.m[0x82]=i;n.m[0x7105]=part2[i+5];n.m[0x7101]=part2[i+1];n.call(0xaead);
-  for(let q=0;q<4;q++){const a=0x200+q*4;add(x+n.m[a+3]-80,y+n.m[a]-76,n.m[a+1],n.m[a+2],0);}
+ for(let slot=0;slot<12;slot++){const i=(!f[19]&&((f[73]??f[32])&1))?176-slot*16:slot*16;if(!part1[i])continue;
+  for(const sprite of npcSprites(rom,f,part1,part2,i))add(...sprite,0);
  }
  check(sprites.length<=160,'Original OAM budget');const oam=Buffer.alloc(160);Buffer.from(sprites).copy(oam);return {oam,cameraX,cameraY};
 }
