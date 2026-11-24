@@ -52,6 +52,12 @@ void ff3_battle_vblank(void) NONBANKED {
  if(!next_entry){battle_origin=battle_committed;battle_due=battle_origin;}
 #endif
  battle_entry=next_entry;battle_serial++; /* Read-only trace publication, after LCDC/OAM. */
+#ifdef FF3_ACTION_FLOW
+ {extern volatile uint16_t action_serial;
+  extern volatile uint8_t action_profile,action_step,action_live,action_frame;
+  extern volatile uint8_t action_next_profile,action_next_step,action_next_live,action_next_frame;
+  if(!next_entry){action_profile=action_next_profile;action_step=action_next_step;action_live=action_next_live;action_frame=action_next_frame;action_serial++;}}
+#endif
  next_entry++;
  if(next_entry==BATTLE_ENTRY_COUNT){battle_active=0;
 #ifdef FF3_NUMBER_TIMELINE

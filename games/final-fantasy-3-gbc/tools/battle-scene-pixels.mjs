@@ -16,50 +16,51 @@ function bgPixel(b,x,y,table=0){
  const base=0x2000+(table&1)*1024,tx=x>>3,ty=y>>3,tile=b[base+ty*32+tx],a=b[base+960+(ty>>2)*8+(tx>>2)],p=(a>>(((ty&2)<<1)+(tx&2)))&3,bit=7-(x&7),at=tile*16+(y&7),v=(b[at]>>bit&1)|((b[at+8]>>bit&1)<<1);
  return {index:v?p*4+v:0,opaque:v!==0};
 }
-export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0},numberOwners=[],formation}={}){
- const b=ppu.bytes,colors=cgbPalette(b.subarray(0x3f00,0x3f20)),pixels=new Uint16Array(W*H).fill(colors.readUInt16LE(0)),used=new Uint8Array(W*H),enemy=new Uint8Array(W*H),party=new Uint8Array(W*H),numberCoverage={sourcePixels:0,viewportPixels:0};
+export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0},numberOwners=[],formation,partyShift=0,statusOwners=false,partyY=targetY,enemyY=16,terrainHeight=16,numberEnemyOffset=0}={}){
+ const b=ppu.bytes,colors=cgbPalette(b.subarray(0x3f00,0x3f20)),pixels=new Uint16Array(W*H).fill(colors.readUInt16LE(0)),used=new Uint8Array(W*H),enemy=new Uint8Array(W*H),party=new Uint8Array(W*H),numberCoverage={sourcePixels:0,viewportPixels:0},partyCoverage={sourcePixels:0,viewportPixels:0},statusCoverage={sourcePixels:0,viewportPixels:0};
  const put=(x,y,index)=>{if(x>=0&&x<160&&y>=0&&y<144)pixels[y*W+x]=colors.readUInt16LE(index*2);};
  // Keep the previous field/party anchors. The terrain is a cropped strip,
  // not a scale operation on party art. This remains a presentation candidate.
- for(let y=0;y<16;y++)for(let x=0;x<160;x++)put(x,y,bgPixel(b,Math.floor(x*256/160),y+8).index);
+ for(let y=0;y<terrainHeight;y++)for(let x=0;x<160;x++)put(x,y,bgPixel(b,Math.floor(x*256/160),y+8).index);
  for(let y=0;y<84;y++)for(let x=0;x<126;x++){
   // 2F/AE5E..AEA3 uses $07 for the enemy scroll page. $06 is not this
   // raster region's page: it wraps incoming back-attack enemies into party.
   const sx=16+Math.floor((x+.5)*8/7),sy=48+Math.floor((y+.5)*8/7),q=bgPixel(b,(back?255-sx:sx)+c.m[15],sy,c.m[7]&1);
-  const dx=rearX(back?159-x:x,layout,back);put(dx,16+y,q.index);if(dx>=0&&dx<160&&q.opaque)enemy[(16+y)*W+dx]=1;
+  const dx=rearX(back?159-x:x,layout,back);put(dx,enemyY+y,q.index);if(dx>=0&&dx<160&&q.opaque)enemy[(enemyY+y)*W+dx]=1;
  }
  // Stone party lives in the BG, so it must participate in the same layer
  // composition as terrain/enemies and survive until the source clears it.
  for(let slot=0;slot<4;slot++)for(let sy=[40,72,96,128][slot];sy<[72,96,128,152][slot];sy++)for(let sx=160;sx<256;sx++){
-  const q=bgPixel(b,back?255-sx:sx,sy);if(q.opaque){const x=back?159-(sx-80):sx-80,y=sy-sourceY[slot]+targetY[slot];put(x,y,q.index);if(x>=0&&x<160&&y>=0&&y<144)party[y*W+x]=1;}
+  const q=bgPixel(b,back?255-sx:sx,sy);if(q.opaque){const x=back?159-(sx-80):sx-80,y=sy-sourceY[slot]+partyY[slot]+partyShift;put(x,y,q.index);if(x>=0&&x<160&&y>=0&&y<144)party[y*W+x]=1;}
  }
  const basePixels=pixels.slice(),baseUsed=new Uint8Array(W*H),numberObjects=[];
  for(let i=0;i<64;i++){
   const at=0x200+i*4,sy=c.m[at]+1,sx=c.m[at+3],tile=c.m[at+1],attr=c.m[at+2];if(sy>239)continue;
   check(!(attr&32),'Unsupported behind-BG source OBJ in scene adapter');
-  const slot=i>=40?Math.floor((i-40)/6):target;
+  const slot=i>=40?Math.floor((i-40)/6):statusOwners&&i<8?Math.floor(i/2):target;
   const owner=i<40?numberOwners[i]:null,number=owner?{sourceSlot:i,target:owner.target,enemy:owner.enemy,palette:attr&3,pixels:new Uint8Array(64)}:null;
   for(let y=0;y<8;y++)for(let x=0;x<8;x++){
    const px=attr&64?7-x:x,py=attr&128?7-y:y,k=0x1000+tile*16+py,bit=7-px,v=(b[k]>>bit&1)|((b[k+8]>>bit&1)<<1);if(!v)continue;
-   const canonical=back?255-(sx+x):sx+x;let dx=back?159-(canonical-80):canonical-80,dy=sy+y-sourceY[slot]+targetY[slot];
+   const canonical=back?255-(sx+x):sx+x;let dx=back?159-(canonical-80):canonical-80,dy=sy+y-sourceY[slot]+partyY[slot]+partyShift;
    if(owner){
     numberCoverage.sourcePixels++;
     if(owner.enemy){check(formation,'Enemy numeral formation');const cx=c.m[0x7dd7+owner.target*2],bottom=c.m[0x7e07+owner.target]+1,[ax,ay]=adaptPoint(formation,cx,bottom),anchor=rearX(back?159-ax:ax,layout,back),sourceCenter=back?254-cx:cx;
      // Keep digit glyphs and sine motion unscaled; clamp the whole 32px
      // number strip at viewport edges instead of cutting significant digits.
-     dx=Math.max(0,Math.min(128,anchor-16))+sx+x-(sourceCenter-16);dy=ay+sy+y-bottom;
-    }else{dx=(back?sx+x-16:sx+x-80);dy=sy+y-sourceY[owner.target]+targetY[owner.target];}
+     dx=Math.max(0,Math.min(128,anchor-16))+sx+x-(sourceCenter-16);dy=ay+sy+y-bottom+enemyY-16+numberEnemyOffset;
+    }else{dx=(back?sx+x-16:sx+x-80);dy=sy+y-sourceY[owner.target]+partyY[owner.target]+partyShift;}
     // The cropped terrain leaves less room above party slot 0 than NES.
     // Contain the entire 8px glyph at the viewport edge, never its pixels.
     dy=Math.max(0,Math.min(136,dy-y))+y;
     number.x=dx-x;number.y=dy-y;number.pixels[y*8+x]=v;
    }
-   if(dx<0||dx>=160||dy<0||dy>=144)continue;if(owner)numberCoverage.viewportPixels++;const p=dy*W+dx;if(!owner&&!baseUsed[p]){baseUsed[p]=1;basePixels[p]=colors.readUInt16LE((16+(attr&3)*4+v)*2);}if(i>=40)party[p]=1;if(used[p])continue;used[p]=1;put(dx,dy,16+(attr&3)*4+v);
+   if(i>=40)partyCoverage.sourcePixels++;if(statusOwners&&i<8)statusCoverage.sourcePixels++;
+   if(dx<0||dx>=160||dy<0||dy>=144)continue;if(i>=40)partyCoverage.viewportPixels++;if(statusOwners&&i<8)statusCoverage.viewportPixels++;if(owner)numberCoverage.viewportPixels++;const p=dy*W+dx;if(!owner&&!baseUsed[p]){baseUsed[p]=1;basePixels[p]=colors.readUInt16LE((16+(attr&3)*4+v)*2);}if(i>=40)party[p]=1;if(used[p])continue;used[p]=1;put(dx,dy,16+(attr&3)*4+v);
   }
   if(number?.pixels.some(Boolean))numberObjects.push(number);
  }
  check(numberCoverage.sourcePixels===numberCoverage.viewportPixels,'Number glyph clipped by viewport');
- return {pixels,basePixels,numberObjects,numberCoverage,objPalette:colors.subarray(32),sourcePalettes:colors,sourcePaletteSha256:hash(b.subarray(0x3f00,0x3f20)),partyEnemyOverlapPixels:party.reduce((n,v,i)=>n+(v&&enemy[i]?1:0),0)};
+ return {pixels,basePixels,numberObjects,numberCoverage,partyCoverage,statusCoverage,objPalette:colors.subarray(32),sourcePalettes:colors,sourcePaletteSha256:hash(b.subarray(0x3f00,0x3f20)),partyEnemyOverlapPixels:party.reduce((n,v,i)=>n+(v&&enemy[i]?1:0),0)};
 }
 export function originalSceneSequence(rom,{back=false,retreat=8,numbers=false,enemyValues=[65535,65535,65535,1234,65535,65535,65535,65535]}={}){
  const formation=originalFormation(rom,3),layout=formationPixels(rom,formation,{retreat}).layout;

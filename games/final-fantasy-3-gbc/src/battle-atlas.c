@@ -1,4 +1,7 @@
 #pragma bank 13
+#ifndef FF3_ACTION_FLOW
+#define ACTION_SCROLL_Y 0
+#endif
 #include <gb/cgb.h>
 #include <string.h>
 #include "composition-window.h"
@@ -6,6 +9,16 @@
 #include "text-vblank.h"
 #include "memory.h"
 #include "scene-assets.h"
+#ifdef FF3_ACTION_FLOW
+#include "battle-action-data.h"
+#define ACTION_SCROLL_Y 6
+static uint8_t action_mask,action_profile_index,action_dirty,action_ui_index,action_tiles[2];
+volatile uint8_t action_profile,action_step,action_live,action_frame;
+volatile uint8_t action_next_profile,action_next_step,action_next_live,action_next_frame;
+volatile uint16_t action_serial;
+static const uint8_t action_rows[]={13,14,15,16,17,18};
+extern volatile uint16_t native_clock;
+#endif
 #if defined(FF3_BATTLE_TIMELINE) || defined(FF3_NUMBER_TIMELINE)
 #include "battle-timeline.h"
 #endif
@@ -161,7 +174,13 @@ static void queue(uint8_t bank,const uint8_t *source,uint8_t vram,uint16_t desti
  uint8_t n;
 #endif
  if(!bytes)return;
- if(((uint16_t)source|destination|bytes)&15||(uint16_t)source<0x4000u||(uint16_t)source+bytes>0x8000u||destination<0x8000u||destination+bytes>0xa000u){scene_error=11;return;}
+ if(((uint16_t)source|destination|bytes)&15||
+#ifdef FF3_ACTION_FLOW
+ !(((uint16_t)source>=0x4000u&&(uint16_t)source+bytes<=0x8000u)||((uint16_t)source>=0xd950u&&(uint16_t)source+bytes<=0xdb40u))||
+#else
+ (uint16_t)source<0x4000u||(uint16_t)source+bytes>0x8000u||
+#endif
+ destination<0x8000u||destination+bytes>0xa000u){scene_error=11;return;}
  while(bytes){if(transfer_count==32)flush();
 #ifdef FF3_BATTLE_STREAM
  n=bytes>256?256:bytes;
@@ -186,6 +205,26 @@ static void preload(void){
  loaded=1;
 #endif
 }
+#ifdef FF3_ACTION_FLOW
+static void overlay(uint8_t page){uint8_t r,x,tile;uint16_t at;
+ flush();if(action_tiles[page]!=action_profile_index){queue(ACTION_GLYPH_BANK,action_glyphs+(uint16_t)action_profile_index*1280,page,0x9300u,1280);flush();action_tiles[page]=action_profile_index;}
+ ff3_scene_rom_copy(7,action_cells+(uint16_t)action_ui_index*120,scene_keys,120);
+ for(r=0;r<6;r++){
+  at=(uint16_t)action_rows[r]*32;
+  ff3_scene_rom_copy(target.bank,target.maps+at,scene_input+r*32,32);
+  ff3_scene_rom_copy(target.bank,target.maps+(page?1216u:608u)+at,text_staging+r*32,32);
+  for(x=0;x<20;x++){
+   tile=((uint8_t*)scene_keys)[r*20+x];
+   if(tile!=255){scene_input[r*32+x]=tile;text_staging[r*32+x]=7|(page?8:0);}
+  }
+  queue(7,scene_input+r*32,0,(page?0x9c00u:0x9800u)+at,32);
+  queue(7,text_staging+r*32,1,(page?0x9c00u:0x9800u)+at,32);
+  ff3_native_service();
+ }
+ flush();
+}
+static void action_observe(void){CRITICAL{action_profile=action_profile_index;action_step=action_next_step;action_live=action_mask;action_frame=scene_page;action_serial++;}}
+#endif
 static void prepare(uint8_t page){uint8_t i,bank,old,*oam=page?scene_oam1:scene_oam0;uint16_t *spans=(uint16_t*)scene_input;
  read_frame(scene_page,&target);
  if(last_frame[page]==255)old=SCENE_VISUAL_COUNT;
@@ -215,21 +254,32 @@ static void prepare(uint8_t page){uint8_t i,bank,old,*oam=page?scene_oam1:scene_
   queue(target.bank,target.graphics,1,0x8000u+(uint16_t)page*1024,(uint16_t)target.objects*16);
 #endif
  }
- flush();last_frame[page]=scene_page;
+ flush();
+#ifdef FF3_ACTION_FLOW
+ overlay(page);
+#endif
+ last_frame[page]=scene_page;
 }
 static void show(void){uint8_t page=active_page^1;
  if(window_owned||scene_page>=SCENE_FRAME_COUNT){scene_error=5;return;}
  read_frame(scene_page,&target);
- if(active_frame!=255){read_frame(active_frame,&previous);if(previous.visual==target.visual){active_frame=scene_page;scene_hits++;scene_frames++;return;}}
+ if(active_frame!=255){read_frame(active_frame,&previous);if(previous.visual==target.visual
+#ifdef FF3_ACTION_FLOW
+ &&!action_dirty
+#endif
+ ){active_frame=scene_page;scene_hits++;scene_frames++;return;}}
  scene_phase=1;if(!loaded)preload();if(scene_error)return;
  prepare(page);if(scene_error)return;ff3_scene_rom_copy(7,scene_frames_data+scene_page,&frame,sizeof(frame));
  scene_phase=4;ff3_scene_rom_copy(frame.bank,frame.palette,scene_palette,96);
 #ifdef FF3_BATTLE_STREAM
- ff3_scene_publish(page,1,0,0);
+ ff3_scene_publish(page,1,0,ACTION_SCROLL_Y);
 #else
- ff3_scene_publish(page,active_frame==255,0,0);
+ ff3_scene_publish(page,active_frame==255,0,ACTION_SCROLL_Y);
 #endif
  active_page=page;active_frame=scene_page;scene_frames++;
+#ifdef FF3_ACTION_FLOW
+ action_dirty=0;
+#endif
 }
 static void open(void){
  if(window_owned||active_frame==255){scene_error=9;return;}
@@ -263,10 +313,16 @@ static void play_numbers(void){uint8_t n,i,page=active_page^1,storage=page,*oam;
  ff3_scene_rom_copy(7,scene_number_runs+scene_page,&run,sizeof(run));
  scene_page=run.first;scene_phase=1;if(!loaded)preload();prepare(page);if(scene_error)return;
  ff3_scene_rom_copy(7,scene_frames_data+scene_page,&frame,sizeof(frame));ff3_scene_rom_copy(frame.bank,frame.palette,scene_palette,96);
- scene_phase=4;ff3_battle_start(page);
+ scene_phase=4;
+#ifdef FF3_ACTION_FLOW
+ /* Latch the state before admission; its serial is published by the first
+  * numeral VBlank, not by a main-loop observer that may resume a frame later. */
+ action_next_profile=action_profile_index;action_next_live=action_mask;action_next_frame=scene_page;
+#endif
+ ff3_battle_start(page);
  while(battle_entry==255&&!scene_error){ff3_native_service();__asm halt __endasm;}
  scene_phase=8;
- for(n=1;n<33&&!scene_error;n++){
+ for(n=1;n<SCENE_NUMBER_ENTRIES&&!scene_error;n++){
   page^=1;oam=page?scene_oam1:scene_oam0;
   ff3_scene_rom_copy(run.bank,run.oam+(uint16_t)n*160,oam,160);
   for(i=0;i<run.objects;i++)oam[i*4+2]+=storage*64;
@@ -277,10 +333,29 @@ static void play_numbers(void){uint8_t n,i,page=active_page^1,storage=page,*oam;
  /* Both shadow buffers now differ from the regular scene-frame cache.
   * The next ordinary owner must rebuild, even for an identical clear view. */
  active_page=storage;active_frame=255;last_frame[0]=last_frame[1]=255;
- scene_page=run.clear;scene_frames+=33;
+ scene_page=run.clear;scene_frames+=SCENE_NUMBER_ENTRIES;
+#ifdef FF3_ACTION_FLOW
+ /* No synthetic clear: the last source numeral survives message waits and
+  * window closes. The original script's graphics $25 owns its removal. */
+ /* A 32-entry body ends on the OTHER OAM shadow buffer. Rejoin the pinned
+  * BG page with identical OAM before prepare() can reuse the inactive page.
+  * GBDK's ordinary VBlank DMA must never see that buffer being rebuilt. */
+ memcpy(storage?scene_oam1:scene_oam0,page?scene_oam1:scene_oam0,160);
+ CRITICAL{_shadow_OAM_base=storage?0xdd:0xdc;}
+ active_frame=run.clear;action_dirty=0;
+ {uint16_t until=battle_origin+SCENE_NUMBER_END,now;do{CRITICAL{now=native_clock;}if((int16_t)(now-until)>=0)break;ff3_native_service();__asm halt __endasm;}while(!scene_error);}
+#endif
 }
 #endif
+#ifdef FF3_ACTION_FLOW
+#include "battle-action.inc"
+#endif
 void ff3_scene_run(void) BANKED {
+#ifdef FF3_ACTION_FLOW
+ /* The field dialogue owner uses the same glyph VRAM. Only the complete
+  * action consumer may own this mode; unsupported requests fail closed. */
+ if(scene_request!=7)scene_error=15;else play_action();
+#else
 #ifdef FF3_NUMBER_TIMELINE
  if(scene_request==6)play_numbers();else
 #endif
@@ -288,10 +363,14 @@ void ff3_scene_run(void) BANKED {
  if(scene_request==5)play();else
 #endif
  if(scene_request==1)show();else if(scene_request==2)open();else if(scene_request==3){scene_phase=6;if(!window_owned||!text_more||!ff3_text_next())scene_error=10;}else if(scene_request==4)close();else scene_error=9;
+#endif
  scene_phase=0;scene_request=0;
 }
 void ff3_scene_begin(void) BANKED {
  memset(scene_keys,255,256);memset(scene_pins,0,128);
+#ifdef FF3_ACTION_FLOW
+ action_tiles[0]=action_tiles[1]=255;
+#endif
 #ifdef FF3_BATTLE_TIMELINE
  /* Shared palette is invariant across the complete timeline. Load once at
   * boot with LCD off; the Korean window owns only BG palette 7 thereafter. */
