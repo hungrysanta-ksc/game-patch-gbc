@@ -2,7 +2,7 @@
 // Planning consumes only the current background/party and resident palettes.
 import {check} from './source.mjs';
 import {compilePixelComposition,pixelCompositionPalettes,encodeTile,compositionWords} from './npc-composition.mjs';
-export function composeBattleNumbers(frame,{width=168,height=152}={}){
+export function composeBattleNumbers(frame,{width=168,height=152,objOnlyRow=-1}={}){
  const {basePixels,numberObjects,sourcePalettes}=frame;
  check(numberObjects.length>0&&numberObjects.every(o=>o.palette===3),'Original numeral palette ownership');
  // Palette 7 is the original numeral palette; GBC OBJ palette 3 owns it.
@@ -10,7 +10,7 @@ export function composeBattleNumbers(frame,{width=168,height=152}={}){
  // moving numerals retain their original 8x8 boundaries and OAM priority.
  const objPalette=Buffer.concat([0,1,4,7].map(p=>sourcePalettes.subarray(p*8,p*8+8)));
  const palettes=pixelCompositionPalettes([basePixels],objPalette,{width,height,maxPalettes:7});
- const base=compilePixelComposition(basePixels,objPalette,{width,height,palettes}),count=numberObjects.length;
+ const base=compilePixelComposition(basePixels,objPalette,{width,height,palettes,objOnlyRow}),count=numberObjects.length;
  const sprites=[...numberObjects.map((o,tile)=>({x:o.x,y:o.y,h:8,palette:3,tile})),...base.sprites.map(s=>({...s,tile:s.tile+count}))];
  check(sprites.length<=40,'Composition OAM capacity');const lines=new Uint8Array(height);
  for(const s of sprites)for(let y=Math.max(0,s.y);y<Math.min(height,s.y+8);y++)lines[y]++;

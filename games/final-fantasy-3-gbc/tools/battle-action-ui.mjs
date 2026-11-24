@@ -1,7 +1,7 @@
 import {check} from './source.mjs';
 import {encodeTile} from './npc-composition.mjs';
 export const actionRows=[13,14,15,16,17,18];
-export const v6Ui={top:106,height:38,hpLeft:48,rowPitch:8};
+export const v6Ui={top:103,height:41,hpLeft:48,rowPitch:8};
 // User-approved Korean word spacing: nearest pixel to one third of 8px.
 // Compact HP digits keep their separate, fixed numeric alignment.
 export const battleTextAdvance=(id,compact=false)=>compact?5:id===255?3:8;
@@ -41,11 +41,12 @@ export function originalActionUi(ui,flow,text,{smallHp=false}={}){
  const layers=[{x:48,y:8,w:112,h:38,pixels:hp},...projectMessageWindows(flow.windowDescriptors).map((r,i)=>{
   const pixels=compactOriginalBox(tiles,r.w,r.h);drawOriginalUiText(pixels,r.w,tiles,ui.windows[i],4,3,{hangul:text.glyphs});return {...r,pixels};
  })];
- return {palette,layers,smallHp,frameSource:'Observed NES PPU + ROM 34/8E83 rectangles; graphics 01 F7..FF; palette 3',layout:v6Ui};
+ return {palette,layers,smallHp,frameSource:'Observed NES PPU + ROM 34/8E83 rectangles; graphics 01 F7..FF; palette 3',layout:{...v6Ui,top:106,height:38}};
 }
 export function uiPixels(ui,live){const out=new Int16Array(160*48).fill(-1);
- // SCY=6: BG row 14 is screen y=106. Row 13 preserves original party feet.
- out.fill(0,8*160);
+ // SCY=6: legacy action UI starts on row 14; expanded selection UI also
+ // owns row 13. Its field pixels have explicit OBJ ownership.
+ out.fill(0,(ui.layout.top===103?0:8)*160);
  for(const [i,l]of ui.layers.entries())if(i===0||(live&(1<<(i-1))))for(let y=0;y<l.h;y++)for(let x=0;x<l.w;x++){
   check(l.x+x<160&&l.y+y<48,'V6 UI bounds');out[(l.y+y)*160+l.x+x]=l.pixels[y*l.w+x];
  }return out;
@@ -54,7 +55,8 @@ export function packActionUi(profiles){const glyphChunks=[],tileCounts=[],mapIds
  // Small UI maps only, never combinations with battle artwork. This bounded
  // compiler is not the future arbitrary-text live producer.
  for(const p of profiles){const dict=new Map(),tiles=[];for(const e of p.entries){const pixels=uiPixels(p.uiRaster,e.live),result=Buffer.alloc(120,255);
-  for(let y=1;y<6;y++)for(let x=0;x<20;x++){
+  for(let y=p.uiRaster.layout.top===103?0:1;y<6;y++)for(let x=0;x<20;x++){
+   if(p.party&&x>=15)continue; // Live HP suffix owns these cells.
    const values=[];for(let yy=0;yy<8;yy++)for(let xx=0;xx<8;xx++)values.push(pixels[(y*8+yy)*160+x*8+xx]);
    const tile=encodeTile(values),key=tile.toString('hex');if(!dict.has(key)){dict.set(key,tiles.length);tiles.push(tile);}result[y*20+x]=48+dict.get(key);
   }

@@ -26,7 +26,7 @@ static void party_or(uint8_t *destination,const uint8_t *mask) __sdcccall(0) __n
  __endasm;}
 static void party_overlay(uint8_t page){uint8_t r,x,n,variant,cmd,*mask=(uint8_t*)scene_keys;uint16_t at;
  if((party_valid_pages&(1<<page))&&last_frame[page]==scene_page&&!memcmp(party_cached_commands+page*4,party_display_commands,4))return;
- ff3_scene_rom_copy(7,party_ui_base,text_staging,400);
+ ff3_scene_rom_copy(7,party_ui_base,text_staging,480);
  for(r=0;r<4;r++){
   cmd=party_display_commands[r];if(cmd!=255&&cmd!=4&&cmd!=5&&cmd!=6
 #ifdef FF3_ITEM_WINDOW
@@ -42,22 +42,22 @@ static void party_overlay(uint8_t page){uint8_t r,x,n,variant,cmd,*mask=(uint8_t
    party_or(text_staging+(uint16_t)(r+n)*80,mask);ff3_native_service();
   }
  }
- queue(7,text_staging,page,0x9670u,400);flush();
+ queue(7,text_staging,page,0x9620u,480);flush();
 #ifdef FF3_ITEM_WINDOW
- if(selection_mode==4&&item_hp){memset(text_staging,0,16);queue(7,text_staging,page,0x9660u,16);flush();}
+ if(selection_mode==4&&item_hp){memset(text_staging,0,16);queue(7,text_staging,page,0x9610u,16);flush();}
 #endif
- /* scene_input aliases the tail of the 400-byte glyph staging region.
+ /* scene_input aliases the tail of the 480-byte glyph staging region.
   * The preceding flush is mandatory before composing map rows here. */
  ff3_scene_rom_copy(7,action_cells+(uint16_t)action_ui_index*120,scene_keys,120);
- for(r=0;r<5;r++){
-  at=(uint16_t)(14+r)*32;
+ for(r=0;r<6;r++){
+  at=(uint16_t)(13+r)*32;
   ff3_scene_rom_copy(target.bank,target.maps+at,scene_input+r*32,32);
   ff3_scene_rom_copy(target.bank,target.maps+(page?1216u:608u)+at,text_staging+r*32,32);
   for(x=0;x<20;x++){
-   scene_input[r*32+x]=x<15?((uint8_t*)scene_keys)[(r+1)*20+x]:103+r*5+x-15;
+   scene_input[r*32+x]=x<15?((uint8_t*)scene_keys)[r*20+x]:98+r*5+x-15;
    text_staging[r*32+x]=7|(page?8:0);
 #ifdef FF3_ITEM_WINDOW
-   if(selection_mode==4&&item_hp&&x<6)scene_input[r*32+x]=102;
+   if(selection_mode==4&&item_hp&&x<6)scene_input[r*32+x]=97;
 #endif
   }
   queue(7,scene_input+r*32,0,(page?0x9c00u:0x9800u)+at,32);

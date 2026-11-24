@@ -37,14 +37,14 @@ emu.addMemoryCallback(function(address,value)
  local active=(lcdc>>3)&1
  local items=itemVisible and emu.read(itemVisible,mem)~=0
  local loading=itemLoading and emu.read(itemLoading,mem) or 255
- if bank==0 and address<0x8960 and loading<3 then
-  if (address-0x8000)//800~=loading then bad=bad+1 end
+ if bank==0 and address<0x8b40 and loading<3 then
+  if (address-0x8000)//960~=loading then bad=bad+1 end
   if items then
    -- Read the published map, not the producer's pending slot assignments.
    local scroll=emu.read(itemScroll,mem)
    for x=scroll//8,scroll//8+19 do
-    local tile=emu.read(0x9800+active*1024+448+x,mem)
-    if tile//50==loading then bad=bad+1;break end
+    local tile=emu.read(0x9800+active*1024+416+x,mem)
+    if tile//60==loading then bad=bad+1;break end
    end
   elseif active~=1 then bad=bad+1 end
  elseif items and address<0x9800 then
@@ -88,7 +88,7 @@ if itemVisible then
  emu.addMemoryCallback(function(address,value)
   if emu.read(itemVisible,mem)~=0 and (value&16)~=0 then
    raster=raster+1
-   if emu.read(0xff44,mem)~=105 or (emu.read(0xff41,mem)&3)~=0 then badraster=badraster+1;local t=emu.getState();emu.log(string.format('item-raster-invalid:%d,%d,%d,%d',emu.read(0xff44,mem),emu.read(0xff41,mem)&3,t.masterClock,t['cpu.pc'])) end
+   if emu.read(0xff44,mem)~=97 or (emu.read(0xff41,mem)&3)~=0 then badraster=badraster+1;local t=emu.getState();emu.log(string.format('item-raster-invalid:%d,%d,%d,%d',emu.read(0xff44,mem),emu.read(0xff41,mem)&3,t.masterClock,t['cpu.pc'])) end
    local t=emu.getState();emu.log(string.format('item-scroll:%d,%d,%d',emu.read(itemScroll,mem),t.masterClock,t.clockRate))
   end
  end,emu.callbackType.write,0xff40,0xff40,emu.cpuType.gameboy)

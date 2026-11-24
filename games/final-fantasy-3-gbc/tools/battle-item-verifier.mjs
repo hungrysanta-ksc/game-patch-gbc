@@ -56,14 +56,14 @@ export function itemStep(rom,profile,state,q,equipment,jobs){
 }
 const colors=hex=>{const b=Buffer.from(hex,'hex');return Array.from({length:b.length/2},(_,i)=>{const v=b.readUInt16LE(i*2),r=v&31,g=v>>5&31,z=v>>10;return [Math.min(240,(r*26+g*4+z*2)>>2),Math.min(240,(g*24+z*8)>>2),Math.min(240,(r*6+g*4+z*22)>>2)];});};
 const pixel=(b,t,x,y)=>(b[t*16+y*2]>>(7-x)&1)|((b[t*16+y*2+1]>>(7-x)&1)<<1);
-function columnPixels(a,column,s,equipment,jobs,offset){const kind=!column?0:column===1?1:column===8?3:2,p=new Uint8Array(80*38);
- for(let y=0;y<38;y++)for(let x=0;x<80;x++)p[y*80+x]=pixel(a.base,kind*50+(y>>3)*10+(x>>3),x&7,y&7);
+function columnPixels(a,column,s,equipment,jobs,offset){const kind=!column?0:column===1?1:column===8?3:2,p=new Uint8Array(80*48);
+ for(let y=0;y<48;y++)for(let x=0;x<80;x++)p[y*80+x]=pixel(a.base,kind*60+(y>>3)*10+(x>>3),x&7,y&7);
  for(let r=0;r<4;r++){const label=!column&&!(r&1),id=label?256+(r>>1):column?s.bag[(column-1)*4+r]:equipment[s.party[0]*64+(r>=2?5:3)],qty=column?s.bag[32+(column-1)*4+r]:equipment[s.party[0]*64+(r>=2?6:4)],shift=column===s.cursor[1]&&r===s.cursor[0]?offset:0;
   for(let y=0;y<8;y++){
-   if(label||id)for(let x=0;x<36;x++){const sx=x+shift;if(sx<128&&(a.names[id*128+y*16+(sx>>3)]&(128>>(sx&7))))p[(3+r*8+y)*80+16+x]=3;}
+   if(label||id)for(let x=0;x<36;x++){const sx=x+shift;if(sx<128&&(a.names[id*128+y*16+(sx>>3)]&(128>>(sx&7))))p[(8+r*8+y)*80+16+x]=3;}
    if(label)continue;
-   for(let x=0;x<24;x++){const g=x<8?10:x<16?(qty<10?255:Math.floor(qty/10)%10):qty%10;if(g!==255&&(a.digits[g*16+y*2]&(128>>(x&7))))p[(3+r*8+y)*80+52+x]=3;}
-   if(column&&!a.usable[jobs[s.party[0]]*256+id])for(let x=0;x<8;x++)if(a.digits[11*16+y*2]&(128>>x))p[(3+r*8+y)*80+4+x]=3;
+   for(let x=0;x<24;x++){const g=x<8?10:x<16?(qty<10?255:Math.floor(qty/10)%10):qty%10;if(g!==255&&(a.digits[g*16+y*2]&(128>>(x&7))))p[(8+r*8+y)*80+52+x]=3;}
+   if(column&&!a.usable[jobs[s.party[0]]*256+id])for(let x=0;x<8;x++)if(a.digits[11*16+y*2]&(128>>x))p[(8+r*8+y)*80+4+x]=3;
   }
  }return p;
 }
@@ -80,10 +80,11 @@ export async function verifySelection({data,local,report,actual,cfg,dir,shots,se
   if(old?.mode===3&&s.mode===3&&(old.cursor[0]!==s.cursor[0]||old.cursor[1]!==s.cursor[1]))check(p.item.marquee===0,'Changed cursor resets name offset '+i);
   const visible=s.mode===3||(s.mode===4&&!s.hp);check(p.item.visible===+visible,'Item visibility '+i);check(p.item.marquee<=92,'Marquee bound');if(q.hold>=360){const id=s.bag[(s.cursor[1]-1)*4+s.cursor[0]];marqueeWindows.push({from:p.completedMaster,to:p.captureMaster,maxOffset:a.widths[id]-36});}if(!p.screenshot)continue;
   const view=profiles[s.back][s.party[0]],f=report.frames[profile.entries[s.party[0]].frame],ui=partyUiRaster(view,assets.text,s.display),rgb=actionRgb(view.source.frame,ui,3),palette=colors(f.palette),obj=colors(f.palette.slice(128)),tiles=view.source.menuTiles;let hand=[];
-  if(visible){for(let col=0;col<2;col++){const pixels=columnPixels(a,s.cursor[2]+col,s,equipment,jobs,p.item.marquee);for(let y=0;y<38;y++)for(let x=0;x<80;x++)rgb.set(palette[28+pixels[y*80+x]],((106+y)*160+col*80+x)*3);}
-   if(s.mode===3){const add=(r,c,selected=0)=>{if(c<s.cursor[2]||c>s.cursor[2]+1){hand.push(null,null,null,null);return;}const first=view.source.commandHand[0];hand.push(...view.source.commandHand.map(p=>({...p,x:p.x-first.x+(c-s.cursor[2])*80+selected*4,y:p.y-first.y+104+r*8})));};add(s.cursor[0],s.cursor[1]);if(s.cursor[3])add(s.cursor[4],s.cursor[5],1);}
+  if(visible){for(let col=0;col<2;col++){const pixels=columnPixels(a,s.cursor[2]+col,s,equipment,jobs,p.item.marquee);for(let y=5;y<46;y++)for(let x=0;x<80;x++)rgb.set(palette[28+pixels[y*80+x]],((98+y)*160+col*80+x)*3);}
+   if(s.mode===3){const add=(r,c,selected=0)=>{if(c<s.cursor[2]||c>s.cursor[2]+1){hand.push(null,null,null,null);return;}const left=Math.min(...view.source.commandHand.map(p=>p.x));hand.push(...view.source.commandHand.map(p=>({...p,x:p.x-left+(c-s.cursor[2])*80+selected*4,y:p.y+r*8})));};add(s.cursor[0],s.cursor[1]);if(s.cursor[3])add(s.cursor[4],s.cursor[5],1);}
    else{const mask=s.target[0]||s.target[1],start=s.target[0]&&!(mask&240)?4:0;for(let j=start;j<start+4;j++)if(mask&(128>>j))hand.push(...view.source.cursors[j+(s.target[0]?0:8)]);}
-  }else{hand=selectionHand(view,s);if(s.mode===4&&s.hp)for(let y=106;y<144;y++)rgb.fill(0,y*160*3,(y*160+48)*3);}
+  }else{hand=selectionHand(view,s);if(s.mode===4&&s.hp)for(let y=103;y<144;y++)rgb.fill(0,y*160*3,(y*160+48)*3);}
+  check(hand.filter(Boolean).every(q=>q.x>=0&&q.y>=0&&q.x+8<=160&&q.y+8<=144),'Complete hand stays inside viewport '+i);
   for(const q of hand.filter(Boolean).reverse())for(let y=0;y<8;y++)for(let x=0;x<8;x++){const v=pixel(tiles,q.tile,q.attr&64?7-x:x,q.attr&128?7-y:y);if(v&&q.x+x>=0&&q.x+x<160&&q.y+y>=0&&q.y+y<144)rgb.set(obj[(q.attr&3)*4+v],((q.y+y)*160+q.x+x)*3);}
   const image=await fs.readFile(cfg.home+'/Screenshots/'+shots[p.screenshotOrdinal]),actualRgb=screenshotRgb(image);if(!actualRgb.equals(rgb)){await fs.writeFile(dir+'/item-expected-'+i+'.rgb',rgb);throw Error('Actual item pixels '+i+' mode '+s.mode+' marquee '+p.item.marquee);}
   const expectedOam=Buffer.alloc(160),base=Buffer.from(f.atlas.oam.data),page=visible?1:(p.lcdc>>3)&1,n=f.stats.objects;for(let j=0;j<n;j++)base[j*4+2]+=page*64;base.copy(expectedOam,hand.length*4,0,n*4);for(const [j,q]of hand.entries())if(q)expectedOam.set([q.y+16,q.x+8,60+q.tile-89+page*64,11+((q.attr&64)?32:0)+((q.attr&128)?64:0)],j*4);

@@ -2,21 +2,21 @@
  * only column graphics, cursor state and a pending action are cached. */
 static void item_column(uint8_t column,uint8_t slot,uint8_t offset){uint8_t r;
  item_loading_slot=slot;scene_phase=10;
- for(r=0;r<5;r++){ff3_item_render_row(column,r,column==item_cursor.column?item_cursor.row:255,offset,selection_party.actor,text_staging);queue(7,text_staging,0,0x8000u+(uint16_t)slot*800+(uint16_t)r*160,160);flush();}
+ for(r=0;r<6;r++){ff3_item_render_row(column,r,column==item_cursor.column?item_cursor.row:255,offset,selection_party.actor,text_staging);queue(7,text_staging,0,0x8000u+(uint16_t)slot*960+(uint16_t)r*160,160);flush();}
  item_loading_slot=255;
 }
 static void item_map(uint8_t page,uint8_t a,uint8_t b,uint8_t c){uint8_t r,x,slot,*attrs=text_staging;
  scene_phase=10;
  if(item_map_slots[page*3]==a&&item_map_slots[page*3+1]==b&&item_map_slots[page*3+2]==c)return;
- if(!(item_maps&(1<<page))){queue(target.bank,target.maps,0,page?0x9c00u:0x9800u,448);queue(target.bank,target.maps+1216,1,page?0x9c00u:0x9800u,448);flush();item_maps|=1<<page;}
- for(r=0;r<5;r++){for(x=0;x<32;x++){slot=x<10?a:x<20?b:c;scene_input[r*32+x]=slot*50+r*10+(x<10?x:x<20?x-10:x-20);attrs[r*32+x]=7;}ff3_native_service();}
- queue(7,scene_input,0,(page?0x9c00u:0x9800u)+448,160);queue(7,attrs,1,(page?0x9c00u:0x9800u)+448,160);flush();
+ if(!(item_maps&(1<<page))){queue(target.bank,target.maps,0,page?0x9c00u:0x9800u,416);queue(target.bank,target.maps+1216,1,page?0x9c00u:0x9800u,416);flush();item_maps|=1<<page;}
+ for(r=0;r<6;r++){for(x=0;x<32;x++){slot=x<10?a:x<20?b:c;scene_input[r*32+x]=slot*60+r*10+(x<10?x:x<20?x-10:x-20);attrs[r*32+x]=7;}ff3_native_service();}
+ queue(7,scene_input,0,(page?0x9c00u:0x9800u)+416,192);queue(7,attrs,1,(page?0x9c00u:0x9800u)+416,192);flush();
  item_map_slots[page*3]=a;item_map_slots[page*3+1]=b;item_map_slots[page*3+2]=c;
 }
-static void item_hand(uint8_t *oam,uint8_t row,uint8_t column,uint8_t scroll,uint8_t selected){uint8_t i,left,top;
+static void item_hand(uint8_t *oam,uint8_t row,uint8_t column,uint8_t scroll,uint8_t selected){uint8_t i,left;
  if(column<scroll||column>scroll+1){memset(oam,0,16);return;}
- ff3_scene_rom_copy(7,selection_cursors+(uint16_t)SELECTION_VIEW*208,oam,16);left=oam[1];top=oam[0];
- for(i=0;i<4;i++){oam[i*4]=oam[i*4]-top+120+row*8;oam[i*4+1]=oam[i*4+1]-left+8+(column-scroll)*80+selected*4;oam[i*4+2]+=64;}
+ ff3_scene_rom_copy(7,selection_cursors+(uint16_t)SELECTION_VIEW*208,oam,16);left=oam[1];for(i=1;i<4;i++)if(oam[i*4+1]<left)left=oam[i*4+1];
+ for(i=0;i<4;i++){oam[i*4]=oam[i*4]+row*8;oam[i*4+1]=oam[i*4+1]-left+8+(column-scroll)*80+selected*4;oam[i*4+2]+=64;}
 }
 static void item_oam(uint8_t page){uint8_t i,n=0,*oam=page?scene_oam1:scene_oam0;scene_phase=10;
  memset(oam,0,160);

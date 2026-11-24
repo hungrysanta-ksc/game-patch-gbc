@@ -8,7 +8,7 @@ void ff3_item_scroll_vblank(void) NONBANKED {
  x=offsets[step-1];item_scroll_x=item_scroll_right?x:80-x;
  item_scroll_step=step==6?0:step+1;
 }
-/* LYC105 arms the HBlank interrupt and returns immediately. HBlank105
+/* LYC97 arms the HBlank interrupt and returns immediately. HBlank97
  * publishes the bottom-only scroll/addressing split, then rearms LYC.
  * Neither interrupt waits for the PPU; AF is the only modified register. */
 void ff3_item_lcd(void) NONBANKED __naked {__asm
@@ -18,7 +18,7 @@ _item_raster_begin:
  ldh a,(_STAT_REG)
  and #3
  jr nz,item_raster_arm
- ; The mode-0 source is only armed on LY105. Keep its deadline path short;
+ ; The mode-0 source is only armed on LY97. Keep its deadline path short;
  ; bank copies recheck LY under the IE mask before they can block this IRQ.
  ld a,(_item_visible)
  or a
@@ -38,7 +38,7 @@ item_raster_arm:
  or a
  jr z,item_raster_done
  ldh a,(_LY_REG)
- cp #105
+ cp #97
  jr nz,item_raster_late
  ld a,#8
  ldh (_STAT_REG),a
@@ -52,5 +52,5 @@ item_raster_done:
  __endasm;
 }
 void ff3_item_video_init(void) NONBANKED {
- CRITICAL{LYC_REG=105;STAT_REG=(STAT_REG&7)|0x40;}
+ CRITICAL{LYC_REG=97;STAT_REG=(STAT_REG&7)|0x40;}
 }

@@ -20,9 +20,9 @@ void ff3_wram_transfer(void) NONBANKED __naked {
   * leaves both the audio timer and STAT enabled. */
  __asm
  ldh a,(_LY_REG)
- cp #104
+ cp #96
  jr c,91022$
- cp #106
+ cp #98
  jr c,91020$
 91022$:
  __endasm;
@@ -46,9 +46,9 @@ void ff3_wram_transfer(void) NONBANKED __naked {
   * Recheck atomically, and restore IE before retrying the wait. */
  __asm
  ldh a,(_LY_REG)
- cp #104
+ cp #96
  jr c,91023$
- cp #106
+ cp #98
  jr nc,91023$
  pop af
  ldh (_IE_REG),a

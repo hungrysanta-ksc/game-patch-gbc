@@ -1,11 +1,11 @@
 import {check} from './source.mjs';import {encodeTile} from './npc-composition.mjs';import {literal} from './battle-select-view-assets.mjs';import {drawOriginalUiText,uiPixels} from './battle-action-ui.mjs';
-// Five tile columns, five rows, at (120,106). Base frame is preserved;
+// Five tile columns, six rows, at (120,98). Base frame is preserved;
 // four independent two-tile-high labels share only transparent mask pixels.
 function tiles(p,w,h){const out=[];for(let y=0;y<h;y+=8)for(let x=0;x<w;x+=8){const a=[];for(let yy=0;yy<8;yy++)for(let xx=0;xx<8;xx++)a.push(p[(y+yy)*w+x+xx]);out.push(encodeTile(a));}return Buffer.concat(out);}
-export function partyUiAssets(profile,text,{items=false}={}){const pixels=uiPixels(profile.uiRaster,3),base=new Uint8Array(40*40),t=profile.source.menuTiles;
- for(let y=0;y<40;y++)for(let x=0;x<40;x++)base[y*40+x]=pixels[(y+8)*160+120+x];
- const labels=[255,4,5,6,...(items?[20]:[])].map(command=>{const p=new Uint8Array(40*16),words=command===255?profile.source.hp[0].value.slice(5):literal(text,0x620+command);drawOriginalUiText(p,40,t,words,3,3,{compact:command===255,hangul:text.glyphs});return tiles(p,40,16);});
- return {base:tiles(base,40,40),masks:Buffer.concat(labels),tileFirst:103,tileCount:25};
+export function partyUiAssets(profile,text,{items=false}={}){const pixels=uiPixels(profile.uiRaster,3),base=new Uint8Array(40*48),t=profile.source.menuTiles;
+ for(let y=0;y<48;y++)for(let x=0;x<40;x++)base[y*40+x]=pixels[y*160+120+x];
+ const labels=[255,4,5,6,...(items?[20]:[])].map(command=>{const p=new Uint8Array(40*16),words=command===255?profile.source.hp[0].value.slice(5):literal(text,0x620+command);drawOriginalUiText(p,40,t,words,3,8,{compact:command===255,hangul:text.glyphs});return tiles(p,40,16);});
+ return {base:tiles(base,40,48),masks:Buffer.concat(labels),tileFirst:98,tileCount:30};
 }
 // Pixel reference deliberately redraws labels with the text renderer, not
 // the native mask compositor or its generated masks.

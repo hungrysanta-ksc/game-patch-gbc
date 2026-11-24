@@ -18,9 +18,9 @@ export async function itemAssets(rom,text,tiles,config){
   names.push(b);widths.push(width);origins.push(id<256?{id,sourceSha256:e.sourceSha256,origin:e.origin??'supplied translation binding',translationSha256:hash(Buffer.from(e.ko))}:{id,origin:'system right/left labels'});
  }
  const base=[];for(let kind=0;kind<4;kind++){
-  const p=compactOriginalBox(tiles,80,38),middle=compactOriginalBox(tiles,240,38);
-  for(let y=0;y<38;y++)for(let x=0;x<80;x++)if((x<4&&kind!==0&&kind!==1)||(x>=76&&kind!==0&&kind!==3))p[y*80+x]=middle[y*240+80+x];
-  for(let y=0;y<40;y+=8)for(let x=0;x<80;x+=8){const a=[];for(let yy=0;yy<8;yy++)for(let xx=0;xx<8;xx++)a.push(y+yy<38?p[(y+yy)*80+x+xx]:0);base.push(encodeTile(a));}
+  const p=new Uint8Array(80*48),box=compactOriginalBox(tiles,80,41),middle=compactOriginalBox(tiles,240,41);p.set(box,5*80);
+  for(let y=0;y<41;y++)for(let x=0;x<80;x++)if((x<4&&kind!==0&&kind!==1)||(x>=76&&kind!==0&&kind!==3))p[(y+5)*80+x]=middle[y*240+80+x];
+  for(let y=0;y<48;y+=8)for(let x=0;x<80;x+=8){const a=[];for(let yy=0;yy<8;yy++)for(let xx=0;xx<8;xx++)a.push(p[(y+yy)*80+x+xx]);base.push(encodeTile(a));}
  }
  const use=compiledItemUseTables(rom);return {names:Buffer.concat(names),widths:Buffer.from(widths),base:Buffer.concat(base),digits:Buffer.concat([...Array.from({length:10},(_,i)=>0x80+i),0xc8,0x73].map(id=>tiles.subarray(id*16,id*16+16))),...use,report:{bindingsSha256:hash(bytes),names:origins,useChecks:use.checks,provenance:use.provenance,viewport:36,fullNameCapacity:128,columnWidth:80,rows:4,scrollFrames:6}};
 }
