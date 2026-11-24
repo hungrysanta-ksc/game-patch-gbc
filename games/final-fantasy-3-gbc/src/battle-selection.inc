@@ -17,6 +17,16 @@ static void selection_cursor(uint8_t page){uint8_t id=0,i,*oam=page?scene_oam1:s
  ff3_scene_rom_copy(target.bank,target.oam,oam,160);
  for(i=0;i<target.objects;i++)oam[i*4+2]+=page*64;
  if(selection_mode==2)return;
+#ifdef FF3_PARTY_COMMANDS
+ if(selection_mode==5){
+  memmove(oam+4,oam,(uint16_t)target.objects*4);
+  oam[0]=selection_row_state.arrow_y-20-selection_party.actor*4;
+  oam[1]=selection_row_state.arrow_x-(selection_back?8:72);
+  oam[2]=60+page*64;oam[3]=11|((selection_row_state.arrow_attr&64)?32:0);
+  if(selection_glyphs_loaded[page]!=2){ff3_scene_rom_copy(7,selection_arrow,text_staging,16);queue(7,text_staging,1,0x83c0u+(uint16_t)page*1024,16);flush();selection_glyphs_loaded[page]=2;}
+  return;
+ }
+#endif
  if(selection_mode==1
 #ifdef FF3_ITEM_WINDOW
  ||selection_mode==4
@@ -25,7 +35,7 @@ static void selection_cursor(uint8_t page){uint8_t id=0,i,*oam=page?scene_oam1:s
  memmove(oam+16,oam,(uint16_t)target.objects*4);
  ff3_scene_rom_copy(7,selection_cursors+(uint16_t)SELECTION_VIEW*208+(uint16_t)id*16,oam,16);
  for(i=0;i<4;i++){uint8_t at=i*4;oam[at+2]+=page*64;if(selection_mode==0)oam[at]+=selection_row*8;}
- if(!selection_glyphs_loaded[page]){ff3_scene_rom_copy(7,selection_glyphs,text_staging,64);queue(7,text_staging,1,0x83c0u+(uint16_t)page*1024,64);flush();selection_glyphs_loaded[page]=1;}
+ if(selection_glyphs_loaded[page]!=1){ff3_scene_rom_copy(7,selection_glyphs,text_staging,64);queue(7,text_staging,1,0x83c0u+(uint16_t)page*1024,64);flush();selection_glyphs_loaded[page]=1;}
 }
 static void selection_begin(void){
  #ifdef FF3_ITEM_WINDOW
@@ -47,7 +57,7 @@ static void selection_begin(void){
  selection_held=selection_delay=0;selection_repeat=8;
  selection_glyphs_loaded[0]=selection_glyphs_loaded[1]=0;
 #ifdef FF3_PARTY_COMMANDS
- memset(&selection_party,0,sizeof(selection_party));memset(party_used_equipped,0,4);memset(selection_party.command,255,4);party_valid_pages=0;party_enter();
+ memset(&selection_party,0,sizeof(selection_party));memset(&selection_row_state,0,sizeof(selection_row_state));memset(party_used_equipped,0,4);memset(selection_party.command,255,4);party_valid_pages=0;party_enter();
 #endif
  action_profile_index=4+selection_back;action_mask=3;ff3_scene_rom_copy(7,selection_uis+selection_back,&action_ui_index,1);ff3_scene_rom_copy(7,selection_frames+SELECTION_VIEW,(void*)&scene_page,1);action_dirty=1;show();selection_serial++;
  /* Warm the inactive page before accepting a key. Moving the hand must not
@@ -63,7 +73,7 @@ static void selection_input(void){uint8_t key=selection_buttons,bit=key&((uint8_
 #endif
 #ifdef FF3_PARTY_COMMANDS
  #ifdef FF3_ITEM_WINDOW
- if(selection_mode>=3)item_key(key);else
+ if(selection_mode==3||selection_mode==4)item_key(key);else
 #endif
  party_key(key);
 #else
