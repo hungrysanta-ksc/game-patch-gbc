@@ -21,14 +21,45 @@ void ff3_battle_vblank(void) NONBANKED {
  uint16_t now=native_clock;uint8_t changed;
  if(!battle_active)return;
  if(next_entry&&((int16_t)(now-battle_due)<0))return;
+#ifdef FF3_NUMBER_TIMELINE
+ __asm ei __endasm;
+ /* Anchor the first VBlank admission, not the longer first palette copy. */
+ if(!next_entry){battle_origin=now;battle_due=now;}
+ changed=1; /* Logical source waits survive visually identical frames. */
+#else
  changed=!next_entry||battle_visuals[next_entry]!=battle_visuals[next_entry-1];
+#endif
  if(changed){
-  if(!battle_ready||supplied_entry!=next_entry){battle_misses++;scene_error=13;battle_active=0;return;}
-  ff3_battle_commit(supplied_page,0);battle_ready=0;
+  if(!battle_ready||supplied_entry!=next_entry){battle_misses++;scene_error=13;battle_active=0;
+#ifdef FF3_NUMBER_TIMELINE
+   __asm di __endasm;
+#endif
+   return;}
+#ifdef FF3_NUMBER_TIMELINE
+  ff3_number_commit(supplied_page);
+  __asm ei __endasm;
+#else
+  ff3_battle_commit(supplied_page,0);
+#endif
+  battle_ready=0;
  }
- battle_committed=native_clock;if(!next_entry){battle_origin=battle_committed;battle_due=battle_origin;}
+#ifdef FF3_NUMBER_TIMELINE
+ CRITICAL{battle_committed=native_clock;}
+#else
+ battle_committed=native_clock;
+#endif
+#ifndef FF3_NUMBER_TIMELINE
+ if(!next_entry){battle_origin=battle_committed;battle_due=battle_origin;}
+#endif
  battle_entry=next_entry;battle_serial++; /* Read-only trace publication, after LCDC/OAM. */
  next_entry++;
- if(next_entry==BATTLE_ENTRY_COUNT){battle_active=0;return;}
+ if(next_entry==BATTLE_ENTRY_COUNT){battle_active=0;
+#ifdef FF3_NUMBER_TIMELINE
+  __asm di __endasm;
+#endif
+  return;}
  battle_due=battle_origin+battle_offsets[next_entry];
+#ifdef FF3_NUMBER_TIMELINE
+ __asm di __endasm;
+#endif
 }

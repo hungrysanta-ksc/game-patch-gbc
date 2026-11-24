@@ -6,7 +6,7 @@
 #include "text-vblank.h"
 #include "memory.h"
 #include "scene-assets.h"
-#ifdef FF3_BATTLE_TIMELINE
+#if defined(FF3_BATTLE_TIMELINE) || defined(FF3_NUMBER_TIMELINE)
 #include "battle-timeline.h"
 #endif
 void ff3_native_service(void) NONBANKED;
@@ -257,7 +257,33 @@ static void play(void){uint8_t n,page=active_page^1,visual;SceneBattleFrame item
  scene_page=active_frame;scene_frames+=SCENE_FRAME_COUNT;
 }
 #endif
+#ifdef FF3_NUMBER_TIMELINE
+static void play_numbers(void){uint8_t n,i,page=active_page^1,storage=page,*oam;SceneNumberRun run;
+ if(window_owned||battle_active||scene_page>=SCENE_NUMBER_RUNS){scene_error=12;return;}
+ ff3_scene_rom_copy(7,scene_number_runs+scene_page,&run,sizeof(run));
+ scene_page=run.first;scene_phase=1;if(!loaded)preload();prepare(page);if(scene_error)return;
+ ff3_scene_rom_copy(7,scene_frames_data+scene_page,&frame,sizeof(frame));ff3_scene_rom_copy(frame.bank,frame.palette,scene_palette,96);
+ scene_phase=4;ff3_battle_start(page);
+ while(battle_entry==255&&!scene_error){ff3_native_service();__asm halt __endasm;}
+ scene_phase=8;
+ for(n=1;n<33&&!scene_error;n++){
+  page^=1;oam=page?scene_oam1:scene_oam0;
+  ff3_scene_rom_copy(run.bank,run.oam+(uint16_t)n*160,oam,160);
+  for(i=0;i<run.objects;i++)oam[i*4+2]+=storage*64;
+  ff3_battle_supply(n,page);
+  while(battle_entry<n&&battle_active&&!scene_error){ff3_native_service();__asm halt __endasm;}
+ }
+ while(battle_active&&!scene_error){ff3_native_service();__asm halt __endasm;}
+ /* Both shadow buffers now differ from the regular scene-frame cache.
+  * The next ordinary owner must rebuild, even for an identical clear view. */
+ active_page=storage;active_frame=255;last_frame[0]=last_frame[1]=255;
+ scene_page=run.clear;scene_frames+=33;
+}
+#endif
 void ff3_scene_run(void) BANKED {
+#ifdef FF3_NUMBER_TIMELINE
+ if(scene_request==6)play_numbers();else
+#endif
 #ifdef FF3_BATTLE_TIMELINE
  if(scene_request==5)play();else
 #endif

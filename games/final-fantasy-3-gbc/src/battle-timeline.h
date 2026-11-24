@@ -7,4 +7,5 @@ void ff3_battle_start(uint8_t page) NONBANKED;
 void ff3_battle_supply(uint8_t entry,uint8_t page) NONBANKED;
 void ff3_battle_vblank(void) NONBANKED;
 void ff3_battle_commit(uint8_t page,uint8_t palette) NONBANKED;
+void ff3_number_commit(uint8_t page) NONBANKED;
 #endif

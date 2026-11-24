@@ -66,8 +66,9 @@ export function originalSceneSequence(rom,{back=false,retreat=8,numbers=false,en
  const observations=[],numberRuns=[];let phase='entry',last,numberOwners=[],numberFrame=null;
  const capture=(boundary,c,ppu)=>{
   const picture=scenePixels(c,ppu,{back,layout,numberOwners,formation}),key=hash(Buffer.concat([Buffer.from(picture.pixels.buffer),picture.objPalette]));
-  if(last?.key===key&&last.phase===phase){last.boundaries++;last.partyEnemyOverlapPixels=Math.max(last.partyEnemyOverlapPixels,picture.partyEnemyOverlapPixels);return;}
-  last={phase,key,boundaries:1,boundary:boundary.boundary,numberFrame,enemyScroll:boundary.enemyScroll,enemyPage:c.m[7]&1,...picture,sourceOamSha256:boundary.oamSha256,sourceChrSha256:boundary.chrSha256};observations.push(last);
+  const numberFrames=phase.endsWith('-numbers')&&numberFrame!==null&&boundary.reason==='before-NMI-wait'?[numberFrame]:[];
+  if(last?.key===key&&last.phase===phase){last.boundaries++;last.numberFrames.push(...numberFrames);last.partyEnemyOverlapPixels=Math.max(last.partyEnemyOverlapPixels,picture.partyEnemyOverlapPixels);return;}
+  last={phase,key,boundaries:1,boundary:boundary.boundary,numberFrame,numberFrames,enemyScroll:boundary.enemyScroll,enemyPage:c.m[7]&1,...picture,sourceOamSha256:boundary.oamSha256,sourceChrSha256:boundary.chrSha256};observations.push(last);
  };
  const {m}=initializedBattle(rom,{formation:3,back,rows:[0,0,0,0],terrain:0,capture}),c=m.c;
  m.begin();m.call(0xb469);m.finish();
