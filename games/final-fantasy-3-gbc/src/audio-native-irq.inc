@@ -68,6 +68,20 @@ static void dispatch_due(void) __naked {
  ld a,(hl+)
  ld (_irq_flags),a
  ld de,#_native_consumed
+ __endasm;
+#ifdef FF3_ITEM_WINDOW
+ /* Fixed-size diagnostic copy: no loop overhead in the audio deadline. */
+ __asm
+ .rept 11
+ ld a,(hl+)
+ ld (de),a
+ inc de
+ .endm
+ ld a,(hl+)
+ ld (de),a
+ __endasm;
+#else
+ __asm
  ld b,#12
 90104$:
  ld a,(hl+)
@@ -76,6 +90,7 @@ static void dispatch_due(void) __naked {
  dec b
  jp nz,90104$
  __endasm;
+#endif
 #ifdef FF3_SCENE
  __asm
  ld a,(hl+)
@@ -91,6 +106,51 @@ static void dispatch_due(void) __naked {
 #endif
  __asm
  ld a,(_irq_write_count)
+ __endasm;
+#ifdef FF3_ITEM_WINDOW
+ /* Emit the remainder, then groups of four. Preserve APU order and values
+  * with bounded loop overhead for a worst-case 23-write packet. */
+ __asm
+ ld d,a
+ and #3
+ ld b,a
+ jr z,90125$
+90124$:
+ ld a,(hl+)
+ ld c,a
+ ld a,(hl+)
+ ldh (c),a
+ dec b
+ jr nz,90124$
+90125$:
+ ld a,d
+ srl a
+ srl a
+ ld b,a
+ or a
+ jr z,90106$
+90105$:
+ ld a,(hl+)
+ ld c,a
+ ld a,(hl+)
+ ldh (c),a
+ ld a,(hl+)
+ ld c,a
+ ld a,(hl+)
+ ldh (c),a
+ ld a,(hl+)
+ ld c,a
+ ld a,(hl+)
+ ldh (c),a
+ ld a,(hl+)
+ ld c,a
+ ld a,(hl+)
+ ldh (c),a
+ dec b
+ jr nz,90105$
+ __endasm;
+#else
+ __asm
  ld b,a
  or a
  jp z,90106$
@@ -102,6 +162,9 @@ static void dispatch_due(void) __naked {
  ldh (c),a
  dec b
  jp nz,90105$
+ __endasm;
+#endif
+ __asm
 90106$:
 90120$:
  ld a,(_native_head)
@@ -110,7 +173,20 @@ static void dispatch_due(void) __naked {
  ld (_native_head),a
  ld a,(_irq_flags)
  or a
+ __endasm;
+#ifdef FF3_ITEM_WINDOW
+ /* prepare() merges coincident VM/sweep/restore deadlines into one packet.
+  * Deadlines are strictly increasing; the next timer edge can discover the
+  * following wait instead of rescanning another packet in this interrupt. */
+ __asm
+ jp z,90199$
+ __endasm;
+#else
+ __asm
  jp z,90100$
+ __endasm;
+#endif
+ __asm
  xor a
 #ifndef FF3_EXPLORATION
  ldh (_TAC_REG),a
@@ -129,8 +205,34 @@ static void dispatch_due(void) __naked {
  __endasm;
 }
 static void clock_irq(void) __naked {__asm
+ __endasm;
+#ifdef FF3_ITEM_WINDOW
+ __asm
+ .globl _item_audio_irq_begin
+_item_audio_irq_begin:
+ __endasm;
+#endif
+ __asm
  push af
+ __endasm;
+#ifndef FF3_ITEM_WINDOW
+ __asm
  push hl
+ __endasm;
+#endif
+#ifdef FF3_ITEM_WINDOW
+ /* STAT may preempt the packet writer, but neither TIM nor VBL may reenter
+  * it. The raster ISR preserves AF and touches no queue, bank, or WRAM. */
+ __asm
+ ldh a,(_IE_REG)
+ push af
+ and #2
+ ldh (_IE_REG),a
+ ei
+ push hl
+ __endasm;
+#endif
+ __asm
  ld a,#1
  ld (_native_irq_busy),a
  ld hl,#_native_clock
@@ -155,8 +257,32 @@ static void clock_irq(void) __naked {__asm
  pop de
  pop bc
 90202$:
+ __endasm;
+#ifdef FF3_ITEM_WINDOW
+ __asm
+ di
  pop hl
  pop af
+ ldh (_IE_REG),a
+ __endasm;
+#endif
+ __asm
+ __endasm;
+#ifndef FF3_ITEM_WINDOW
+ __asm
+ pop hl
+ __endasm;
+#endif
+ __asm
+ pop af
+ __endasm;
+#ifdef FF3_ITEM_WINDOW
+ __asm
+ .globl _item_audio_irq_end
+_item_audio_irq_end:
+ __endasm;
+#endif
+ __asm
  reti
  __endasm;}
 ISR_VECTOR(VECTOR_TIMER, clock_irq)

@@ -2,6 +2,9 @@
 #include <string.h>
 #include "composition-window.h"
 #include "text-vblank.h"
+#ifdef FF3_ITEM_WINDOW
+#include "battle-item-video.h"
+#endif
 #if defined(FF3_BATTLE_TIMELINE) || defined(FF3_NUMBER_TIMELINE)
 #include "battle-timeline.h"
 #endif
@@ -98,6 +101,10 @@ static void palette_copy(void) __naked {__asm
 }
 #endif
 static void publish_irq(void) NONBANKED {
+#ifdef FF3_ITEM_WINDOW
+ if(item_visible){SCX_REG=0;LCDC_REG&=0xef;}
+ ff3_item_scroll_vblank();
+#endif
 #if defined(FF3_BATTLE_TIMELINE) || defined(FF3_NUMBER_TIMELINE)
  if(battle_active){ff3_battle_vblank();return;}
 #endif
@@ -110,7 +117,15 @@ static void publish_irq(void) NONBANKED {
  __asm ei __endasm;
  if(next_palette)palette_copy();
  if((STAT_REG&3)!=1||LY_REG>152)scene_error=8;
+ #ifdef FF3_ITEM_WINDOW
+ item_visible=item_next_visible;item_scroll_x=item_next_scroll;
+#endif
  SCX_REG=next_x;SCY_REG=next_y;LCDC_REG=0x83|(next_page?8:0);scene_pending=0;
+ #ifdef FF3_ITEM_WINDOW
+ /* This renderer publishes OAM explicitly above. A second automatic GBDK
+  * copy on the next VBlank would extend the masked interval past TIMA. */
+ DISABLE_OAM_DMA;
+ #endif
  __asm di __endasm;
 }
 #if defined(FF3_BATTLE_TIMELINE) || defined(FF3_BATTLE_STREAM)
@@ -152,7 +167,11 @@ void ff3_number_commit(uint8_t page) NONBANKED {
  if((STAT_REG&3)!=1||LY_REG>152)scene_error=8;
 }
 #endif
-void ff3_scene_video_init(void) NONBANKED {CRITICAL{add_VBL(publish_irq);}}
+void ff3_scene_video_init(void) NONBANKED {CRITICAL{add_VBL(publish_irq);}
+#ifdef FF3_ITEM_WINDOW
+ ff3_item_video_init();
+#endif
+}
 void ff3_scene_publish(uint8_t page,uint8_t palette,uint8_t x,uint8_t y) NONBANKED {
  CRITICAL{next_page=page;next_palette=palette;next_x=x;next_y=y;
 #ifndef FF3_BATTLE_STREAM

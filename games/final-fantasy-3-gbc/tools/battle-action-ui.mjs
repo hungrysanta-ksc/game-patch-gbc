@@ -2,6 +2,9 @@ import {check} from './source.mjs';
 import {encodeTile} from './npc-composition.mjs';
 export const actionRows=[13,14,15,16,17,18];
 export const v6Ui={top:106,height:38,hpLeft:48,rowPitch:8};
+// User-approved Korean word spacing: nearest pixel to one third of 8px.
+// Compact HP digits keep their separate, fixed numeric alignment.
+export const battleTextAdvance=(id,compact=false)=>compact?5:id===255?3:8;
 function pixel(tiles,id,x,y){const a=id*16+y*2,b=7-x;return (tiles[a]>>b&1)|((tiles[a+1]>>b&1)<<1);}
 // Source grey/white bevel and round corners; omit repeated frame padding.
 export function compactOriginalBox(tiles,w,h){const out=new Uint8Array(w*h),lo=[0,1,2,5],hi=[2,5,6,7],bottom=[2,4,5,7];
@@ -12,7 +15,7 @@ export function compactOriginalBox(tiles,w,h){const out=new Uint8Array(w*h),lo=[
 }
 export function drawOriginalUiText(target,w,tiles,words,x,y,{compact=false,hangul}={}){
  while(words.at(-1)===255)words=words.slice(0,-1);
- for(const id of words){const advance=compact?5:8;
+ for(const id of words){const advance=battleTextAdvance(id,compact);
   check(x+advance<=w-3&&y>=0&&y+8<=target.length/w,'Battle UI text overflow; explicit layout required');
   for(let yy=0;yy<(compact?7:8);yy++)for(let xx=0;xx<advance;xx++){
    const sx=compact?Math.round(xx*6/4)+1:xx,sy=compact?yy+1:yy;

@@ -24,5 +24,5 @@ export function originalSelectionView(rom,{back=false,actor=0,queued}={}){
   x=Math.max(0,Math.min(144,x));y=Math.max(0,Math.min(128,y));cursors.push(parts.map(p=>({...p,x:x+p.x-left,y:y+p.y-top})));
  }
  select(c,0x1a);c.m[0x55]=0;c.m[0x1a]=0;c.call(0x8966);const commandHand=[];for(let at=0x220;at<0x230;at+=4){const [y,tile,attr,x]=c.m.subarray(at,at+4);commandHand.push({x:x-32+4,y:y+1-169+104,tile,attr});}
- return {frame,env,hp:hp.map(raw=>({name:[...raw.subarray(1,7)],value:[...raw.subarray(8,17)]})),...(queued?{labels}:{}),commands,rowCommands,menuTiles,menuPalette:frame.sourcePalettes.subarray(24,32),sourceUi,cursors,commandHand,formation:f,scope:'Live selection function boundary, first-battle formation/counts; explicit diagnostic names and HP, no effect calculator'};
+ return {frame,env,monsterStatus:Buffer.from(Array.from({length:8},(_,i)=>c.m[0x7676+i*64])),hp:hp.map(raw=>({name:[...raw.subarray(1,7)],value:[...raw.subarray(8,17)]})),...(queued?{labels}:{}),commands,rowCommands,menuTiles,menuPalette:frame.sourcePalettes.subarray(24,32),sourceUi,cursors,commandHand,formation:f,scope:'Live selection function boundary, first-battle formation/counts; explicit diagnostic names and HP, no effect calculator'};
 }
