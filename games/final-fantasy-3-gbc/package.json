@@ -18,7 +18,7 @@
     "verify:memory": "node tools/verify-memory.mjs",
     "build:audio": "node tools/build-audio.mjs",
     "build:timed": "node tools/build-timed.mjs",
-    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs tests/render-budget.test.mjs tests/npc-composition.test.mjs tests/composition-kernel.test.mjs tests/composition-cache.test.mjs tests/composition-input.test.mjs tests/composition-window.test.mjs tests/battle-display.test.mjs tests/battle-composition.test.mjs tests/battle-timeline.test.mjs tests/battle-placement.test.mjs tests/battle-scene.test.mjs tests/battle-transitions.test.mjs tests/battle-scene-composition.test.mjs tests/battle-numbers.test.mjs tests/battle-number-timeline.test.mjs tests/battle-action.test.mjs tests/battle-select.test.mjs",
+    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs tests/render-budget.test.mjs tests/npc-composition.test.mjs tests/composition-kernel.test.mjs tests/composition-cache.test.mjs tests/composition-input.test.mjs tests/composition-window.test.mjs tests/battle-display.test.mjs tests/battle-composition.test.mjs tests/battle-timeline.test.mjs tests/battle-placement.test.mjs tests/battle-scene.test.mjs tests/battle-transitions.test.mjs tests/battle-scene-composition.test.mjs tests/battle-numbers.test.mjs tests/battle-number-timeline.test.mjs tests/battle-action.test.mjs tests/battle-select.test.mjs tests/battle-party.test.mjs",
     "test:vgm": "node --test tests/vgm.test.mjs tests/timed-stream.test.mjs",
     "verify:timed": "node tools/verify-timed.mjs",
     "build:control": "node tools/build-control.mjs",
@@ -65,7 +65,11 @@
     "build:battle-select": "node tools/build-battle-select.mjs",
     "verify:battle-select": "node tools/verify-battle-select.mjs",
     "build:battle-selection": "node tools/build-composition-window.mjs --selection",
-    "verify:battle-selection": "node tools/verify-composition-window.mjs --selection"
+    "verify:battle-selection": "node tools/verify-composition-window.mjs --selection",
+    "build:battle-party": "node tools/build-battle-party.mjs",
+    "verify:battle-party": "node tools/verify-battle-select.mjs --party",
+    "build:battle-party-commands": "node tools/build-composition-window.mjs --party-commands",
+    "verify:battle-party-commands": "node tools/verify-composition-window.mjs --party-commands"
   },
   "engines": {
     "node": ">=20"
