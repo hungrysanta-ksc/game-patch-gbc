@@ -2,6 +2,17 @@
 -- The Korean window may borrow bank 1 only after normalization to page 0.
 local mem=emu.memType.gameboyDebug
 local writes,bad,palettes,badpalette=0,0,0,0
+local publications,badpublication=0,0
+local criticalStart,criticalRate,criticalMax,criticalCount=nil,0,0,0
+emu.addMemoryCallback(function()local t=emu.getState();criticalStart=t.masterClock;criticalRate=t.clockRate end,emu.callbackType.exec,__SCENE_DMA_BEGIN__,__SCENE_DMA_BEGIN__,emu.cpuType.gameboy)
+emu.addMemoryCallback(function()
+ local t=emu.getState();if not criticalStart then error('Missing DMA critical start') end
+ criticalMax=math.max(criticalMax,t.masterClock-criticalStart);criticalCount=criticalCount+1
+end,emu.callbackType.exec,__SCENE_DMA_END__,__SCENE_DMA_END__,emu.cpuType.gameboy)
+emu.addMemoryCallback(function(address,value)
+ local t=emu.getState()
+ emu.log(string.format('scene-stage:%d,%d,%d',value,t.masterClock,t.clockRate))
+end,emu.callbackType.write,__SCENE_PHASE__,__SCENE_PHASE__,emu.cpuType.gameboy)
 emu.addMemoryCallback(function(address,value)
  writes=writes+1
  local bank=emu.read(0xff4f,mem)&1
@@ -21,4 +32,17 @@ emu.addMemoryCallback(function(address,value)
  palettes=palettes+1
  if (emu.read(0xff41,mem)&3)~=1 then badpalette=badpalette+1 end
 end,emu.callbackType.write,0xff6b,0xff6b,emu.cpuType.gameboy)
+-- Check the actual OAM bytes at the map switch, not only the stable screenshot.
+emu.addMemoryCallback(function(address,value)
+ local phase=emu.read(__SCENE_PHASE__,mem)
+ if phase==4 or phase==5 then
+  publications=publications+1
+  local page=(value>>3)&1
+  local base=page==1 and 0xdd00 or 0xdc00
+  if emu.read(__OAM_BASE__,mem)~=base>>8 or (emu.read(0xff41,mem)&3)~=1 then badpublication=badpublication+1 end
+  for i=0,159 do if emu.read(0xfe00+i,mem)~=emu.read(base+i,mem) then badpublication=badpublication+1 end end
+ end
+end,emu.callbackType.write,0xff40,0xff40,emu.cpuType.gameboy)
 emu.addEventCallback(function()emu.log(string.format('scene-residency:%d,%d,%d,%d',writes,bad,palettes,badpalette))end,emu.eventType.codeBreak)
+emu.addEventCallback(function()emu.log(string.format('scene-publication:%d,%d',publications,badpublication))end,emu.eventType.codeBreak)
+emu.addEventCallback(function()emu.log(string.format('scene-critical:%d,%d,%d',criticalCount,criticalMax,criticalRate))end,emu.eventType.codeBreak)

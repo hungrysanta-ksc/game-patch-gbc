@@ -21,7 +21,9 @@ export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0}}={}){
  // not a scale operation on party art. This remains a presentation candidate.
  for(let y=0;y<16;y++)for(let x=0;x<160;x++)put(x,y,bgPixel(b,Math.floor(x*256/160),y+8).index);
  for(let y=0;y<84;y++)for(let x=0;x<126;x++){
-  const sx=16+Math.floor((x+.5)*8/7),sy=48+Math.floor((y+.5)*8/7),q=bgPixel(b,(back?255-sx:sx)+c.m[15],sy,c.m[6]&1);
+  // 2F/AE5E..AEA3 uses $07 for the enemy scroll page. $06 is not this
+  // raster region's page: it wraps incoming back-attack enemies into party.
+  const sx=16+Math.floor((x+.5)*8/7),sy=48+Math.floor((y+.5)*8/7),q=bgPixel(b,(back?255-sx:sx)+c.m[15],sy,c.m[7]&1);
   const dx=rearX(back?159-x:x,layout,back);put(dx,16+y,q.index);if(dx>=0&&dx<160&&q.opaque)enemy[(16+y)*W+dx]=1;
  }
  // Stone party lives in the BG, so it must participate in the same layer
@@ -47,7 +49,7 @@ export function originalSceneSequence(rom,{back=false,retreat=8}={}){
  const capture=(boundary,c,ppu)=>{
   const picture=scenePixels(c,ppu,{back,layout}),key=hash(Buffer.concat([Buffer.from(picture.pixels.buffer),picture.objPalette]));
   if(last?.key===key&&last.phase===phase){last.boundaries++;last.partyEnemyOverlapPixels=Math.max(last.partyEnemyOverlapPixels,picture.partyEnemyOverlapPixels);return;}
-  last={phase,key,boundaries:1,boundary:boundary.boundary,...picture,sourceOamSha256:boundary.oamSha256,sourceChrSha256:boundary.chrSha256};observations.push(last);
+  last={phase,key,boundaries:1,boundary:boundary.boundary,enemyScroll:boundary.enemyScroll,enemyPage:c.m[7]&1,...picture,sourceOamSha256:boundary.oamSha256,sourceChrSha256:boundary.chrSha256};observations.push(last);
  };
  const {m}=initializedBattle(rom,{formation:3,back,rows:[0,0,0,0],terrain:0,capture}),c=m.c;
  m.begin();m.call(0xb469);m.finish();
@@ -65,11 +67,16 @@ export function originalSceneSequence(rom,{back=false,retreat=8}={}){
 }
 export function sceneComposition(rom,options={}){
  const source=originalSceneSequence(rom,options),frames=[],failures=[];
+ // A palette set per unchanged source OBJ palette avoids reindexing every
+ // tile when one actor changes pose. This is a finite fixture palette plan;
+ // the live consumer must plan from its current assets, not future frames.
+ const groups=new Map();for(const f of source.observations){const obj=Buffer.concat([0,1,5,7].map(p=>f.sourcePalettes.subarray(p*8,p*8+8))),key=hash(obj);if(!groups.has(key))groups.set(key,{obj,images:[]});groups.get(key).images.push(f.pixels);}
+ for(const g of groups.values())g.palettes=pixelCompositionPalettes(g.images,g.obj,{width:W,height:H,maxPalettes:7});
  for(const [i,f] of source.observations.entries()){
   // Residual OBJ need enemy colors too: copying only NES OBJ palettes leaves
   // mixed enemy cells uncovered. This four-palette choice is a fixture policy,
   // not a universal solver. Failure is retained rather than dropping pixels.
-  try{const objPalette=Buffer.concat([0,1,5,7].map(p=>f.sourcePalettes.subarray(p*8,p*8+8))),palettes=pixelCompositionPalettes([f.pixels],objPalette,{width:W,height:H,maxPalettes:7}),c=compilePixelComposition(f.pixels,objPalette,{width:W,height:H,palettes});
+  try{const objPalette=Buffer.concat([0,1,5,7].map(p=>f.sourcePalettes.subarray(p*8,p*8+8))),palettes=groups.get(hash(objPalette)).palettes,c=compilePixelComposition(f.pixels,objPalette,{width:W,height:H,palettes});
    check(compositionWords(c).every((v,i)=>v===f.pixels[i]),'Whole scene RGB555 roundtrip');frames.push({...f,index:i,composition:c});
   }catch(e){if(!/^Composition (OAM|scanline|BG tile) capacity$|^No lossless global palette cover$/.test(e.message))throw e;failures.push({index:i,phase:f.phase,reason:e.message});}
  }

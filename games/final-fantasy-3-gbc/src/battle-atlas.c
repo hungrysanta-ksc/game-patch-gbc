@@ -27,6 +27,110 @@ static volatile uint8_t transfer_count,transfer_index,transfer_pending;
 static uint8_t ready(void) NONBANKED {uint8_t ly=LY_REG;return ly>=144&&ly<=149&&(STAT_REG&3)==1;}
 /* Fixed ROM and fixed WRAM descriptors. Each GDMA is at most 128 bytes;
  * restore the interrupted ROM bank before re-enabling timer interrupts. */
+#ifdef FF3_BATTLE_STREAM
+/* The C descriptor walk consumed most of the short VBlank window. Retain the
+ * LY gate and cap stream DMA at 256 bytes (descriptor bytes=0 encodes 256).
+ * At double speed its ~128us DMA plus setup stays below one 4096Hz tick.
+ * Restore the interrupted bank before EI; timer IRQ preserves all registers. */
+static void transfer_irq(void) NONBANKED __naked {__asm
+ ld a,(_transfer_pending)
+ or a
+ ret z
+ ei
+scene_dma_loop:
+ ld a,(_transfer_index)
+ ld e,a
+ ld a,(_transfer_count)
+ cp e
+ jr z,scene_dma_done
+ ld d,#0
+ ld l,e
+ ld h,d
+ add hl,hl
+ add hl,hl
+ add hl,hl
+ or a
+ ld a,l
+ sub e
+ ld l,a
+ ld a,h
+ sbc d
+ ld h,a
+ ld de,#_transfers
+ add hl,de
+ .globl _scene_dma_begin, _scene_dma_end
+_scene_dma_begin:
+ di
+ ldh a,(_LY_REG)
+ cp #144
+ jr c,scene_dma_return
+ cp #150
+ jr nc,scene_dma_return
+ ldh a,(_STAT_REG)
+ and #3
+ cp #1
+ jr nz,scene_dma_return
+ ldh a,(__current_bank)
+ ld b,a
+ ld a,(hl+)
+ ldh (_HDMA2_REG),a
+ ld a,(hl+)
+ ldh (_HDMA1_REG),a
+ ld a,(hl+)
+ ldh (_HDMA4_REG),a
+ ld a,(hl+)
+ ldh (_HDMA3_REG),a
+ ld a,(hl+)
+ ldh (__current_bank),a
+ ld (#0x2000),a
+ ld a,(hl+)
+ ldh (_VBK_REG),a
+ ld a,(hl)
+ ld c,a
+ swap a
+ and #15
+ dec a
+ and #15
+ ldh (_HDMA5_REG),a
+ ld a,b
+ ld (#0x2000),a
+ ldh (__current_bank),a
+ xor a
+ ldh (_VBK_REG),a
+_scene_dma_end:
+ ei
+ ld hl,#_transfer_index
+ inc (hl)
+ ld hl,#_text_transfer_chunks
+ inc (hl)
+ jr nz,scene_dma_bytes
+ inc hl
+ inc (hl)
+scene_dma_bytes:
+ ld hl,#_text_transfer_bytes
+ ld a,c
+ or a
+ jr nz,scene_dma_partial
+ inc hl
+ inc (hl)
+ jr scene_dma_loop
+scene_dma_partial:
+ ld a,(hl)
+ add c
+ ld (hl+),a
+ jr nc,scene_dma_loop
+ inc (hl)
+ jr scene_dma_loop
+scene_dma_done:
+ xor a
+ ld (_transfer_count),a
+ ld (_transfer_pending),a
+scene_dma_return:
+ di
+ ret
+ __endasm;
+}
+#else
 static void transfer_irq(void) NONBANKED {uint8_t saved;Transfer *t;
  if(!transfer_pending)return;
 #ifdef FF3_BATTLE_TIMELINE
@@ -46,15 +150,34 @@ static void transfer_irq(void) NONBANKED {uint8_t saved;Transfer *t;
  if(transfer_index==transfer_count){transfer_count=0;transfer_pending=0;}
  __asm di __endasm;
 }
+#endif
 static void flush(void){if(!transfer_count)return;transfer_index=0;text_transfer_busy=1;transfer_pending=1;
  while(transfer_pending){ff3_native_service();__asm halt __endasm;}text_transfer_busy=0;
 }
-static void queue(uint8_t bank,const uint8_t *source,uint8_t vram,uint16_t destination,uint16_t bytes){Transfer *t;uint8_t n;
+static void queue(uint8_t bank,const uint8_t *source,uint8_t vram,uint16_t destination,uint16_t bytes){Transfer *t;
+#ifdef FF3_BATTLE_STREAM
+ uint16_t n;
+#else
+ uint8_t n;
+#endif
  if(!bytes)return;
  if(((uint16_t)source|destination|bytes)&15||(uint16_t)source<0x4000u||(uint16_t)source+bytes>0x8000u||destination<0x8000u||destination+bytes>0xa000u){scene_error=11;return;}
- while(bytes){if(transfer_count==32)flush();n=bytes>128?128:(uint8_t)bytes;t=transfers+transfer_count;t->source=(uint16_t)source;t->destination=destination;t->bank=bank;t->vram=vram;t->bytes=n;transfer_count++;source+=n;destination+=n;bytes-=n;}
+ while(bytes){if(transfer_count==32)flush();
+#ifdef FF3_BATTLE_STREAM
+ n=bytes>256?256:bytes;
+#else
+ n=bytes>128?128:(uint8_t)bytes;
+#endif
+ t=transfers+transfer_count;t->source=(uint16_t)source;t->destination=destination;t->bank=bank;t->vram=vram;t->bytes=(uint8_t)n;transfer_count++;source+=n;destination+=n;bytes-=n;}
 }
 static void read_frame(uint8_t n,SceneBattleFrame *out){ff3_scene_rom_copy(7,scene_battle_frames+n,out,sizeof(*out));}
+#ifdef FF3_BATTLE_STREAM
+/* Coalesce adjacent dirty tiles in 16-bit masks, up to 256 bytes. The last
+ * byte of the map/OBJ masks has zero padding; never read beyond its row. */
+static void queue_mask(uint8_t bank,const uint8_t *source,uint8_t vram,uint16_t destination,const uint8_t *mask,uint8_t count){uint8_t n,start;uint16_t bits,at=0;
+ while(count){bits=*mask++;count--;if(count){bits|=(uint16_t)*mask++<<8;count--;}n=0;while(bits){if(!(bits&1)){bits>>=1;n++;continue;}start=n;do{bits>>=1;n++;}while(bits&1);queue(bank,source+at+(uint16_t)start*16,vram,destination+at+(uint16_t)start*16,(uint16_t)(n-start)*16);}at+=256;}
+}
+#endif
 static void preload(void){
 #ifndef FF3_BATTLE_STREAM
  queue(SCENE_BLOCK_BANK,scene_bg_tiles,0,0x9000u,SCENE_JOB_COUNT*16u);scene_misses+=SCENE_JOB_COUNT;
@@ -68,24 +191,29 @@ static void prepare(uint8_t page){uint8_t i,bank,old,*oam=page?scene_oam1:scene_
  if(last_frame[page]==255)old=SCENE_VISUAL_COUNT;
  else {read_frame(last_frame[page],&previous);old=previous.visual;}
 #ifdef FF3_BATTLE_STREAM
- ff3_scene_rom_copy(target.bank,target.spans+(uint16_t)old*12,scene_input,12);
- queue(target.bank,target.background+spans[4],page,0x8800u+spans[4],spans[5]);
+ ff3_scene_rom_copy(target.bank,target.spans+(uint16_t)old*48,scene_input,48);
+ queue_mask(target.bank,target.background,page,0x8800u,scene_input+10,32);
 #else
  ff3_scene_rom_copy(target.bank,target.spans+(uint16_t)old*8,scene_input,8);
 #endif
  scene_phase=2;
  for(bank=0;bank<2;bank++){
-  queue(target.bank,target.maps+(uint16_t)bank*608
 #ifdef FF3_BATTLE_STREAM
-   +(bank&&page?608u:0u)
-#endif
+  queue_mask(target.bank,target.maps+(uint16_t)bank*608+(bank&&page?608u:0u),bank,page?0x9c00u:0x9800u,scene_input+bank*5,5);
+#else
+  queue(target.bank,target.maps+(uint16_t)bank*608
    +spans[bank*2],bank,(page?0x9c00u:0x9800u)+spans[bank*2],spans[bank*2+1]);
+#endif
  }
  scene_phase=3;
  if(last_frame[page]==255||previous.visual!=target.visual){
   ff3_scene_rom_copy(target.bank,target.oam,oam,160);
   for(i=0;i<target.objects;i++)oam[i*4+2]+=page*64;
+#ifdef FF3_BATTLE_STREAM
+  queue_mask(target.bank,target.graphics,1,0x8000u+(uint16_t)page*1024,scene_input+42,5);
+#else
   queue(target.bank,target.graphics,1,0x8000u+(uint16_t)page*1024,(uint16_t)target.objects*16);
+#endif
  }
  flush();last_frame[page]=scene_page;
 }

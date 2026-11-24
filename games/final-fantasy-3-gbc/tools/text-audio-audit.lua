@@ -25,7 +25,7 @@ emu.addMemoryCallback(video,emu.callbackType.write,0xff69,0xff69,emu.cpuType.gam
 emu.addMemoryCallback(function(address,value)
  local ly=emu.read(0xff44,mem)
  dma=dma+1
- if ly<144 or ly>150 or (emu.read(0xff41,mem)&3)~=1 or value>7 then baddma=baddma+1 end
+ if ly<144 or ly>150 or (emu.read(0xff41,mem)&3)~=1 or value>(dmaMaxBlocks or 7) then baddma=baddma+1 end
 end,emu.callbackType.write,0xff55,0xff55,emu.cpuType.gameboy)
 emu.addMemoryCallback(function(address,value) if (value&128)==0 then off=off+1 end end,emu.callbackType.write,0xff40,0xff40,emu.cpuType.gameboy)
 emu.addMemoryCallback(function(address,value)
