@@ -6,6 +6,10 @@
 #include "composition-window.h"
 void ff3_native_begin(void) NONBANKED;
 void ff3_native_service(void) NONBANKED;
+#ifdef FF3_SELECTION_FLOW
+void ff3_selection_poll(void) BANKED;
+extern volatile uint8_t native_request;
+#endif
 void main(void){ff3_platform_init();ff3_memory_init();cpu_fast();DISPLAY_OFF;
  memset((void*)0xd000,0x6d,2032);memset((void*)0xdb70,0x6e,144);
  memset((void*)0xd7f0,0xa7,16);memset((void*)0xd940,0xa7,16);memset((void*)0xddf0,0xa7,16);
@@ -22,5 +26,12 @@ void main(void){ff3_platform_init();ff3_memory_init();cpu_fast();DISPLAY_OFF;
  ff3_text_video_init();ff3_scene_video_init();ff3_scene_begin();
 #endif
  text_idle=ff3_native_service;LCDC_REG=0x83;ff3_native_begin();scene_ready=0xa5;
- while(1){ff3_native_service();if(scene_request)ff3_scene_run();else {__asm halt __endasm;}}
+ #ifdef FF3_SELECTION_FLOW
+ scene_page=0;scene_request=8;native_request=255;
+ #endif
+ while(1){ff3_native_service();if(scene_request)ff3_scene_run();else {
+ #ifdef FF3_SELECTION_FLOW
+ ff3_selection_poll();
+ #endif
+ __asm halt __endasm;}}
 }

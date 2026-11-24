@@ -9,6 +9,16 @@
 #include "text-vblank.h"
 #include "memory.h"
 #include "scene-assets.h"
+#ifdef FF3_SELECTION_FLOW
+#include "battle-select.h"
+#include "battle-selection-data.h"
+volatile uint8_t selection_mode,selection_row,selection_back,selection_buttons,selection_dispatch,selection_enabled,selection_sound;
+volatile uint16_t selection_serial;
+Ff3Target selection_target;
+static Ff3TargetEnv selection_env;
+static uint8_t selection_commands_local[4],selection_left,selection_right;
+static void selection_cursor(uint8_t page);
+#endif
 #ifdef FF3_ACTION_FLOW
 #include "battle-action-data.h"
 #define ACTION_SCROLL_Y 6
@@ -256,7 +266,13 @@ static void prepare(uint8_t page){uint8_t i,bank,old,*oam=page?scene_oam1:scene_
  }
  flush();
 #ifdef FF3_ACTION_FLOW
+ #ifdef FF3_SELECTION_FLOW
+ if(!selection_enabled||last_frame[page]!=scene_page)
+ #endif
  overlay(page);
+#endif
+#ifdef FF3_SELECTION_FLOW
+ if(selection_enabled)selection_cursor(page);
 #endif
  last_frame[page]=scene_page;
 }
@@ -350,10 +366,17 @@ static void play_numbers(void){uint8_t n,i,page=active_page^1,storage=page,*oam;
 #ifdef FF3_ACTION_FLOW
 #include "battle-action.inc"
 #endif
+#ifdef FF3_SELECTION_FLOW
+#include "battle-selection.inc"
+#endif
 void ff3_scene_run(void) BANKED {
 #ifdef FF3_ACTION_FLOW
  /* The field dialogue owner uses the same glyph VRAM. Only the complete
   * action consumer may own this mode; unsupported requests fail closed. */
+ #ifdef FF3_SELECTION_FLOW
+ if(scene_request==7)selection_enabled=0;
+ if(scene_request==8)selection_begin();else if(scene_request==9)selection_input();else
+ #endif
  if(scene_request!=7)scene_error=15;else play_action();
 #else
 #ifdef FF3_NUMBER_TIMELINE

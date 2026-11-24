@@ -35,9 +35,9 @@ function initializedParty(rom,{jobs=[0,1,2,3],back=false,rows=[0,0,0,0]}={}){
  // consumers. Entry settles canonical coordinates; the renderer flips them.
  const {m}=initializedBattle(rom,{formation:3,back,rows,terrain:0,jobs});m.call(0xb469);return m;
 }
-export function initializedBattle(rom,{formation,back,rows,terrain,jobs=[0,1,2,3],capture}){
+export function initializedBattle(rom,{formation,back,rows,terrain,jobs=[0,1,2,3],counts,capture}){
  check(rows.length===4&&rows.every(r=>r===0||r===1),'Entry rows');
- const f=originalFormation(rom,formation);check(!f.unresolved,'Entry formation unresolved');
+ const f=originalFormation(rom,formation,{counts});check(!f.unresolved,'Entry formation unresolved');
  const m=presentationMachine(rom,{capture}),c=m.c;c.m[0x78c3]=back?0x88:0;c.m[0x7ced]=formation&255;c.m[0x7ed8]=formation>>8;c.m[0x7cef]=terrain;
  // Actual reset up to RNG initialization, then explicit table-bound counts.
  // Encounter selection/RNG is deliberately outside this diagnostic.
