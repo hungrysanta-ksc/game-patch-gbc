@@ -3,6 +3,54 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "docs/battle-weapon-duration.md",
+      "bytes": 8414,
+      "sha256": "06e8b46e2a61e85406f0d7e56906917ecb1fdf386193d48973448cabc9ba71a6",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-weapon-duration.mjs",
+      "bytes": 1677,
+      "sha256": "2d922cf8b579ad841c2b93fa953632694c218000338254a74f8136c2d9faba0c",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/prepare-battle-weapon-duration.mjs",
+      "bytes": 3274,
+      "sha256": "4ab133c00bef36a0e8330ea8c8b1929552594e30d10931ceb3548431c1952f50",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-battle-weapon-duration.mjs",
+      "bytes": 6206,
+      "sha256": "e1f8b2dc747a8b5c9de7480cfa34612c6dd670f408e802416183cb7ba763e850",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-weapon-audit.lua",
+      "bytes": 896,
+      "sha256": "0854e4816c938c88b35ec27ac8ff9ae89a84a6be49f7f5b896ba1856f29e29b6",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/ObserveBattleWeapon/Program.cs",
+      "bytes": 7523,
+      "sha256": "f2cf313c3e4ce17f6e6e028d5134ed9be348fde2f546ce17e324bc98d556b680",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/ObserveBattleWeapon/DurationCapture.csproj",
+      "bytes": 210,
+      "sha256": "da2d65915c599ead09a16aebbb6c8dd1f3a2a83e26b6b552c53ef1d3151518ad",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/battle-weapon-duration.test.mjs",
+      "bytes": 1685,
+      "sha256": "64d7dc6fda0808303e4044c152eba3f375040587c6589df382be4535c87a6af5",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "docs/battle-physical.md",
       "bytes": 8402,
       "sha256": "6167c88edffbef472aab0926d5998ae5bb101b0a2afe530c5fd2f3f74a669f88",
@@ -1192,14 +1240,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 6196,
-      "sha256": "544b35c283ab724a373bc6048d28c14b8b625c6b998540592e64e8adf40f257a",
+      "bytes": 6319,
+      "sha256": "e1f1463baadcf3b453e5a72e69d4531ee8c78edff67903785311e70e71ee07c5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 40675,
-      "sha256": "b9a9cb057010e20aad1c25694810dbb005dfce9c6e466b947ea3fa75d6cd73e5",
+      "bytes": 41522,
+      "sha256": "1d59693d4e47f522c43f56bbe6d4419f8069c6a16da0bd42b879bc2569b1087a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1210,8 +1258,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 16863,
-      "sha256": "d47a03555a46355aa54c2ecb8e9f3891ade2e0f4d43790ac5234c96b9ad8c500",
+      "bytes": 17210,
+      "sha256": "cbbdcf0240f2bcee020eeab37aa21ac077bad85d1287f14ffb1345323e42f9ac",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2032,8 +2080,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 11911,
-      "sha256": "ccddd15cfb2700bc8e7cc5a9646dd242d5b41632402bc8f5abcdcda0ac89e95d",
+      "bytes": 12228,
+      "sha256": "00c2239fd1ac11d3015d9d4d6d6c6b04c68132760281a228e1afa02b314cd6cd",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
