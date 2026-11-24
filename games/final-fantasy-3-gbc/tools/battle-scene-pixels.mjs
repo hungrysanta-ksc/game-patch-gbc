@@ -5,8 +5,9 @@ import {initializedBattle,itemEffectRoutes} from './battle-transition-source.mjs
 import {cgbPalette} from './field-source.mjs';
 import {compilePixelComposition,pixelCompositionPalettes,compositionWords} from './npc-composition.mjs';
 import {originalFormation} from './battle-placement-source.mjs';
-import {formationPixels} from './battle-placement-budget.mjs';
+import {formationPixels,adaptPoint} from './battle-placement-budget.mjs';
 import {rearX} from './battle-layout.mjs';
+import {originalNumberRun} from './battle-number-source.mjs';
 const W=168,H=152,sourceY=[44,72,100,128],targetY=[10,34,58,82];
 const select=(c,p)=>{c.banks=[p*2,p*2+1,0x3e,0x3f];c.m[0x7cf6]=p;};
 function bgPixel(b,x,y,table=0){
@@ -14,8 +15,8 @@ function bgPixel(b,x,y,table=0){
  const base=0x2000+(table&1)*1024,tx=x>>3,ty=y>>3,tile=b[base+ty*32+tx],a=b[base+960+(ty>>2)*8+(tx>>2)],p=(a>>(((ty&2)<<1)+(tx&2)))&3,bit=7-(x&7),at=tile*16+(y&7),v=(b[at]>>bit&1)|((b[at+8]>>bit&1)<<1);
  return {index:v?p*4+v:0,opaque:v!==0};
 }
-export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0}}={}){
- const b=ppu.bytes,colors=cgbPalette(b.subarray(0x3f00,0x3f20)),pixels=new Uint16Array(W*H).fill(colors.readUInt16LE(0)),used=new Uint8Array(W*H),enemy=new Uint8Array(W*H),party=new Uint8Array(W*H);
+export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0},numberOwners=[],formation}={}){
+ const b=ppu.bytes,colors=cgbPalette(b.subarray(0x3f00,0x3f20)),pixels=new Uint16Array(W*H).fill(colors.readUInt16LE(0)),used=new Uint8Array(W*H),enemy=new Uint8Array(W*H),party=new Uint8Array(W*H),numberCoverage={sourcePixels:0,viewportPixels:0};
  const put=(x,y,index)=>{if(x>=0&&x<160&&y>=0&&y<144)pixels[y*W+x]=colors.readUInt16LE(index*2);};
  // Keep the previous field/party anchors. The terrain is a cropped strip,
  // not a scale operation on party art. This remains a presentation candidate.
@@ -37,19 +38,32 @@ export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0}}={}){
   const slot=i>=40?Math.floor((i-40)/6):target;
   for(let y=0;y<8;y++)for(let x=0;x<8;x++){
    const px=attr&64?7-x:x,py=attr&128?7-y:y,k=0x1000+tile*16+py,bit=7-px,v=(b[k]>>bit&1)|((b[k+8]>>bit&1)<<1);if(!v)continue;
-   const canonical=back?255-(sx+x):sx+x,dx=back?159-(canonical-80):canonical-80,dy=sy+y-sourceY[slot]+targetY[slot];
-   if(dx<0||dx>=160||dy<0||dy>=144)continue;const p=dy*W+dx;if(i>=40)party[p]=1;if(used[p])continue;used[p]=1;put(dx,dy,16+(attr&3)*4+v);
+   const canonical=back?255-(sx+x):sx+x;let dx=back?159-(canonical-80):canonical-80,dy=sy+y-sourceY[slot]+targetY[slot];
+   const owner=i<40?numberOwners[i]:null;
+   if(owner){
+    numberCoverage.sourcePixels++;
+    if(owner.enemy){check(formation,'Enemy numeral formation');const cx=c.m[0x7dd7+owner.target*2],bottom=c.m[0x7e07+owner.target]+1,[ax,ay]=adaptPoint(formation,cx,bottom),anchor=rearX(back?159-ax:ax,layout,back),sourceCenter=back?254-cx:cx;
+     // Keep digit glyphs and sine motion unscaled; clamp the whole 32px
+     // number strip at viewport edges instead of cutting significant digits.
+     dx=Math.max(0,Math.min(128,anchor-16))+sx+x-(sourceCenter-16);dy=ay+sy+y-bottom;
+    }else{dx=(back?sx+x-16:sx+x-80);dy=sy+y-sourceY[owner.target]+targetY[owner.target];}
+    // The cropped terrain leaves less room above party slot 0 than NES.
+    // Contain the entire 8px glyph at the viewport edge, never its pixels.
+    dy=Math.max(0,Math.min(136,dy-y))+y;
+   }
+   if(dx<0||dx>=160||dy<0||dy>=144)continue;if(owner)numberCoverage.viewportPixels++;const p=dy*W+dx;if(i>=40)party[p]=1;if(used[p])continue;used[p]=1;put(dx,dy,16+(attr&3)*4+v);
   }
  }
- return {pixels,objPalette:colors.subarray(32),sourcePalettes:colors,sourcePaletteSha256:hash(b.subarray(0x3f00,0x3f20)),partyEnemyOverlapPixels:party.reduce((n,v,i)=>n+(v&&enemy[i]?1:0),0)};
+ check(numberCoverage.sourcePixels===numberCoverage.viewportPixels,'Number glyph clipped by viewport');
+ return {pixels,numberCoverage,objPalette:colors.subarray(32),sourcePalettes:colors,sourcePaletteSha256:hash(b.subarray(0x3f00,0x3f20)),partyEnemyOverlapPixels:party.reduce((n,v,i)=>n+(v&&enemy[i]?1:0),0)};
 }
-export function originalSceneSequence(rom,{back=false,retreat=8}={}){
- const layout=formationPixels(rom,originalFormation(rom,3),{retreat}).layout;
- const observations=[];let phase='entry',last;
+export function originalSceneSequence(rom,{back=false,retreat=8,numbers=false,enemyValues=[65535,65535,65535,1234,65535,65535,65535,65535]}={}){
+ const formation=originalFormation(rom,3),layout=formationPixels(rom,formation,{retreat}).layout;
+ const observations=[],numberRuns=[];let phase='entry',last,numberOwners=[],numberFrame=null;
  const capture=(boundary,c,ppu)=>{
-  const picture=scenePixels(c,ppu,{back,layout}),key=hash(Buffer.concat([Buffer.from(picture.pixels.buffer),picture.objPalette]));
+  const picture=scenePixels(c,ppu,{back,layout,numberOwners,formation}),key=hash(Buffer.concat([Buffer.from(picture.pixels.buffer),picture.objPalette]));
   if(last?.key===key&&last.phase===phase){last.boundaries++;last.partyEnemyOverlapPixels=Math.max(last.partyEnemyOverlapPixels,picture.partyEnemyOverlapPixels);return;}
-  last={phase,key,boundaries:1,boundary:boundary.boundary,enemyScroll:boundary.enemyScroll,enemyPage:c.m[7]&1,...picture,sourceOamSha256:boundary.oamSha256,sourceChrSha256:boundary.chrSha256};observations.push(last);
+  last={phase,key,boundaries:1,boundary:boundary.boundary,numberFrame,enemyScroll:boundary.enemyScroll,enemyPage:c.m[7]&1,...picture,sourceOamSha256:boundary.oamSha256,sourceChrSha256:boundary.chrSha256};observations.push(last);
  };
  const {m}=initializedBattle(rom,{formation:3,back,rows:[0,0,0,0],terrain:0,capture}),c=m.c;
  m.begin();m.call(0xb469);m.finish();
@@ -63,7 +77,12 @@ export function originalSceneSequence(rom,{back=false,retreat=8}={}){
  phase='item';c.m[0x95]=0;c.x=0;c.m[0xcc]=1;c.m[0x7e98]=128;c.m[0x7e99]=c.m[0x7e9b]=32;c.m[0x7e88]=route.spell;c.m[0x7e9d]=route.animation;c.m[0xca]=route.sound;
  m.begin();m.call(0xb15e);m.finish();check(c.m[0xcc]===0&&c.m[0xc0]===208,'Sequence item return');
  phase='next-selection';m.begin();m.call(0xb5b8);m.finish();
- return {observations,source:{formation:3,back,layout,jobs:[0,1,2,3],item:0xa6,actor:0,target:2,scope:'Same original VRAM/OAM from entry through forced status updates and item visual body. No command selection, HP calculation, battle message payloads, digits or normal-play claim. Uniform rear retreat requested by user; terrain crop/7:8 enemies remain presentation candidates.'}};
+ if(numbers)for(const enemy of [true,false]){
+  phase=enemy?'enemy-numbers':'party-numbers';numberFrame=null;numberOwners=[];
+  const run=originalNumberRun(rom,m,{enemy,values:enemy?enemyValues:[0,0x4000,0x8038,65535],onGroup:g=>{for(let i=0;i<4;i++)numberOwners[g.first+i]=g;},onFrame:f=>{numberFrame=f.frame;}});numberRuns.push(run);
+  phase=enemy?'enemy-numbers-clear':'party-numbers-clear';select(c,0x17);m.begin();m.call(0xb5b8);m.finish();numberOwners=[];numberFrame=null;
+ }
+ return {observations,numberRuns,source:{formation:3,back,layout,jobs:[0,1,2,3],item:0xa6,actor:0,target:2,numbers,scope:'Same original VRAM/OAM from entry through forced status updates, item body and optional number consumers. No command selection, HP calculation, battle message payloads or normal-play claim. Uniform rear retreat requested by user; terrain crop/7:8 enemies remain presentation candidates.'}};
 }
 export function sceneComposition(rom,options={}){
  const source=originalSceneSequence(rom,options),frames=[],failures=[];
@@ -78,7 +97,7 @@ export function sceneComposition(rom,options={}){
   // not a universal solver. Failure is retained rather than dropping pixels.
   try{const objPalette=Buffer.concat([0,1,5,7].map(p=>f.sourcePalettes.subarray(p*8,p*8+8))),palettes=groups.get(hash(objPalette)).palettes,c=compilePixelComposition(f.pixels,objPalette,{width:W,height:H,palettes});
    check(compositionWords(c).every((v,i)=>v===f.pixels[i]),'Whole scene RGB555 roundtrip');frames.push({...f,index:i,composition:c});
-  }catch(e){if(!/^Composition (OAM|scanline|BG tile) capacity$|^No lossless global palette cover$/.test(e.message))throw e;failures.push({index:i,phase:f.phase,reason:e.message});}
+  }catch(e){if(!/^Composition (OAM|scanline|BG tile) capacity$|^No lossless global palette cover$/.test(e.message))throw e;failures.push({index:i,phase:f.phase,numberFrame:f.numberFrame,reason:e.message});}
  }
- return {source:source.source,frames,failures,summary:{observations:source.observations.length,composed:frames.length,failed:failures.length,maxBgTiles:Math.max(...frames.map(f=>f.composition.stats.bgTiles)),maxObjects:Math.max(...frames.map(f=>f.composition.stats.objects)),maxLine:Math.max(...frames.map(f=>f.composition.stats.peak))}};
+ return {source:source.source,numberRuns:source.numberRuns,frames,failures,summary:{observations:source.observations.length,composed:frames.length,failed:failures.length,maxBgTiles:Math.max(...frames.map(f=>f.composition.stats.bgTiles)),maxObjects:Math.max(...frames.map(f=>f.composition.stats.objects)),maxLine:Math.max(...frames.map(f=>f.composition.stats.peak))}};
 }

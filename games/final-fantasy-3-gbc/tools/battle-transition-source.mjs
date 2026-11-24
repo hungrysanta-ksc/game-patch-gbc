@@ -43,7 +43,12 @@ export function initializedBattle(rom,{formation,back,rows,terrain,jobs=[0,1,2,3
  // Encounter selection/RNG is deliberately outside this diagnostic.
  segment(c,0x9e8e,0x9f28);segment(c,0xa02a,0xa0b7);c.m.set(f.counts,0x7d6f);c.call(0x9faa);c.call(0xa31f);c.call(0xb909);
  for(let i=0;i<4;i++){c.m[0x6100+i*64]=jobs[i];c.m[0x620f+i*64]=rows[i];}
- m.call(0x9d5f);return {m,f};
+ // Reset's tail copies both bank-switching math/animation trampolines.
+ // The encounter/RNG gap above must not omit this later initialization.
+ c.call(0x9f5e);m.call(0x9d5f);
+ // B32B initializes target anchors independently of drawing the enemies.
+ // The diagnostic skips the surrounding command UI, not this consumer.
+ c.call(0xbdba);return {m,f};
 }
 export function entryTransition(rom,{formation=3,back=false,rows=[0,1,0,1],terrain=0}={}){
  const {m,f}=initializedBattle(rom,{formation,back,rows,terrain}),c=m.c;
