@@ -60,10 +60,10 @@ function columnPixels(a,column,s,equipment,jobs,offset){const kind=!column?0:col
  for(let y=0;y<48;y++)for(let x=0;x<80;x++)p[y*80+x]=pixel(a.base,kind*60+(y>>3)*10+(x>>3),x&7,y&7);
  for(let r=0;r<4;r++){const label=!column&&!(r&1),id=label?256+(r>>1):column?s.bag[(column-1)*4+r]:equipment[s.party[0]*64+(r>=2?5:3)],qty=column?s.bag[32+(column-1)*4+r]:equipment[s.party[0]*64+(r>=2?6:4)],shift=column===s.cursor[1]&&r===s.cursor[0]?offset:0;
   for(let y=0;y<8;y++){
-   if(label||id)for(let x=0;x<36;x++){const sx=x+shift;if(sx<128&&(a.names[id*128+y*16+(sx>>3)]&(128>>(sx&7))))p[(8+r*8+y)*80+16+x]=3;}
+   if(label||id)for(let x=0;x<36;x++){const sx=x+shift;if(sx<128&&(a.names[id*128+y*16+(sx>>3)]&(128>>(sx&7))))p[(9+r*8+y)*80+16+x]=3;}
    if(label)continue;
-   for(let x=0;x<24;x++){const g=x<8?10:x<16?(qty<10?255:Math.floor(qty/10)%10):qty%10;if(g!==255&&(a.digits[g*16+y*2]&(128>>(x&7))))p[(8+r*8+y)*80+52+x]=3;}
-   if(column&&!a.usable[jobs[s.party[0]]*256+id])for(let x=0;x<8;x++)if(a.digits[11*16+y*2]&(128>>x))p[(8+r*8+y)*80+4+x]=3;
+   for(let x=0;x<24;x++){const g=x<8?10:x<16?(qty<10?255:Math.floor(qty/10)%10):qty%10;if(g!==255&&(a.digits[g*16+y*2]&(128>>(x&7))))p[(9+r*8+y)*80+52+x]=3;}
+   if(column&&!a.usable[jobs[s.party[0]]*256+id])for(let x=0;x<8;x++)if(a.digits[11*16+y*2]&(128>>x))p[(9+r*8+y)*80+4+x]=3;
   }
  }return p;
 }

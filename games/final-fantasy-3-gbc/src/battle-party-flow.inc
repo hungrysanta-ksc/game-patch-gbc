@@ -39,7 +39,7 @@ static void party_overlay(uint8_t page){uint8_t r,x,n,variant,cmd,*mask=(uint8_t
 #endif
   for(n=0;n<2;n++){
    ff3_scene_rom_copy(7,party_ui_masks+(uint16_t)variant*160+(uint16_t)n*80,mask,80);
-   party_or(text_staging+(uint16_t)(r+n)*80,mask);ff3_native_service();
+   party_or(text_staging+(uint16_t)(r+n+1)*80,mask);ff3_native_service();
   }
  }
  queue(7,text_staging,page,0x9620u,480);flush();

@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/battle-row.md','src/battle-row.h','src/battle-row.c','src/battle-row-test.c','tools/battle-row-source.mjs','tools/build-battle-row.mjs','tests/battle-row.test.mjs',
  'docs/battle-equipment.md','src/battle-equipment.h','src/battle-equipment.c','src/battle-equipment-stats.c','src/battle-equipment-test.c','tools/battle-equipment-source.mjs','tools/build-battle-equipment.mjs','tests/battle-equipment.test.mjs',
  'docs/battle-item-window.md','src/battle-item-flow.inc','src/battle-item-render.c','src/battle-item-render.h','src/battle-item-video.c','src/battle-item-video.h','tools/battle-item-assets.mjs','tools/battle-item-use-source.mjs','tools/battle-item-verifier.mjs','tests/battle-item-use.test.mjs',
  'docs/battle-items.md','src/inventory.h','src/inventory.c','src/battle-items.h','src/battle-items.c','src/battle-items-test.c','tools/battle-items-source.mjs','tools/build-battle-items.mjs','tools/audit-battle-items-observations.mjs','tests/battle-items.test.mjs',
