@@ -1,6 +1,8 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/battle-selection.md','src/battle-select.h','src/battle-select.c','src/battle-select-test.c','src/battle-selection.inc',
+ 'tools/battle-select-source.mjs','tools/build-battle-select.mjs','tools/verify-battle-select.mjs','tools/battle-select-view-source.mjs','tools/battle-select-view-assets.mjs','tools/battle-selection-verifier.mjs','tools/audit-battle-selection-observations.mjs','tests/battle-select.test.mjs',
  'docs/battle-action-flow.md','src/battle-action.inc','tools/battle-action-source.mjs','tools/battle-action-assets.mjs','tools/battle-ui-observation.mjs','tools/audit-battle-ui-observations.mjs','docs/battle-ui-observation.md','tools/battle-action-ui.mjs','tools/battle-action-verifier.mjs','tests/battle-action.test.mjs',
  'tools/battle-number-timeline.mjs','tools/battle-number-timeline-verifier.mjs','tests/battle-number-timeline.test.mjs',
  'docs/battle-numbers.md','tools/battle-number-source.mjs','tools/battle-number-composition.mjs','tools/audit-battle-numbers.mjs','tests/battle-numbers.test.mjs',

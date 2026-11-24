@@ -1,0 +1,53 @@
+/* Included in the shared atlas, using the same inactive-page and audio pump.
+ * One actor's selection boundary; dispatch is consumed by a future battle
+ * caller. It must not run a made-up attack or the unrelated item diagnostic. */
+static uint16_t selection_observed;
+static uint8_t selection_held,selection_repeat,selection_delay;
+static uint8_t selection_glyphs_loaded[2];
+static void selection_cursor(uint8_t page){uint8_t id=0,i,*oam=page?scene_oam1:scene_oam0;
+ ff3_scene_rom_copy(target.bank,target.oam,oam,160);
+ for(i=0;i<target.objects;i++)oam[i*4+2]+=page*64;
+ if(selection_mode==2)return;
+ if(selection_mode==1){uint8_t mask=selection_target.ad?selection_target.ad:(selection_target.ae&240);for(i=0;i<8;i++)if(mask&(128>>i)){id=1+i+(selection_target.ad?0:8);break;}}
+ memmove(oam+16,oam,(uint16_t)target.objects*4);
+ ff3_scene_rom_copy(7,selection_cursors+(uint16_t)selection_back*208+(uint16_t)id*16,oam,16);
+ for(i=0;i<4;i++){uint8_t at=i*4;oam[at+2]+=page*64;if(selection_mode==0)oam[at]+=selection_row*8;}
+ if(!selection_glyphs_loaded[page]){ff3_scene_rom_copy(7,selection_glyphs,text_staging,64);queue(7,text_staging,1,0x83c0u+(uint16_t)page*1024,64);flush();selection_glyphs_loaded[page]=1;}
+}
+static void selection_begin(void){
+ if(scene_page>1||battle_active){scene_error=16;return;}selection_back=scene_page;
+ ff3_scene_rom_copy(7,selection_envs+(uint16_t)selection_back*25,&selection_env,25);if(!ff3_target_valid(&selection_env)){scene_error=16;return;}
+ ff3_scene_rom_copy(7,selection_commands,selection_commands_local,4);memset(&selection_target,0,sizeof(selection_target));
+ selection_row=selection_mode=selection_dispatch=selection_left=selection_right=selection_sound=0;selection_enabled=1;
+ selection_held=selection_delay=0;selection_repeat=8;
+ selection_glyphs_loaded[0]=selection_glyphs_loaded[1]=0;
+ action_profile_index=4+selection_back;action_mask=3;ff3_scene_rom_copy(7,selection_uis+selection_back,&action_ui_index,1);ff3_scene_rom_copy(7,selection_frames+selection_back,(void*)&scene_page,1);action_dirty=1;show();selection_serial++;
+ /* Warm the inactive page before accepting a key. Moving the hand must not
+  * pay a first-use geometry/UI upload or re-upload its invariant 64 bytes. */
+ if(!scene_error)prepare(active_page^1);
+}
+static void selection_input(void){uint8_t key=selection_buttons,bit=key&((uint8_t)(~key)+1),row=selection_row;
+ if(!selection_enabled||selection_mode==2){scene_error=16;return;}
+ if(selection_mode==0){
+  if(key)selection_sound=0x98;
+  selection_row=ff3_command_cursor(row,0,key);
+  if(bit==1){selection_sound=0x85;selection_dispatch=selection_commands_local[selection_row];
+   if(selection_dispatch==4){selection_target.sound=selection_sound;ff3_target_begin(&selection_target,&selection_env,0);selection_mode=1;selection_dispatch=0;selection_repeat=16;selection_delay=0;}else selection_mode=2;
+  }else if(bit==2){selection_row=0;selection_left=selection_right=0;}
+  else if(bit==64){if(selection_left){selection_sound=0x85;selection_dispatch=selection_back?3:2;selection_mode=2;}else{selection_left=1;selection_right=0;}}
+  else if(bit==128){if(selection_right){selection_sound=0x85;selection_dispatch=selection_back?2:3;selection_mode=2;}else{selection_right=1;selection_left=0;}}
+ }else{
+  ff3_target_input(&selection_target,&selection_env,key);selection_sound=selection_target.sound;
+  if(!selection_target.ad&&!selection_target.ae){if(selection_target.b4){selection_dispatch=4;selection_mode=2;}else{selection_mode=selection_row=selection_left=selection_right=0;}}
+ }
+ /* The geometry is unchanged; only the independent UI and hand are posted.
+  * Hidden/selected cursor states never modify an active OAM shadow. */
+ ff3_scene_rom_copy(7,selection_frames+selection_back,(void*)&scene_page,1);
+ action_dirty=1;show();selection_serial++;
+}
+void ff3_selection_poll(void) BANKED {uint16_t now;uint8_t gb,keys,pressed;
+ CRITICAL{now=sys_time;}if(now==selection_observed||!selection_enabled||selection_mode==2)return;selection_observed=now;
+ if(selection_delay){selection_delay--;return;}gb=joypad();keys=(gb>>4)|((gb&4)<<2)|((gb&8)<<2)|((gb&2)<<5)|((gb&1)<<7);
+ pressed=ff3_input_repeat(selection_held,keys,&selection_repeat);selection_held=keys;if(!pressed)return;
+ selection_buttons=pressed;scene_request=9;if(selection_mode==0)selection_delay=3;
+}

@@ -5,6 +5,7 @@ import {composeBattleNumbers} from './battle-number-composition.mjs';
 import {packBattleFrames} from './battle-scene-assets.mjs';
 import {nativeTiming} from './native-plan.mjs';
 import {originalActionUi,uiPixels,packActionUi,actionRows as rows} from './battle-action-ui.mjs';
+import {selectionViewProfile} from './battle-select-view-assets.mjs';
 const offset=n=>Math.floor(n*nativeTiming.timerHz*nativeTiming.sourceRateDenominator/nativeTiming.sourceRateNumerator);
 // Shift the BG grid six pixels, then SCY=6 restores the approved screen
 // positions. The y=106 UI edge becomes tile-aligned at BG y=112; no party
@@ -38,7 +39,7 @@ export function actionRgb(frame,ui,live){
  check(n<=256,'Oracle UI tile capacity');const bgPalette=Buffer.from(c.bgPalette);ui.palette.copy(bgPalette,56);
  const raw=compositionRgb({...c,map,attributes:attrs,background:Buffer.concat(tiles),bgPalette}),rgb=Buffer.alloc(160*144*3);for(let y=0;y<144;y++)raw.copy(rgb,y*480,(y+6)*504,(y+6)*504+480);return rgb;
 }
-export function battleActionAssets(rom,text,{smallHp=false}={}){
+export function battleActionAssets(rom,text,{smallHp=false,selection=false}={}){
  const raw=[],keys=new Map(),profiles=[],runs=[];
  for(const back of [false,true])for(const enemy of [false,true]){
   const flow=originalActionFlow(rom,{back,enemy}),ui=actionUi(text,flow),uiRaster=originalActionUi(ui,flow,text,{smallHp}),entries=[];let body=[];
@@ -67,10 +68,12 @@ export function battleActionAssets(rom,text,{smallHp=false}={}){
   check(entries.length<=255&&entries.every(e=>e.hold>0&&e.hold<=255),'Action stream ABI limits');
   profiles.push({back,enemy,ui,uiRaster,entries,events:flow.events,hp:flow.hp,health:flow.health,values:flow.values,script:flow.script,source:flow.source,sourceFrames:flow.frames.length});
  }
+ let selectionViews;
+ if(selection){selectionViews=[false,true].map(back=>{const p=selectionViewProfile(rom,text,{back}),f=p.source.frame,c=actionComposition(f),frame=raw.length;check(c.background.length/16<=176&&c.objGraphics.length<=60*16&&c.stats.objects<=36,'Selection hand reservation');raw.push({...f,back,scroll:[0,6],index:frame,composition:c});p.entries=[{frame,live:3,hold:1,run:255,phase:'command-selection',command:255,sourceStart:0,sourceGate:1}];profiles.push(p);return p;});}
  check(raw.length<255,'Action geometry index capacity');
  const {frames,visuals}=packBattleFrames({frames:raw,summary:{failed:0}});
  for(const run of runs){const first=frames[run.first];run.objects=first.stats.objects;run.numberObjects=first.stats.numberObjects;run.oam=Buffer.concat(run.entries.map(e=>{const f=frames[e.frame];for(const k of ['background','maps','objects'])check(f.atlas[k].equals(first.atlas[k]),'Pinned action numeral '+k);check(f.palette.equals(first.palette),'Pinned action numeral palette');return f.atlas.oam;}));}
  const {glyphs,cells,tileCount}=packActionUi(profiles);
- const blank=Buffer.alloc(80),action={profiles,tileCount,glyphs,cells,rows,source:'34/8FF7..9058 action scripts; original message/HP/status consumers',scope:'Bounded original post-effect display flows (item and poison, normal/back). UI is a runtime independent map layer. Geometry remains diagnostic precompilation; no battle calculation, command-input menu, all actions, or full-speed whole-scene claim.'};
+ const blank=Buffer.alloc(80),action={profiles,tileCount,glyphs,cells,rows,selectionViews,source:'34/8FF7..9058 action scripts; original message/HP/status consumers',scope:'Bounded original post-effect display flows (item and poison, normal/back). UI is a runtime independent map layer. Geometry remains diagnostic precompilation; no battle calculation, all actions, or full-speed whole-scene claim.'};
  return {jobs:[{bytes:blank,expected:blank,static:true}],frames,blocks:Buffer.alloc(16),bgTiles:Buffer.alloc(16),palettes:7,battle:{action,numberTimeline:{timing:nativeTiming,runs,source:'32 numeral waits; retain final OAM until actual script cleanup'},uniqueVisuals:visuals.size,summary:{observations:raw.length,maxObjects:Math.max(...frames.map(f=>f.stats.objects)),maxLine:Math.max(...frames.map(f=>f.stats.peak)),maxBgTiles:Math.max(...frames.map(f=>f.atlas.background.length/16))},scope:action.scope},raw};
 }
