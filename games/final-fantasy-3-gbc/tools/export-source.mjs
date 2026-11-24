@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/battle-fight.md','src/battle-fight.h','src/battle-fight.c','src/battle-fight-test.c','tools/battle-fight-source.mjs','tools/build-battle-fight.mjs','tests/battle-fight.test.mjs',
  'docs/battle-weapon-duration.md','tools/battle-weapon-duration.mjs','tools/prepare-battle-weapon-duration.mjs','tools/verify-battle-weapon-duration.mjs','tools/battle-weapon-audit.lua','tools/ObserveBattleWeapon/Program.cs','tools/ObserveBattleWeapon/DurationCapture.csproj','tests/battle-weapon-duration.test.mjs',
  'docs/battle-physical.md','src/battle-physical.h','src/battle-physical.c','src/battle-physical-test.c','tools/battle-physical-source.mjs','tools/build-battle-physical.mjs','tests/battle-physical.test.mjs',
  'docs/battle-row.md','src/battle-row.h','src/battle-row.c','src/battle-row-test.c','tools/battle-row-source.mjs','tools/build-battle-row.mjs','tests/battle-row.test.mjs',
