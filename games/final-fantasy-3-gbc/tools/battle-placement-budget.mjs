@@ -7,6 +7,7 @@ import {originalBattleFrames} from './battle-composition-assets.mjs';
 import {segment} from './state-source.mjs';
 import {cgbPalette} from './field-source.mjs';
 import {pixelCompositionPalettes,compilePixelComposition,compositionWords} from './npc-composition.mjs';
+import {rearLayout,rearAnchor} from './battle-layout.mjs';
 const W=168,H=152;
 const pal=(rom,id)=>cgbPalette([15,...rom.subarray(0x5cc10+id*3,0x5cc13+id*3)]);
 export const budgetFormationIds=[3,13,47,44,234,301,79,83];
@@ -15,7 +16,7 @@ export const budgetFormationIds=[3,13,47,44,234,301,79,83];
 export function adaptPoint(f,x,y){const n=f.layout===9?2:7,d=f.layout===9?3:8;return [Math.floor((x-16)*n/d),16+Math.floor((y-48)*n/d)];}
 function paint(pixels,quads,palettes){const used=new Uint8Array(W*H);for(const q of quads)for(let y=0;y<8;y++)for(let x=0;x<8;x++){const xx=q.x+x,yy=q.y+y,v=q.pixels[y*8+x];if(!v||xx<0||xx>=W||yy<0||yy>=H)continue;const at=yy*W+xx;if(used[at])continue;used[at]=1;pixels[at]=palettes[q.palette].readUInt16LE(v*2);}}
 function changedCells(a,b){let count=0;for(let cy=0;cy<H/8;cy++)for(let cx=0;cx<W/8;cx++){let different=false;for(let y=0;y<8;y++)for(let x=0;x<8;x++)different||=a[(cy*8+y)*W+cx*8+x]!==b[(cy*8+y)*W+cx*8+x];count+=+different;}return count;}
-export function formationPixels(rom,f){
+export function formationPixels(rom,f,{retreat=0}={}){
  check(!f.unresolved,'Unresolved formation is not a render fixture');const pixels=new Uint16Array(W*H),colors=f.palettes.map(id=>pal(rom,id)),images=[];
  for(const s of f.slots.filter(s=>s.monster!==null)){
   const g=s.monster===206?resolveBoss206(rom).graphic:monsterGraphic(rom,s.monster);check(!g.unresolved,'Unresolved formation graphics');
@@ -26,12 +27,16 @@ export function formationPixels(rom,f){
   for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){const ox=Math.floor((xx+.5)*sw/w),oy=Math.floor((yy+.5)*sh/h),t=(oy>>3)*g.w+(ox>>3),v=g.tiles[t][(oy&7)*8+(ox&7)];pixels[(y+yy)*W+x+xx]=v?colors[g.attrs[t]].readUInt16LE(v*2):0;}
   images.push({slot:s.slot,monster:s.monster,sourceRect:[...origin,sw,sh],candidateRect:[x,y,w,h],sourceAnchor:s.center,candidateAnchor:adaptPoint(f,s.center[0],s.center[1]+1)});
  }
- return {pixels,images};
+ const layout=rearLayout(pixels,{requested:retreat});
+ if(layout.shift){const before=pixels.slice();pixels.fill(0);for(let y=0;y<H;y++)for(let x=layout.shift;x<160;x++)pixels[y*W+x-layout.shift]=before[y*W+x];
+  for(const image of images){image.candidateRect[0]-=layout.shift;image.candidateAnchor=rearAnchor(image.candidateAnchor,layout);}
+ }
+ return {pixels,images,layout};
 }
-function hitFrames(rom,f,target,base,party){
+function hitFrames(rom,f,target,base,party,layout){
  const c=battleCpu(rom,0x19),trace=recordTransfers(c);c.m[0x7e88]=29;c.call(0xaf6f);c.call(0xb589);c.a=c.m[0x7e8d];c.call(0xab08);const magicPalette=cgbPalette([15,...c.m.subarray(0x7d14,0x7d17)]),tiles=tilePixels(trace.bytes.subarray(0x1000,0x2000));
  segment(c,0xb696,0xb6ca);c.m[0x7e9a]=64;c.m[0x90]=target.slot;for(const s of f.slots)c.m.set(s.center,0x7dd7+s.slot*2);
- const [anchorX,anchorY]=adaptPoint(f,target.center[0],target.center[1]+1),frames=[];
+ const [anchorX,anchorY]=rearAnchor(adaptPoint(f,target.center[0],target.center[1]+1),layout),frames=[];
  for(let index=1;index<=c.m[0x7300];index++){
   c.m[0x7e9c]=index;segment(c,0xb711,0xb799);check(c.m[0x8c]===((target.center[0]-24)&255)&&c.m[0x8d]===((target.center[1]-16)&255),'Magic follows selected original center');
   const quads=Array.from({length:36},(_,i)=>{const at=0x200+i*4,tile=c.m[at+1],attr=c.m[at+2];return {x:anchorX+c.m[at+3]-target.center[0],y:anchorY+c.m[at]-target.center[1],palette:0,tile,pixels:Uint8Array.from({length:64},(_,p)=>tiles[tile][(attr&128?7-(p>>3):p>>3)*8+(attr&64?7-(p&7):p&7)])};});
@@ -42,13 +47,13 @@ function hitFrames(rom,f,target,base,party){
  }
  return {frames,magicPalette};
 }
-export function placementBudgetAudit(rom){
+export function placementBudgetAudit(rom,{retreat=0}={}){
  const formations=[];for(let id=0;id<512;id++)for(const endpoint of ['min','max'])formations.push({...originalFormation(rom,id,{endpoint}),endpoint});
  const effectConditions=effectConditionAudit(rom),standing=originalBattleFrames(rom).party,rows=[];
  for(const id of budgetFormationIds){
-  const f=formations.find(f=>f.id===id&&f.endpoint==='max');check(!f.unresolved,'Representative formation unresolved');const {pixels:base,images}=formationPixels(rom,f),idle=base.slice();paint(idle,standing,[252,253,254].map(id=>pal(rom,id)));
+  const f=formations.find(f=>f.id===id&&f.endpoint==='max');check(!f.unresolved,'Representative formation unresolved');const {pixels:base,images,layout}=formationPixels(rom,f,{retreat}),idle=base.slice();paint(idle,standing,[252,253,254].map(id=>pal(rom,id)));
   const frames=[{target:null,entry:0,pixels:idle,outsideViewport:0,menuPixels:0}];let magicPalette;
-  for(const target of f.slots.filter(s=>s.monster!==null)){const hit=hitFrames(rom,f,target,base,standing);magicPalette=hit.magicPalette;frames.push(...hit.frames,{target:target.slot,entry:0,pixels:idle,outsideViewport:0,menuPixels:0});}
+  for(const target of f.slots.filter(s=>s.monster!==null)){const hit=hitFrames(rom,f,target,base,standing,layout);magicPalette=hit.magicPalette;frames.push(...hit.frames,{target:target.slot,entry:0,pixels:idle,outsideViewport:0,menuPixels:0});}
   const objPalette=Buffer.concat([...f.palettes.map(id=>pal(rom,id)),magicPalette,pal(rom,253)]),palettes=pixelCompositionPalettes(frames.map(f=>f.pixels),objPalette,{width:W,height:H,maxPalettes:7}),allTiles=new Set(),allObjects=new Set(),states=[],transitions=[];
   for(const frame of frames){
    try{const c=compilePixelComposition(frame.pixels,objPalette,{width:W,height:H,palettes});check(compositionWords(c).every((v,i)=>v===frame.pixels[i]),'Formation RGB555 round trip');
