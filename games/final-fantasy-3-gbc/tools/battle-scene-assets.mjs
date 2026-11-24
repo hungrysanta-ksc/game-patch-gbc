@@ -13,8 +13,8 @@ export function stableSceneTiles(compositions){
 }
 // Finite source-state fixture through the shared transfer consumer. The two
 // VRAM BG banks hold active/next patterns; total animation union is irrelevant.
-export function battleSceneAssets(rom,{numbers=true}={}){
- const profiles=[false,true].map(back=>sceneComposition(rom,{back,numbers}));
+export function battleSceneAssets(rom,{numbers=true,enemyValues=Array(8).fill(1234)}={}){
+ const profiles=[false,true].map(back=>sceneComposition(rom,{back,numbers,enemyValues}));
  const source={source:{profiles:profiles.map(p=>p.source),scope:profiles[0].source.scope},frames:profiles.flatMap(p=>p.frames.map(f=>({...f,back:p.source.back}))),summary:{observations:profiles.reduce((n,p)=>n+p.summary.observations,0),failed:profiles.reduce((n,p)=>n+p.summary.failed,0),maxBgTiles:Math.max(...profiles.map(p=>p.summary.maxBgTiles)),maxObjects:Math.max(...profiles.map(p=>p.summary.maxObjects)),maxLine:Math.max(...profiles.map(p=>p.summary.maxLine))}},frames=[],visuals=new Map();check(!source.summary.failed,'Whole scene composition failures');
  const stable=stableSceneTiles(source.frames.map(f=>f.composition));
  for(const [fi,f] of source.frames.entries()){const c=stable[fi],raw=compositionRgb(c),rgb=Buffer.alloc(160*144*3),ids=Array.from(c.map),maps=[Buffer.alloc(608),Buffer.alloc(608),Buffer.alloc(608)];
@@ -35,5 +35,5 @@ export function battleSceneAssets(rom,{numbers=true}={}){
   }
  }f.atlas.spans=spans;}
  const blank=Buffer.alloc(80);
- return {jobs:[{bytes:blank,expected:blank,static:true}],frames,blocks:Buffer.alloc(16),bgTiles:Buffer.alloc(16),palettes:7,battle:{source:source.source,numberRuns:profiles.map(p=>({back:p.source.back,runs:p.numberRuns})),summary:source.summary,hostComposed:true,streamed:true,uniqueVisuals:visuals.size,scope:'Sequential original source-state fixtures including a single enemy damage target and party zero/MISS/recovery/absent probes. Not all-enemy capacity, game rules, battle messages or source-frame timing proof'}};
+ return {jobs:[{bytes:blank,expected:blank,static:true}],frames,blocks:Buffer.alloc(16),bgTiles:Buffer.alloc(16),palettes:7,battle:{source:source.source,numberRuns:profiles.map(p=>({back:p.source.back,runs:p.numberRuns})),summary:source.summary,hostComposed:true,streamed:true,uniqueVisuals:visuals.size,scope:'Sequential original source-state fixtures including all eight enemy damage targets and party zero/MISS/recovery/absent probes. Current formation capacity only; not game rules, other effects, battle messages or source-frame timing proof'}};
 }
