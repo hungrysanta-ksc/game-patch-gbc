@@ -1,4 +1,18 @@
 import test from 'node:test';import assert from 'node:assert/strict';
+import {sourceMagicTargetMode} from '../tools/battle-select-source.mjs';
+test('ROM magic policy distinguishes manual all-target, single-only, auto-all and no selector',async()=>{
+ const {data}=await input(),kinds=new Set();
+ for(let id=0;id<115;id++){const r=sourceMagicTargetMode(data,id),p=r.property;assert.equal(r.kind,!(p&24)?'no-selector':p&64?'automatic-enemies':'manual');if(r.kind==='manual')assert.equal(r.flags,((p&32)?0:1)|((p&128)?2:0));kinds.add(r.kind);}
+ assert.equal(kinds.size,3);
+ for(const back of [false,true])for(const flags of [0,1,2,3]){
+  const e=targetEnvironment(data,0,192,back,5),towardParty=back?64:128,towardEnemy=back?128:64;
+  let s=sourceTarget(data,e,Buffer.alloc(11),flags,{begin:true});
+  for(let n=0;n<8;n++)s=sourceTarget(data,e,s,towardParty);
+  assert.equal(s[4],flags&1?5:4);if(flags&1){assert.equal(s[1],80);const yes=sourceTarget(data,e,s,1);assert.equal(yes[7],80);assert.equal(yes[8],64);}
+  for(let n=0;n<8;n++)s=sourceTarget(data,e,s,towardEnemy);
+  assert.equal(s[4],flags&1?1:0);if(flags&1){assert.equal(s[0],192);const yes=sourceTarget(data,e,s,1);assert.equal(yes[7],192);assert.equal(yes[8],192);const no=sourceTarget(data,e,s,2);assert.equal(no[7],0);assert.equal(no[8],0);}
+ }
+});
 import {input} from '../tools/source.mjs';import {selectionTables,targetEnvironment,sourceTarget,sourceCommandCursor,sourceRepeat,sourceCommandDispatch} from '../tools/battle-select-source.mjs';import {originalSelectionView} from '../tools/battle-select-view-source.mjs';import {selectionSequence,selectionStep,selectionHand} from '../tools/battle-selection-verifier.mjs';
 test('source attack rejects group expansion, permits party targeting and preserves cancel state',async()=>{const {data}=await input(),e=targetEnvironment(data,0,192),zero=Buffer.alloc(11);let s=sourceTarget(data,e,zero,0,{begin:true});assert.equal(s[0],64);s=sourceTarget(data,e,s,16);assert.equal(s[0],128);const single=Buffer.from(s);s=sourceTarget(data,e,s,16);assert.deepEqual(s.subarray(0,5),single.subarray(0,5));s=sourceTarget(data,e,s,128);assert.equal(s[0],0);assert.equal(s[1],136);s=sourceTarget(data,e,s,32);assert.equal(s[1],68);s=sourceTarget(data,e,s,1);assert.equal(s[7],64);assert.equal(s[8],0);assert.equal(s[9],0);assert.equal(s[10],133);
  e[9]=e[8];const multi=sourceTarget(data,e,zero,1,{begin:true});const group=sourceTarget(data,e,multi,32);assert.equal(group[0],192);const cancelled=sourceTarget(data,e,group,2);assert.equal(cancelled[0],0);assert.equal(cancelled[7],0);assert.equal(cancelled[8],0);

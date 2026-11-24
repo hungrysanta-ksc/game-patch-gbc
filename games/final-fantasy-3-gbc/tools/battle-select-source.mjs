@@ -2,6 +2,18 @@ import {check,hash} from './source.mjs';
 import {battleCpu} from './battle-placement-source.mjs';
 import {segment} from './state-source.mjs';
 import {offset} from './render-budget-source.mjs';
+// Policy after the original job/equipability check (35/B979).
+// spec/source.json registers 115 attack records, not 256 byte-index values.
+export function sourceMagicTargetMode(rom,id){
+ check(Number.isInteger(id)&&id>=0&&id<115,'Registered attack property record');
+ const at=offset(0x30,0x98c0)+id*8+5,property=rom[at],c=battleCpu(rom,0x1a);c.m[0x747d]=property;c.pc=0xb979;
+ for(let n=0;n<64;n++){
+  if(c.pc===0xba27)return {property,kind:'no-selector',flags:null};
+  if(c.pc===0xb9f0)return {property,kind:'automatic-enemies',flags:null};
+  if(c.pc===0xb9a4)return {property,kind:'manual',flags:c.m[0xb3]};
+  c.step();
+ }throw Error('Magic target policy instruction budget');
+}
 export function selectionTables(rom){const regions=[['ff3_target_bits',0x32,0x9a61,8,16055],['ff3_party_bits',0x32,0x9dcc,4,16525],['ff3_target_layouts',0x32,0x9ead,80,16668],['ff3_job_commands',0x34,0x9b21,88,24812]];
  const tables={},provenance=[];for(const [name,bank,cpu,bytes,line]of regions){const at=offset(bank,cpu),data=rom.subarray(at,at+bytes);tables[name]=Buffer.from(data);provenance.push({name,bank,cpu,offset:at,bytes,disassembly:'ff3j.asm',line,sha256:hash(data)});}
  return {tables,provenance,header:Object.entries(tables).map(([k,v])=>'static const uint8_t '+k+'[]={'+[...v]+'};').join('\n')+'\n'};
