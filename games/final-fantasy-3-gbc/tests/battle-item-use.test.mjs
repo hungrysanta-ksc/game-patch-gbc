@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {input} from '../tools/source.mjs';
+import {compiledItemUseTables,sourceItemUse,sourceItemAutoTargets,sourceItemQuantity} from '../tools/battle-item-use-source.mjs';
+import {sourceInitialState} from '../tools/state-source.mjs';
+test('all item/job use properties and equipment masks agree with original machine code',async()=>{const {data}=await input(),r=compiledItemUseTables(data);assert.equal(r.checks,5632);assert.equal(r.usable.length,22*256);assert.equal(r.flags[0xa6],0xb0);assert.equal(r.flags[0xb7],0x4e);assert.equal(r.flags[0x46],0x20);});
+test('potion HP handoff, unusable armor/spell/empty and original item flag side effects',async()=>{const {data}=await input();for(const id of [0xa6,0xa7,0xa8]){const r=sourceItemUse(data,id,0);assert.equal(r.valid,1);assert.equal(r.showHp,1);assert.equal(r.actionFlags,8);}for(const id of [0x57,0x62,0xc8,0xff]){const r=sourceItemUse(data,id,0);assert.equal(r.valid,0);assert.equal(r.item,0);assert.equal(r.actionFlags,8);}assert.equal(sourceItemUse(data,0,0).actionFlags,0);});
+test('automatic all-target items use status records, not visible enemy count',async()=>{const {data}=await input();assert.deepEqual(sourceItemAutoTargets(data,Buffer.alloc(8)),{mask:255,flags:192});for(let i=0;i<8;i++)for(const status of [0,1,32,64,128,192,255]){const statuses=Buffer.alloc(8,192);statuses[i]=status;assert.equal(sourceItemAutoTargets(data,statuses).mask,status&192?0:128>>i);}});
+test('persistent character jobs and equipment are separate source regions',async()=>{const {data}=await input(),s=sourceInitialState(data);for(let i=0;i<4;i++){assert.equal(s[0x100+i*64],0);assert.equal(s[0x203+i*64],0x1e);assert.equal(s[0x204+i*64],1);assert.notEqual(s[0x200+i*64],s[0x100+i*64]);}});
+
+test('item quantity keeps original two displayed decimal positions including values above 99',async()=>{const {data}=await input();for(let qty=0;qty<256;qty++)assert.deepEqual(sourceItemQuantity(data,qty),[qty<10?255:128+Math.floor(qty/10)%10,128+qty%10]);});

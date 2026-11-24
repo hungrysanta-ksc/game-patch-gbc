@@ -21,6 +21,19 @@ static void selection_cursor(uint8_t page);
 #ifdef FF3_PARTY_COMMANDS
 #include "battle-party.h"
 #include "inventory.h"
+#ifdef FF3_ITEM_WINDOW
+#include "battle-items.h"
+#include "battle-item-render.h"
+#include "battle-item-video.h"
+Ff3ItemCursor item_cursor;
+uint8_t item_id,item_hp,item_marquee,item_slots[2];
+uint8_t item_monster_status[8];
+extern const uint8_t item_source_status[];
+volatile uint8_t item_loading_slot=255;
+static uint8_t item_maps,item_marquee_reverse,item_wait,item_map_slots[6];
+static void item_open(void);
+static void item_key(uint8_t key);
+#endif
 #include "platform.h"
 Ff3Party selection_party;
 uint8_t party_used_equipped[4];
@@ -388,6 +401,9 @@ void ff3_scene_run(void) BANKED {
   * action consumer may own this mode; unsupported requests fail closed. */
  #ifdef FF3_SELECTION_FLOW
  if(scene_request==7)selection_enabled=0;
+ #ifdef FF3_ITEM_WINDOW
+ if(scene_request==10)item_marquee_step();else
+#endif
  if(scene_request==8)selection_begin();else if(scene_request==9)selection_input();else
  #endif
  if(scene_request!=7)scene_error=15;else play_action();

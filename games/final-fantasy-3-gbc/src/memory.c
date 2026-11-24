@@ -14,6 +14,20 @@ void ff3_wram_transfer(void) NONBANKED __naked {
  ; batch. Wait with the caller's IE/IME intact for the last three visible
  ; lines to pass. The 16-byte copy is shorter than two scanlines.
 91020$:
+ __endasm;
+#ifdef FF3_ITEM_WINDOW
+ /* Keep the bounded masked copy away from the LYC/HBlank split. This wait
+  * leaves both the audio timer and STAT enabled. */
+ __asm
+ ldh a,(_LY_REG)
+ cp #104
+ jr c,91022$
+ cp #106
+ jr c,91020$
+91022$:
+ __endasm;
+#endif
+ __asm
  ldh a,(_LY_REG)
  cp #141
  jr c,91021$
@@ -26,6 +40,23 @@ void ff3_wram_transfer(void) NONBANKED __naked {
  push af
  xor a
  ldh (_IE_REG),a
+ __endasm;
+#ifdef FF3_ITEM_WINDOW
+ /* A timer IRQ can cross the earlier LY check before IE is masked.
+  * Recheck atomically, and restore IE before retrying the wait. */
+ __asm
+ ldh a,(_LY_REG)
+ cp #104
+ jr c,91023$
+ cp #106
+ jr nc,91023$
+ pop af
+ ldh (_IE_REG),a
+ jr 91020$
+91023$:
+ __endasm;
+#endif
+ __asm
  ld a,(_transfer_offset)
  ld e,a
  ld a,(_transfer_offset+1)

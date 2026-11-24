@@ -10,18 +10,31 @@ static uint8_t selection_glyphs_loaded[2];
 #else
 #define SELECTION_VIEW selection_back
 #endif
+#ifdef FF3_ITEM_WINDOW
+#include "battle-item-flow.inc"
+#endif
 static void selection_cursor(uint8_t page){uint8_t id=0,i,*oam=page?scene_oam1:scene_oam0;
  ff3_scene_rom_copy(target.bank,target.oam,oam,160);
  for(i=0;i<target.objects;i++)oam[i*4+2]+=page*64;
  if(selection_mode==2)return;
- if(selection_mode==1){uint8_t mask=selection_target.ad?selection_target.ad:(selection_target.ae&240);for(i=0;i<8;i++)if(mask&(128>>i)){id=1+i+(selection_target.ad?0:8);break;}}
+ if(selection_mode==1
+#ifdef FF3_ITEM_WINDOW
+ ||selection_mode==4
+#endif
+ ){uint8_t mask=selection_target.ad?selection_target.ad:(selection_target.ae&240);for(i=0;i<8;i++)if(mask&(128>>i)){id=1+i+(selection_target.ad?0:8);break;}}
  memmove(oam+16,oam,(uint16_t)target.objects*4);
  ff3_scene_rom_copy(7,selection_cursors+(uint16_t)SELECTION_VIEW*208+(uint16_t)id*16,oam,16);
  for(i=0;i<4;i++){uint8_t at=i*4;oam[at+2]+=page*64;if(selection_mode==0)oam[at]+=selection_row*8;}
  if(!selection_glyphs_loaded[page]){ff3_scene_rom_copy(7,selection_glyphs,text_staging,64);queue(7,text_staging,1,0x83c0u+(uint16_t)page*1024,64);flush();selection_glyphs_loaded[page]=1;}
 }
 static void selection_begin(void){
+ #ifdef FF3_ITEM_WINDOW
+ if(item_visible)item_leave();
+#endif
  if(scene_page>1||battle_active){scene_error=16;return;}selection_back=scene_page;
+#ifdef FF3_ITEM_WINDOW
+ ff3_scene_rom_copy(7,item_source_status+(uint16_t)selection_back*8,item_monster_status,8);
+#endif
  ff3_scene_rom_copy(7,selection_envs+(uint16_t)selection_back*25,&selection_env,25);if(!ff3_target_valid(&selection_env)){scene_error=16;return;}
  ff3_scene_rom_copy(7,selection_commands,selection_commands_local,4);memset(&selection_target,0,sizeof(selection_target));
  selection_row=selection_mode=selection_dispatch=selection_left=selection_right=selection_sound=0;selection_enabled=1;
@@ -37,7 +50,15 @@ static void selection_begin(void){
 }
 static void selection_input(void){uint8_t key=selection_buttons,bit=key&((uint8_t)(~key)+1),row=selection_row;
  if(!selection_enabled||selection_mode==2){scene_error=16;return;}
+#ifdef FF3_ITEM_WINDOW
+ /* The diagnostic request carries a normal/back selector in scene_page.
+  * Resolve the current actor's actual frame before a submenu can prepare it. */
+ ff3_scene_rom_copy(7,selection_frames+SELECTION_VIEW,(void*)&scene_page,1);
+#endif
 #ifdef FF3_PARTY_COMMANDS
+ #ifdef FF3_ITEM_WINDOW
+ if(selection_mode>=3)item_key(key);else
+#endif
  party_key(key);
 #else
  if(selection_mode==0){
@@ -53,6 +74,9 @@ static void selection_input(void){uint8_t key=selection_buttons,bit=key&((uint8_
   if(!selection_target.ad&&!selection_target.ae){if(selection_target.b4){selection_dispatch=4;selection_mode=2;}else{selection_mode=selection_row=selection_left=selection_right=0;}}
  }
 #endif
+ #ifdef FF3_ITEM_WINDOW
+ if(selection_mode==3||(selection_mode==4&&!item_hp)){item_show();selection_serial++;return;}
+#endif
  /* Publish geometry, UI and hand together on the inactive page.
   * Hidden/selected cursor states never modify an active OAM shadow. */
  ff3_scene_rom_copy(7,selection_frames+SELECTION_VIEW,(void*)&scene_page,1);
@@ -65,6 +89,10 @@ static void selection_input(void){uint8_t key=selection_buttons,bit=key&((uint8_
 }
 void ff3_selection_poll(void) BANKED {uint16_t now;uint8_t gb,keys,pressed;
  CRITICAL{now=sys_time;}if(now==selection_observed||!selection_enabled||selection_mode==2)return;selection_observed=now;
+ #ifdef FF3_ITEM_WINDOW
+ if(item_raster_fault){scene_error=17;return;}
+ if(selection_mode==3){if(item_wait)item_wait--;else if(!scene_request){item_wait=8;scene_request=10;return;}}
+#endif
  if(selection_delay){selection_delay--;return;}gb=joypad();keys=(gb>>4)|((gb&4)<<2)|((gb&8)<<2)|((gb&2)<<5)|((gb&1)<<7);
  pressed=ff3_input_repeat(selection_held,keys,&selection_repeat);selection_held=keys;if(!pressed)return;
  selection_buttons=pressed;scene_request=9;if(selection_mode==0)selection_delay=3;

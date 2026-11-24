@@ -35,7 +35,22 @@ emu.addMemoryCallback(function(address,value)
  local bank=emu.read(0xff4f,mem)&1
  local lcdc=emu.read(0xff40,mem)
  local active=(lcdc>>3)&1
- if address<0x8800 then
+ local items=itemVisible and emu.read(itemVisible,mem)~=0
+ local loading=itemLoading and emu.read(itemLoading,mem) or 255
+ if bank==0 and address<0x8960 and loading<3 then
+  if (address-0x8000)//800~=loading then bad=bad+1 end
+  if items then
+   -- Read the published map, not the producer's pending slot assignments.
+   local scroll=emu.read(itemScroll,mem)
+   for x=scroll//8,scroll//8+19 do
+    local tile=emu.read(0x9800+active*1024+448+x,mem)
+    if tile//50==loading then bad=bad+1;break end
+   end
+  elseif active~=1 then bad=bad+1 end
+ elseif items and address<0x9800 then
+  -- The closing publication may rebuild ONLY the reserved signed UI tiles.
+  if not(bank==1 and address>=0x9300 and emu.read(__SCENE_PHASE__,mem)==11) then bad=bad+1 end
+ elseif address<0x8800 then
   if bank~=1 or ((address-0x8000)//1024)==active then bad=bad+1 end
  elseif address<0x9800 then
   if bank==active then bad=bad+1 end
@@ -63,3 +78,21 @@ end,emu.callbackType.write,0xff40,0xff40,emu.cpuType.gameboy)
 emu.addEventCallback(function()emu.log(string.format('scene-residency:%d,%d,%d,%d',writes,bad,palettes,badpalette))end,emu.eventType.codeBreak)
 emu.addEventCallback(function()emu.log(string.format('scene-publication:%d,%d',publications,badpublication))end,emu.eventType.codeBreak)
 emu.addEventCallback(function()emu.log(string.format('scene-critical:%d,%d,%d',criticalCount,criticalMax,criticalRate))end,emu.eventType.codeBreak)
+if itemVisible then
+ local raster,badraster,begin,rasterMax,rasterRate=0,0,0,0,0
+ local irqStart,irqMax=nil,0
+ emu.addMemoryCallback(function()irqStart=emu.getState().masterClock end,emu.callbackType.exec,itemIrqBegin,itemIrqBegin,emu.cpuType.gameboy)
+ emu.addMemoryCallback(function()irqMax=math.max(irqMax,emu.getState().masterClock-irqStart+52)end,emu.callbackType.exec,itemIrqEnd,itemIrqEnd,emu.cpuType.gameboy)
+ emu.addMemoryCallback(function()local t=emu.getState();begin=t.masterClock;rasterRate=t.clockRate end,emu.callbackType.exec,itemRasterBegin,itemRasterBegin,emu.cpuType.gameboy)
+ emu.addMemoryCallback(function()local t=emu.getState();rasterMax=math.max(rasterMax,t.masterClock-begin)end,emu.callbackType.exec,itemRasterEnd,itemRasterEnd,emu.cpuType.gameboy)
+ emu.addMemoryCallback(function(address,value)
+  if emu.read(itemVisible,mem)~=0 and (value&16)~=0 then
+   raster=raster+1
+   if emu.read(0xff44,mem)~=105 or (emu.read(0xff41,mem)&3)~=0 then badraster=badraster+1;local t=emu.getState();emu.log(string.format('item-raster-invalid:%d,%d,%d,%d',emu.read(0xff44,mem),emu.read(0xff41,mem)&3,t.masterClock,t['cpu.pc'])) end
+   local t=emu.getState();emu.log(string.format('item-scroll:%d,%d,%d',emu.read(itemScroll,mem),t.masterClock,t.clockRate))
+  end
+ end,emu.callbackType.write,0xff40,0xff40,emu.cpuType.gameboy)
+ emu.addMemoryCallback(function(a,v)local t=emu.getState();emu.log(string.format('item-marquee:%d,%d',v,t.masterClock))end,emu.callbackType.write,itemMarquee,itemMarquee,emu.cpuType.gameboy)
+ emu.addEventCallback(function()emu.log(string.format('item-raster:%d,%d,%d,%d,%d',raster,badraster,emu.read(itemRasterFault,mem),rasterMax,rasterRate))end,emu.eventType.codeBreak)
+ emu.addEventCallback(function()emu.log('item-audio-irq:'..irqMax)end,emu.eventType.codeBreak)
+end

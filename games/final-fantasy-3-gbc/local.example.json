@@ -6,7 +6,8 @@
   "text": {
     "font": "D:/private/fonts/7x7_comp.fnt",
     "bindings": "D:/private/text-bindings.json",
-    "translationDir": "D:/private/textasset"
+    "translationDir": "D:/private/textasset",
+    "itemNames": "D:/private/item-names.json"
   },
   "dialogue": {
     "font": "D:/private/fonts/7x7_comp.fnt",
