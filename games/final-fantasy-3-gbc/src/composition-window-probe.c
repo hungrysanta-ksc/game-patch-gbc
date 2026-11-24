@@ -14,6 +14,11 @@ void main(void){ff3_platform_init();ff3_memory_init();cpu_fast();DISPLAY_OFF;
  memset((void*)0xd000,0x6d,2032);memset((void*)0xdb70,0x6e,144);
  memset((void*)0xd7f0,0xa7,16);memset((void*)0xd940,0xa7,16);memset((void*)0xddf0,0xa7,16);
  memset(scene_oam0,0,160);memset(scene_oam1,0,160);_shadow_OAM_base=0xdc;SCX_REG=SCY_REG=0;WX_REG=167;*(volatile uint8_t*)0xff6c=0;
+#ifdef FF3_ITEM_WINDOW
+ /* Equipment-derived battle fields have a separate banked lifetime. The
+  * full battle initializer is still a later integration consumer. */
+ memset((void*)0xda60,0,256);ff3_wram_copy(5,0x400,(void*)0xda60,256,1);
+#endif
 #ifdef FF3_BATTLE_STREAM
  /* Give publication and the bounded DMA pump the early VBlank budget.
   * The text handler has nothing pending while battle transfers run. */

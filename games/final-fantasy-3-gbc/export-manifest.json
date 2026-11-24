@@ -3,15 +3,63 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "docs/battle-equipment.md",
+      "bytes": 8414,
+      "sha256": "156bc04b04850995c80ca4ce268905153a63ab64f0b31d9b7b8c397eab3eaf77",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-equipment.h",
+      "bytes": 662,
+      "sha256": "40d9935ed22cfbf4ada4563c37506e39d89bfce94498e4b51507b230fd71e5ea",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-equipment.c",
+      "bytes": 1617,
+      "sha256": "36bf877dbeae55e7ea24469cc2fcc6b7fa98b75d93b10193bd476808e5fcf862",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-equipment-stats.c",
+      "bytes": 3653,
+      "sha256": "fe101f33d393dae1b02fc7d0b28144387ba1b1197ecdb3fd2d97efc40235cf89",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-equipment-test.c",
+      "bytes": 1145,
+      "sha256": "c072be18fa90e9104036c2b25ee825810eb4bf71ef0a76f5ecd957367cd2a5cd",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-equipment-source.mjs",
+      "bytes": 4119,
+      "sha256": "d6f894f7012683498652b0f7273dd9e5f0ce6103c2fc99f0a45b6b01312e0f0e",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-battle-equipment.mjs",
+      "bytes": 3165,
+      "sha256": "a2e03861bd74bdbca5f5f0d463e83fda3fcb3da1c6e2d5cfa5a51d22861119d8",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/battle-equipment.test.mjs",
+      "bytes": 1650,
+      "sha256": "b65cbca063a7b90390ee3efdefffc852d7b8929fa8e05def52cc53cb653acbd1",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "docs/battle-item-window.md",
-      "bytes": 9227,
-      "sha256": "d727cc724387965c13797d136fb2be0785a7e2f6072a66f5d940faa5c364c4ab",
+      "bytes": 9420,
+      "sha256": "fe03c41dade7ea9cf4c7084a5620cfc4d2551c46b05db30114efd4579b20460a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-item-flow.inc",
-      "bytes": 8387,
-      "sha256": "3df8f119a0997435f0766edd08fc90eb86690ea3b9e16358083d7992c8c2a0fd",
+      "bytes": 9311,
+      "sha256": "1388c4ceab3efbbacc2fa3fa4a31000fa18138e7479afd3d69a59e1290711cbb",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -52,8 +100,8 @@
     },
     {
       "path": "tools/battle-item-verifier.mjs",
-      "bytes": 15382,
-      "sha256": "063e1fbb1ad0f5f3b6e62fc7a5cb8dbb70404640264a53b96905b63da0d490fb",
+      "bytes": 17565,
+      "sha256": "8c68e64b27fa5413b248b2bda1215cd2e5e692e863cce7e981d5a559cc1ea5e2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -214,8 +262,8 @@
     },
     {
       "path": "src/battle-selection.inc",
-      "bytes": 6014,
-      "sha256": "2cf2a7299ae420055e37f70274b4c4eb115bd6012091727e8289f030f04c969a",
+      "bytes": 6360,
+      "sha256": "c90fff8d7df03ea3eac514549b05ca08b9395c1f46be56f87287c0d7e5ba64e3",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -232,8 +280,8 @@
     },
     {
       "path": "tools/verify-battle-select.mjs",
-      "bytes": 1960,
-      "sha256": "84ba734c4dc5b0a8c6ebe7b589ed0ed1331de8fa8aec4629ae13bcdd6695d1f4",
+      "bytes": 2016,
+      "sha256": "9af989c8e837e9c5f27384129a83276030237786b0eb98f7dce0af19bfa605ed",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -538,8 +586,8 @@
     },
     {
       "path": "src/battle-atlas.c",
-      "bytes": 17075,
-      "sha256": "628b8679a8377a44d7307aaa41d5ba3e1550dfdd021464b9836e2e9f24a7bd36",
+      "bytes": 17125,
+      "sha256": "8016f90dea0baef4246a61814078cae4fe69e6cfede9f642380369029cba23b9",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -604,8 +652,8 @@
     },
     {
       "path": "src/composition-window-probe.c",
-      "bytes": 1588,
-      "sha256": "115bf2500f87a5d0c4287ae01449d7fa6b9525fa09ab351d8ccf84a38457fbbb",
+      "bytes": 1834,
+      "sha256": "aa200f3c9145cee78842e979a7e07c9b2970125612e50e5af83a752727c6cc2e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -622,14 +670,14 @@
     },
     {
       "path": "tools/build-composition-window.mjs",
-      "bytes": 21357,
-      "sha256": "717e019ebc7c0d2271aba13d00d42fdaa7508f36c761b31e062ec9b4263a8127",
+      "bytes": 22061,
+      "sha256": "c85d8f48deda3e815de951ffe019a2393e4aba0e223fb156bc68c1938a4a327c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/verify-composition-window.mjs",
-      "bytes": 17769,
-      "sha256": "a39c51cae52f12be288d859f8609de9dfab9127389f108b6ffb3b28b482c06c7",
+      "bytes": 17862,
+      "sha256": "f63ee7d3946c9ea328ca57b75165b2f77bc3bea3d0b3e5822ffbabe5cf467d3d",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -640,8 +688,8 @@
     },
     {
       "path": "tools/VerifyCompositionWindow/Program.cs",
-      "bytes": 11960,
-      "sha256": "c5db89493bac059a8d55e7860e9821a442bb0d247202160e9a519468c5ab78f3",
+      "bytes": 12481,
+      "sha256": "774cc34620f3dcb26c574cd18eda0c6fee9ae21d05a978416c7b10557f3d691d",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -952,14 +1000,14 @@
     },
     {
       "path": "docs/memory-lifetimes.md",
-      "bytes": 16480,
-      "sha256": "ca05b68da41e8ebe5da1b935a9838accedc687f456ed6f6d511c0a1b0b493f69",
+      "bytes": 16548,
+      "sha256": "09c4a720c15cd9b7045061c7deb8ad665eb4501a12d8a03751894d3966c66679",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/memory.h",
-      "bytes": 1227,
-      "sha256": "cec2d844e47d1150755cbde3dff73340178be50b403d886c6363df51cf00b412",
+      "bytes": 1302,
+      "sha256": "0d255ea2105d88fed9db2ac2798cfc84f7f47ac48105dc537012f4a72887d2d5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1042,8 +1090,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 23080,
-      "sha256": "91f0a4687347bda9019f21d4d4b0d5d9b218057320ff80492080842d6f940b28",
+      "bytes": 23207,
+      "sha256": "c74d61344f97014cb42cc43b0734a518f2dea4e19e5593c26cc7302dc7946205",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1060,14 +1108,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 5676,
-      "sha256": "4852f05064ad09723d4babc6701a93cb81b60c2c61439d67e63731cbc3c13acf",
+      "bytes": 5861,
+      "sha256": "b63df0604f83615d62d2194d55cf63f8a636e7fb6f53637cabc00021df368add",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 37394,
-      "sha256": "9c9885071b7abef6c0da219e1da52b8f4714905236eccd45c26a0b9714adbbcf",
+      "bytes": 37912,
+      "sha256": "62a15f00c435bf50cabba0e193b4630a288f31fcc51a143b66ccfdb0cc3a1a79",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1078,8 +1126,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 15384,
-      "sha256": "6317e187551a7b2917d405b9dc8f0ab49f1b97431a6697f4af8bf51dd08a6a5e",
+      "bytes": 15492,
+      "sha256": "339f721b7ad082f7051df17135d4a1bed236d5dfd7d64d923b820e09cd98c1b5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1553,7 +1601,7 @@
     {
       "path": "tools/text-audio-assets.mjs",
       "bytes": 3317,
-      "sha256": "11438e5ad0a23886afd5a9aa50b164f62b3e04ee23f768e586499aaa0a55abab",
+      "sha256": "b50a40a4b709b63cf59664c564b932f04eef03737b3604c5e9d550400882df2e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1900,8 +1948,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 11287,
-      "sha256": "6d53356e6e78aed6e88cc0a4963a505b665e27a43b9f34d702ccfc5f0aa20daf",
+      "bytes": 11532,
+      "sha256": "e400dcd2e557d5b61ed7aeb0ad5ad10a199a41fd55cb6cd61bbccb23212064a5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

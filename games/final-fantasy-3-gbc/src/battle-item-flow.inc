@@ -50,6 +50,15 @@ static void item_leave(void){
  }
  item_next_visible=0;item_next_scroll=0;last_frame[0]=255;action_tiles[0]=255;party_valid_pages=0;
 }
+static void item_update_equipment(void){uint16_t at=(uint16_t)selection_party.actor*64;
+ /* Bank 5 $400..4FF owns derived equipment records. UI scratch is borrowed
+  * only after the closing publication has finished. Never map the stack. */
+ ff3_native_service();
+ if(!ff3_wram_copy(5,0x400u+at,scene_input,64,0)){scene_error=18;return;}
+ ff3_equipment_update(ff3_game_state+0x100u+at,ff3_game_state+0x200u+at,scene_input);
+ if(!ff3_wram_copy(5,0x400u+at,scene_input,64,1))scene_error=18;
+ ff3_native_service();
+}
 static void item_move(uint8_t old_scroll){uint8_t page,i,spare=3-item_slots[0]-item_slots[1],right=item_cursor.scroll>old_scroll;
  item_column(right?item_cursor.scroll+1:item_cursor.scroll,spare,0);
  page=active_page^1;item_map(page,right?item_slots[0]:spare,right?item_slots[1]:item_slots[0],right?spare:item_slots[1]);
@@ -68,7 +77,7 @@ static void item_reserve(void){uint8_t actor=selection_party.actor,at=actor*3;
  selection_party.action[at]=item_id;
  if(!item_cursor.column){selection_party.used[actor]=item_id;party_used_equipped[actor]=1;}
  else if(!ff3_inventory_reserve(ff3_game_state+0xc0,(item_cursor.column-1)*4+item_cursor.row,selection_party.used+actor)){scene_error=18;return;}
- selection_party.actor++;item_leave();party_enter();
+ item_leave();item_update_equipment();selection_party.actor++;party_enter();
 }
 static void item_use(void){uint8_t actor=selection_party.actor,at=actor*3,property,i,mask=0;
  item_id=ff3_item_byte(item_cursor.column,item_cursor.row,actor,0);
@@ -83,11 +92,15 @@ static void item_use(void){uint8_t actor=selection_party.actor,at=actor*3,proper
 }
 static void item_key(uint8_t key){uint8_t old=item_cursor.scroll,oldrow=item_cursor.row,oldcol=item_cursor.column,event,actor=selection_party.actor,at=actor*3;
  if(selection_mode==4){ff3_target_input(&selection_target,&selection_env,key);selection_sound=selection_target.sound;selection_party.selected[actor]=selection_target.selected;
-  if(!selection_target.ad&&!selection_target.ae){if(selection_target.b4){selection_party.action[at+1]=selection_target.b4;selection_party.action[at+2]=selection_target.b5;item_reserve();}else{item_leave();party_enter();}}return;
+  if(!selection_target.ad&&!selection_target.ae){if(selection_target.b4){selection_party.action[at+1]=selection_target.b4;selection_party.action[at+2]=selection_target.b5;item_reserve();}else{item_leave();item_update_equipment();party_enter();}}return;
  }
  event=ff3_item_input(&item_cursor,key);if(key&240)selection_sound=0x98;
- if(event==FF3_ITEM_CLOSE){item_leave();party_enter();return;}
- if(event==FF3_ITEM_EQUIP){item_leave();selection_dispatch=0xe1;selection_party.phase=FF3_PARTY_CALLER;selection_mode=2;return;}
+ if(event==FF3_ITEM_CLOSE){item_leave();item_update_equipment();party_enter();return;}
+ if(event==FF3_ITEM_EQUIP){uint8_t col=item_cursor.column?item_cursor.column:item_cursor.saved_column,r=item_cursor.column?item_cursor.row:item_cursor.saved_row;
+  uint8_t id=ff3_item_byte(col,r,actor,0),eligible=ff3_item_eligible(id,actor);
+  if(!ff3_equipment_swap(ff3_game_state+0xc0,ff3_game_state+0x200u+(uint16_t)actor*64,&item_cursor,eligible)){selection_sound=0x86;return;}
+  selection_sound=0x85;item_leave();item_update_equipment();party_enter();return;
+ }
  if(event==FF3_ITEM_ERROR){selection_sound=0x86;return;}
  if(event==FF3_ITEM_USE){item_use();return;}
  if(key==1){selection_sound=0x85;selection_delay=16;}

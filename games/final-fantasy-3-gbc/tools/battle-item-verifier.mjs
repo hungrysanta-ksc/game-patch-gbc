@@ -4,7 +4,8 @@ import {sourceInitialState} from './state-source.mjs';
 import {selectionStep as partyStep} from './battle-party-verifier.mjs';
 import {sourceParty} from './battle-party-source.mjs';
 import {sourceItemCursor,sourceInventory} from './battle-items-source.mjs';
-import {sourceItemUse,sourceItemAutoTargets} from './battle-item-use-source.mjs';
+import {sourceItemUse,sourceItemAutoTargets,sourceItemEligibility} from './battle-item-use-source.mjs';
+import {sourceEquipmentSwap,sourceEquipmentStats} from './battle-equipment-source.mjs';
 import {sourceTarget} from './battle-select-source.mjs';
 import {selectionHand} from './battle-selection-verifier.mjs';
 import {selectionViewProfile} from './battle-select-view-assets.mjs';
@@ -16,6 +17,7 @@ import {partyUiRaster} from './battle-party-ui.mjs';
 import {actionRgb,actionComposition} from './battle-action-assets.mjs';
 import {screenshotRgb} from './map-pixels.mjs';
 export function itemBags(){const ids=[0xa6,0xa7,0xa8,0xa9,0xaa,0xab,0xac,0xad,0xae,0xaf,0xb0,0xb1,0xb2,0xb3,0xb4,0xb5,0xb6,0xb7,0xb8,0xb9,0xba,0xbb,0xbc,0xbd,0xbe,0xbf,0xc0,0xc1,0x1e,0x62,0xc8,0];return [Buffer.from([...ids,...ids.map((id,i)=>id?(i===1?12:i===2?99:i===24?255:i%9+1):0)]).toString('hex')];}
+export function equipmentSeeds(rom){const base=sourceInitialState(rom),make=(job,hands,id,qty,full=false)=>{const game=Buffer.from(base);game[0x100]=job;game.set(hands,0x203);game.fill(full?0x1e:0,0xc0,0xe0);game.fill(full?1:0,0xe0,0x100);game[0xc0]=id;game[0xe0]=qty;return game.toString('hex');};return [make(0,[0x1e,1,0,0],0x1f,3),make(0,[0x1e,1,0,0],0,0),make(0,[0x1e,1,0,0],0x1e,99),make(0,[0x1e,1,0,0],0x46,1),make(21,[0x4a,1,0,0],0x4f,21),make(21,[0x1e,1,0,0],0x1f,3,true),make(21,[0x1e,1,0,0],0x4a,1),make(21,[0x1e,1,0,0],0x58,1)];}
 export function selectionSequence(){const out=[];for(const back of [0,1]){const route=keys=>{out.push({op:8,page:back,itemSeed:0});for(const key of keys)out.push({op:9,page:back,key});};
  route([16,1,128,128,128,128,128,128,128,128,64,64,64,64,64,64,64,64,32,16,128,2]);
  // Potion: HP target cancel, then reservation, previous actor refunds once.
@@ -30,8 +32,12 @@ export function selectionSequence(){const out=[];for(const back of [0,1]){const 
  route([16,1,64,1,1,1,2]);
  // Disabled armor/spell item and an empty slot must not reserve anything.
  route([16,1,128,128,128,128,128,128,128,32,1,1,2,32,1,1,2,32,1,1,2,2]);
- // Equipment-to-bag swap is an explicit unimplemented caller, not success.
+ // Original equipment error (potion in the bag) keeps the list open.
  route([16,1,64,1,128,1]);
+ }for(const back of [0,1])for(let seed=0;seed<8;seed++){out.push({op:8,page:back,equipmentSeed:seed});const keys=[16,1,1,64,...(seed===4||seed===6||seed===7?[32]:[]),1];for(const key of keys)out.push({op:9,page:back,key});
+ // Success returns to this actor's command menu; reopen to inspect both
+ // hand and bag contents. Failure retains the original two-cursor state.
+ if([0,1,2,4,7].includes(seed))for(const key of [16,1,64,2])out.push({op:9,page:back,key});else for(const key of [2,2])out.push({op:9,page:back,key});
  }return out;}
 function enter(rom,s){s.party=sourceParty(rom,s.party,1);if(s.party[1]===3){const a=s.party[0],r=Buffer.alloc(72);r.set(s.bag);r[64]=s.party[50+a];r[65]=s.equipped[a];const v=sourceInventory(rom,r,4,Buffer.from([0,a])).state;s.bag=Buffer.from(v.subarray(0,64));s.party[50+a]=v[64];s.equipped[a]=v[65];s.party[1]=0;}s.display=Buffer.from(s.party.subarray(2,6));s.mode=s.party[1]===0?0:2;s.row=s.left=s.right=s.dispatch=0;}
 export function itemStep(rom,profile,state,q,equipment,jobs){
@@ -42,7 +48,7 @@ export function itemStep(rom,profile,state,q,equipment,jobs){
  const reserve=()=>{s.party[at]=s.id;if(s.cursor[1]){const r=Buffer.alloc(72);r.set(s.bag);r[64]=s.party[50+actor];const v=sourceInventory(rom,r,3,Buffer.from([(s.cursor[1]-1)*4+s.cursor[0],actor])).state;s.bag=Buffer.from(v.subarray(0,64));s.party[50+actor]=v[64];}else{s.party[50+actor]=s.id;s.equipped[actor]=1;}s.party[0]++;enter(rom,s);};
  if(s.mode===4){s.target=sourceTarget(rom,Buffer.from(profile.env.data),s.target,q.key);s.sound=s.target[10];s.party[22+actor]=s.target[9];if(!s.target[0]&&!s.target[1]){if(s.target[7]){s.party[at+1]=s.target[7];s.party[at+2]=s.target[8];reserve();}else enter(rom,s);}return s;}
  const r=sourceItemCursor(rom,s.cursor,q.key);s.cursor=r.state;if(q.key&240)s.sound=0x98;
- if(r.event===3){enter(rom,s);return s;}if(r.event===2){s.mode=2;s.dispatch=0xe1;s.party[1]=4;return s;}if(r.event===4){s.sound=0x86;return s;}if(!r.event){if(q.key===1)s.sound=0x85;return s;}
+ if(r.event===3){enter(rom,s);return s;}if(r.event===2){const col=s.cursor[1]||s.cursor[5],row=s.cursor[1]?s.cursor[0]:s.cursor[4],id=s.bag[(col-1)*4+row],input=Buffer.concat([s.bag,equipment.subarray(actor*64,actor*64+8),s.cursor]),r=sourceEquipmentSwap(rom,input,+(!!sourceItemEligibility(rom,id,jobs[actor])));s.cursor=Buffer.from(r.state.subarray(72));if(r.result){s.bag=Buffer.from(r.state.subarray(0,64));equipment.set(r.state.subarray(64,72),actor*64);s.sound=0x85;enter(rom,s);}else s.sound=0x86;return s;}if(r.event===4){s.sound=0x86;return s;}if(!r.event){if(q.key===1)s.sound=0x85;return s;}
  s.id=s.cursor[1]?s.bag[(s.cursor[1]-1)*4+s.cursor[0]]:equipment[actor*64+(s.cursor[0]>=2?5:3)];const use=sourceItemUse(rom,s.id,jobs[actor],{equipped:!s.cursor[1]});s.party[at]=use.item;s.party[46+actor]|=use.actionFlags;s.hp=use.showHp;
  if(!use.valid){s.sound=0x86;return s;}s.sound=0x85;
  if(!(use.property&24)){reserve();return s;}if(use.property&64){const target=sourceItemAutoTargets(rom,Buffer.from(profile.source.monsterStatus.data));s.party[at+1]=target.mask;s.party[at+2]=target.flags;reserve();return s;}
@@ -63,12 +69,12 @@ function columnPixels(a,column,s,equipment,jobs,offset){const kind=!column?0:col
 }
 export async function verifySelection({data,local,report,actual,cfg,dir,shots,sequence}){
  const assets=await addTextAssets(data,makeObjectAssets(data,makeMapAssets(data,{verify:false}),{verify:false}),local.text),profiles=[false,true].map(back=>Array.from({length:5},(_,actor)=>selectionViewProfile(data,assets.text,{back,actor,party:true}))),a=await itemAssets(data,assets.text,profiles[0][0].source.menuTiles,local.text);for(const group of profiles)for(const p of group)p.source.frame.composition=actionComposition(p.source.frame);
- const initial=sourceInitialState(data),jobs=Array.from({length:4},(_,i)=>initial[0x100+i*64]);let s,count=0,maxObjects=0,maxLine=0,equipment,serial,outsideState;const examples=[],marqueeWindows=[],latencies={open:[],scrollWithPreparation:[],otherInput:[],start:[]};
+ let game,battle=Buffer.alloc(256),s,count=0,maxObjects=0,maxLine=0,serial;const seeds=equipmentSeeds(data);const examples=[],marqueeWindows=[],latencies={open:[],scrollWithPreparation:[],otherInput:[],start:[]};
  for(const [i,p]of actual.pages.entries()){
-  const q=sequence[i%sequence.length],profile=report.battle.action.selectionViews[q.page];equipment??=Buffer.from(p.gameState,'hex').subarray(0x200,0x300);const old=s;s=itemStep(data,profile,s,q,equipment,jobs);
+  const q=sequence[i%sequence.length],profile=report.battle.action.selectionViews[q.page];game??=Buffer.from(p.gameState,'hex');if(q.equipmentSeed!==undefined){game=Buffer.from(seeds[q.equipmentSeed],'hex');battle.fill(0);s={...s,bag:Buffer.from(game.subarray(0xc0,0x100))};}const equipment=game.subarray(0x200,0x300),jobs=Array.from({length:4},(_,a)=>game[0x100+a*64]),old=s;s=itemStep(data,profile,s,q,equipment,jobs);game.set(s.bag,0xc0);if(q.op!==8&&old?.mode>=3&&s.mode<3){const a=old.party[0]*64,r=sourceEquipmentStats(data,Buffer.concat([game.subarray(0x100+a,0x140+a),game.subarray(0x200+a,0x240+a),battle.subarray(a,a+64)]));game.set(r.subarray(0,64),0x100+a);game.set(r.subarray(64,128),0x200+a);battle.set(r.subarray(128),a);}
   const timing=q.op===8?'start':old?.mode===0&&s.mode===3?'open':old?.mode===3&&s.mode===3&&old.cursor[2]!==s.cursor[2]?'scrollWithPreparation':'otherInput';latencies[timing].push(p.seconds);
   check(p.op===q.op&&p.page===q.page,'Item request order');for(const k of ['mode','row','back','dispatch','sound'])check(p.selection[k]===s[k],'Item '+k+' at '+i+': '+p.selection[k]+' != '+s[k]);
-  const outside=p.gameState.slice(0,0xc0*2)+p.gameState.slice(0x100*2);outsideState??=outside;check(outside===outsideState,'Non-inventory GameState '+i);
+  check(p.gameState===game.toString('hex'),'Complete GameState after equipment/stat update '+i);check(p.equipmentBattle===battle.toString('hex'),'Banked equipment-derived battle fields '+i);
   check(p.selection.target===s.target.toString('hex'),'Original item target '+i);check(p.party===s.party.toString('hex'),'Original item action '+i);check(p.partyDisplay===s.display.toString('hex'),'Item HP labels '+i);check(p.bag===s.bag.toString('hex')&&p.usedEquipped===s.equipped.toString('hex'),'Item reservation/refund '+i);check(p.item.cursor===s.cursor.toString('hex')&&!p.item.rasterFault,'Item cursor/raster '+i);
   if(serial!==undefined)check(((p.selection.serial-serial)&65535)===1,'Item publication serial');serial=p.selection.serial;
   if(old?.mode===3&&s.mode===3&&(old.cursor[0]!==s.cursor[0]||old.cursor[1]!==s.cursor[1]))check(p.item.marquee===0,'Changed cursor resets name offset '+i);
@@ -85,8 +91,8 @@ export async function verifySelection({data,local,report,actual,cfg,dir,shots,se
   if(i<sequence.length){const file='item-'+i+'.png';await fs.writeFile(dir+'/'+file,image);examples.push({file,...q,mode:s.mode,actor:s.party[0],cursor:[...s.cursor],marquee:p.item.marquee});}count++;
  }
  const shiftedNameScreenshots=actual.pages.filter(p=>p.screenshot&&p.item.marquee>0).length;check(shiftedNameScreenshots>=2,'Pixel evidence of selected-name motion with other names stationary');
- check(count===sequence.length*2,'Two complete item cycles');await fs.writeFile(dir+'/item-review.json',JSON.stringify(examples,null,2));await fs.writeFile(dir+'/index.html','<!doctype html><meta charset="utf-8"><title>FF3 아이템 창</title><style>body{background:#151921;color:#eee;font:16px sans-serif;margin:24px}main{display:flex;flex-wrap:wrap;gap:20px}figure{margin:0}img{width:480px;image-rendering:pixelated}</style><h1>원작 아이템 창 · V6</h1><p>실제 GBC 캡처. 재고는 명시적인 검증 입력. A 두 번 사용, B 취소. 효과 계산·장비 교환은 별도 소비자입니다.</p><main>'+examples.map(e=>'<figure><img src="'+e.file+'"><figcaption>'+e.file+' · 모드 '+e.mode+' · 커서 '+e.cursor+'</figcaption></figure>').join('')+'</main>');
- return {latencies:Object.fromEntries(Object.entries(latencies).map(([k,v])=>[k,{count:v.length,maxSeconds:Math.max(...v)}])),marqueeWindows,shiftedNameScreenshots,screenshots:count,pixels:count*160*144,states:actual.pages.length,maxObjects,maxLine,requestsPerCycle:sequence.length,scope:'Original item IDs/counts/usability and six-frame horizontal list, selected-name marquee, original target selection/reservation/refund; fixed diagnostic inventory/formation, no item effects or equipment swap'};
+ check(count===sequence.length*2,'Two complete item cycles');await fs.writeFile(dir+'/item-review.json',JSON.stringify(examples,null,2));await fs.writeFile(dir+'/index.html','<!doctype html><meta charset="utf-8"><title>FF3 아이템 창</title><style>body{background:#151921;color:#eee;font:16px sans-serif;margin:24px}main{display:flex;flex-wrap:wrap;gap:20px}figure{margin:0}img{width:480px;image-rendering:pixelated}</style><h1>원작 아이템 창 · V6</h1><p>실제 GBC 캡처. 재고는 명시적인 검증 입력. A 두 번 사용, B 취소. 무기·방패 교환과 능력치 갱신은 원작 규칙을 사용합니다. 아이템 실행 효과는 후속 범위입니다.</p><main>'+examples.map(e=>'<figure><img src="'+e.file+'"><figcaption>'+e.file+' · 모드 '+e.mode+' · 커서 '+e.cursor+'</figcaption></figure>').join('')+'</main>');
+ return {latencies:Object.fromEntries(Object.entries(latencies).map(([k,v])=>[k,{count:v.length,maxSeconds:Math.max(...v)}])),marqueeWindows,shiftedNameScreenshots,screenshots:count,pixels:count*160*144,states:actual.pages.length,maxObjects,maxLine,requestsPerCycle:sequence.length,scope:'Original item IDs/counts/usability and six-frame horizontal list, selected-name marquee, original target selection/reservation/refund; original weapon/shield swap and stat update; fixed diagnostic inventory/formation, no item effects'};
 }
 
 export function checkItemTiming(log,selection){

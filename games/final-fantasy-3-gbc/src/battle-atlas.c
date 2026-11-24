@@ -25,6 +25,8 @@ static void selection_cursor(uint8_t page);
 #include "battle-items.h"
 #include "battle-item-render.h"
 #include "battle-item-video.h"
+#include "battle-equipment.h"
+#include "memory.h"
 Ff3ItemCursor item_cursor;
 uint8_t item_id,item_hp,item_marquee,item_slots[2];
 uint8_t item_monster_status[8];

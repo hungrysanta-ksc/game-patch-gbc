@@ -3,7 +3,8 @@
 #include <gb/gb.h>
 /* Bank 1 owns the live stack and active field/window workspace. Other WRAM
  * banks are storage, never a mapped execution mode. No pointers escape them.
- * Bank 2: diagnostics [0,464). Banks 3..7: future mode storage, unclaimed. */
+ * Bank 2: diagnostics [0,464). Item battle build: bank 5 [0x400,0x500)
+ * stores equipment-derived character records. Other mode storage is reserved. */
 #define FF3_WRAM_DIAGNOSTICS 2u
 #define FF3_WRAM_SNAPSHOT_BYTES 232u
 #define FF3_WRAM_CHUNK 16u
