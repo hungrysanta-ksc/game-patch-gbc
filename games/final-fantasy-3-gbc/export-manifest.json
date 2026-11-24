@@ -4,26 +4,26 @@
   "files": [
     {
       "path": "docs/battle-scene-composition.md",
-      "bytes": 9396,
-      "sha256": "b967ed3bbfd7ec72d83262a4b5f9efecfdca838278757749ae154e386c77b14d",
+      "bytes": 16211,
+      "sha256": "b08adf2677df7f251f6a91096d653977fa692729680288e5b2070271589b61e4",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/battle-scene-pixels.mjs",
-      "bytes": 6708,
-      "sha256": "075a60def3c4ac6848f6a171e1083aaf70bb31f547cd27567139c0207ccb1f20",
+      "bytes": 7457,
+      "sha256": "92f4b21936060ca5e67e48a65143813b75c288018e39d000e3a5423034e0e05e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/battle-scene-assets.mjs",
-      "bytes": 3242,
-      "sha256": "bd3fe2b048504ff52f3b414120f6609729732f0826dc992927ab2ba273f4a4ec",
+      "bytes": 4113,
+      "sha256": "21e29368bdc916875e5771d744bda1b7f40a77664047983c8a52803c69b687c3",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/battle-scene-audit.lua",
-      "bytes": 1160,
-      "sha256": "63b3737afcf206adba202ba869a2f00044e0f7013bda3852ceda09d35ff0b9cb",
+      "bytes": 2864,
+      "sha256": "fa4fe433592a74a7e8ea775fb301b69fa65df39a3f0e6b1bcd2eb08db24c95dd",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -34,8 +34,8 @@
     },
     {
       "path": "tests/battle-scene-composition.test.mjs",
-      "bytes": 4174,
-      "sha256": "97a0d4daab24d065d23aabcab3a4cd2e81bc748c487daab20b3294310636feff",
+      "bytes": 6529,
+      "sha256": "fecd2cb17406aef2f5da8248fdebabd8b3c63e143f4f486c5da2fd52f4c43556",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -166,8 +166,8 @@
     },
     {
       "path": "src/battle-atlas.c",
-      "bytes": 7783,
-      "sha256": "18f90df1191d0000e9908a2c0732fa1a0c7516b5d288feabee1d547ed3a5bcb4",
+      "bytes": 10525,
+      "sha256": "4ab8521c524a0741e8dc3626a1b4e293ab510b8cc1505da557395b9272f98b2a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -226,14 +226,14 @@
     },
     {
       "path": "src/composition-window-video.c",
-      "bytes": 2421,
-      "sha256": "c0fe9c649550c3ce9fe42210c5de1ad14672bedd9e952d8bb932469ed9c5475e",
+      "bytes": 3643,
+      "sha256": "c9afee13dde6eac707fe04c8a8191aaef2cb6fcbebeca7cc4822899c5c676943",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/composition-window-probe.c",
-      "bytes": 1091,
-      "sha256": "72f543c0205e2d9ad236d5488bd8992986d42ced53e8b010af4ff04d6e385552",
+      "bytes": 1332,
+      "sha256": "fcc97dce7ec1d4868511fa1384241b7519d06bfd6475db938bfa5f360ec79c79",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -250,14 +250,14 @@
     },
     {
       "path": "tools/build-composition-window.mjs",
-      "bytes": 12860,
-      "sha256": "bbb65e9ad84c77fa28ab4172a2664a763b89d9bd164b8f58b4cc3b81b0933fd6",
+      "bytes": 13046,
+      "sha256": "f42f27a07828d5d44c58e769172621c91fcbfb7117120ac3aa5011638f395d21",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/verify-composition-window.mjs",
-      "bytes": 12436,
-      "sha256": "799c7793225bfe69067bdfe70153d13f48e88423883d95350c1daaf3ed509c2b",
+      "bytes": 13190,
+      "sha256": "23389379335b311530c019397b31d14f062ef7c48e4ae23708443db47cc5b649",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -694,8 +694,8 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 28218,
-      "sha256": "cb2398fa401bd819e70ebd20e79c0cd1e77e49476399576903916e1d9e493a80",
+      "bytes": 29327,
+      "sha256": "fb7c37a37423cfb6a39e9ce842bcbf8ccfdbbde531bb41bf693269d08760f1d6",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -706,8 +706,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 10191,
-      "sha256": "7b88331d9587852ba0f76081a31fa247c83c1c237bf1a766e2e43a259b4b0645",
+      "bytes": 10716,
+      "sha256": "e7a6792331ec3572a948f72737485458cc12e86c1cb3575d2aad23c05e54dadd",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1186,8 +1186,8 @@
     },
     {
       "path": "tools/text-audio-audit.lua",
-      "bytes": 2324,
-      "sha256": "5fa45831a1a12b073225e6beb7f78dc6bdd520b8d203aac275155360aa36daae",
+      "bytes": 2342,
+      "sha256": "a1bbe340e35dc3db62747434d4b457ed7e658e3099e65a306ffa9b304d43bb9d",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
