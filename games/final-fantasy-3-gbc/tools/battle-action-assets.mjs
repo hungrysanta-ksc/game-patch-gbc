@@ -8,12 +8,14 @@ import {originalActionUi,uiPixels,packActionUi,actionRows as rows} from './battl
 import {selectionViewProfile} from './battle-select-view-assets.mjs';
 const offset=n=>Math.floor(n*nativeTiming.timerHz*nativeTiming.sourceRateDenominator/nativeTiming.sourceRateNumerator);
 // Shift the BG grid six pixels, then SCY=6 restores the approved screen
-// positions. The y=106 UI edge becomes tile-aligned at BG y=112; no party
-// foot pixel or numeral needs an extra OBJ merely to cross a UI palette edge.
+// positions. Action windows retain their y=106 edge. Selection windows start
+// at y=103 inside tile row 13; that row keeps its artwork in OBJ so the new
+// blue frame/padding cannot overwrite a foot. Numeral geometry is unchanged.
 export function actionComposition(f){
  const shift=p=>{const q=new Uint16Array(168*152).fill(f.sourcePalettes.readUInt16LE(0));q.set(p.subarray(0,168*146),168*6);return q;};
+ if(f.cursorLayout)check(f.sourcePalettes.readUInt16LE(0)===0,'Selection padding requires original black background');
  const shifted={...f,pixels:shift(f.pixels),basePixels:shift(f.basePixels),numberObjects:f.numberObjects.map(o=>({...o,y:o.y+6}))};
- const obj=Buffer.concat([0,1,4,7].map(p=>f.sourcePalettes.subarray(p*8,p*8+8))),c=f.numberObjects.length?composeBattleNumbers(shifted):compilePixelComposition(shifted.pixels,obj,{width:168,height:152,palettes:pixelCompositionPalettes([shifted.pixels],obj,{width:168,height:152,maxPalettes:7})});
+ const obj=Buffer.concat([0,1,4,7].map(p=>f.sourcePalettes.subarray(p*8,p*8+8))),c=f.numberObjects.length?composeBattleNumbers(shifted,{objOnlyRow:f.cursorLayout?13:-1}):compilePixelComposition(shifted.pixels,obj,{width:168,height:152,objOnlyRow:f.cursorLayout?13:-1,palettes:pixelCompositionPalettes([shifted.pixels],obj,{width:168,height:152,maxPalettes:7})});
  check(compositionWords(c).every((v,i)=>v===shifted.pixels[i]),'Shifted V6 geometry lossless');return c;
 }
 function literal(text,id){const i=text.sourceIds.indexOf(id);check(i>=0,'Reviewed battle text binding required: '+id);const words=[];for(let p=0;p<text.messages[i].length;p+=2){const v=text.messages[i].readUInt16LE(p);if(v===0)break;check(v>=0x8000,'Unsupported battle text control '+id);words.push(v-0x8000);}return words;}
@@ -73,7 +75,7 @@ export function battleActionAssets(rom,text,{smallHp=false,selection=false,party
  check(raw.length<255,'Action geometry index capacity');
  const {frames,visuals}=packBattleFrames({frames:raw,summary:{failed:0}});
  for(const run of runs){const first=frames[run.first];run.objects=first.stats.objects;run.numberObjects=first.stats.numberObjects;run.oam=Buffer.concat(run.entries.map(e=>{const f=frames[e.frame];for(const k of ['background','maps','objects'])check(f.atlas[k].equals(first.atlas[k]),'Pinned action numeral '+k);check(f.palette.equals(first.palette),'Pinned action numeral palette');return f.atlas.oam;}));}
- const {glyphs,cells,tileCount,tileCounts}=packActionUi(profiles);if(party)check(tileCounts.slice(4).every(n=>n<=55),'Party suffix reservation: '+tileCounts.slice(4));
+ const {glyphs,cells,tileCount,tileCounts}=packActionUi(profiles);if(party)check(tileCounts.slice(4).every(n=>n<=49),'Party suffix reservation: '+tileCounts.slice(4));
  const blank=Buffer.alloc(80),action={profiles,tileCount,glyphs,cells,rows,selectionViews,source:'34/8FF7..9058 action scripts; original message/HP/status consumers',scope:'Bounded original post-effect display flows (item and poison, normal/back). UI is a runtime independent map layer. Geometry remains diagnostic precompilation; no battle calculation, all actions, or full-speed whole-scene claim.'};
  return {jobs:[{bytes:blank,expected:blank,static:true}],frames,blocks:Buffer.alloc(16),bgTiles:Buffer.alloc(16),palettes:7,battle:{action,numberTimeline:{timing:nativeTiming,runs,source:'32 numeral waits; retain final OAM until actual script cleanup'},uniqueVisuals:visuals.size,summary:{observations:raw.length,maxObjects:Math.max(...frames.map(f=>f.stats.objects)),maxLine:Math.max(...frames.map(f=>f.stats.peak)),maxBgTiles:Math.max(...frames.map(f=>f.atlas.background.length/16))},scope:action.scope},raw};
 }

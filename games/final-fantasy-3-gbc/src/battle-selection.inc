@@ -29,7 +29,13 @@ static void selection_cursor(uint8_t page){uint8_t id=0,i,*oam=page?scene_oam1:s
 }
 static void selection_begin(void){
  #ifdef FF3_ITEM_WINDOW
- if(item_visible)item_leave();
+ /* scene_page carries the requested normal/back selector here, not the
+  * outgoing actor frame. Close with that frame so the restored atlas page
+  * is tagged correctly before a different formation reuses its cache. */
+ if(item_visible){uint8_t back=scene_page;
+  ff3_scene_rom_copy(7,selection_frames+SELECTION_VIEW,(void*)&scene_page,1);
+  item_leave();scene_page=back;
+ }
 #endif
  if(scene_page>1||battle_active){scene_error=16;return;}selection_back=scene_page;
 #ifdef FF3_ITEM_WINDOW

@@ -36,7 +36,9 @@ export function pixelCompositionPalettes(images,objPalette,{width=160,height=144
   const values=[...new Set(Array.from({length:64},(_,i)=>pixels[(ty*8+(i>>3))*width+tx*8+(i&7)]))].sort((a,b)=>a-b);cells.set(values.join(),values);
  }}return choosePalettes([...cells.values()],Array.from({length:objPalette.length/8},(_,p)=>Array.from({length:4},(_,i)=>objPalette.readUInt16LE((p*4+i)*2))),maxPalettes);
 }
-export function compilePixelComposition(pixels,objPalette,{width=160,height=144,palettes}={}){
+// objOnlyRow reserves one black BG tile row for a UI overlay. Its original
+// opaque artwork must fit losslessly in existing OBJ palettes and budgets.
+export function compilePixelComposition(pixels,objPalette,{width=160,height=144,palettes,objOnlyRow=-1}={}){
  check(width>0&&height>0&&width%8===0&&height%8===0&&pixels.length===width*height,'Pixel composition dimensions');check(pixels.every(v=>Number.isInteger(v)&&v>=0&&v<=32767),'RGB555 pixel range');
  check([16,32].includes(objPalette.length),'Residual palette format');
  const cols=width/8,rows=height/8,objPalettes=[],cells=[];
@@ -47,19 +49,20 @@ export function compilePixelComposition(pixels,objPalette,{width=160,height=144,
  for(let ty=0;ty<rows;ty++)for(let tx=0;tx<cols;tx++){
   const values=cells[ty*cols+tx],colors=[...new Set(values)];let best;
   for(let p=0;p<bgPalettes.length;p++){
-   const layers=partition(colors,bgPalettes[p],objPalettes);if(layers&&(!best||layers.length<best.layers.length))best={palette:p,layers};
+   if(ty===objOnlyRow&&bgPalettes[p][0]!==0)continue;
+   const layers=partition(colors,ty===objOnlyRow?[0]:bgPalettes[p],objPalettes);if(layers&&(!best||layers.length<best.layers.length))best={palette:p,layers};
   }
   check(best,'No lossless tile palette partition at '+tx+','+ty);
-  const background=values.map(v=>Math.max(0,bgPalettes[best.palette].indexOf(v))),tile=encodeTile(background),key=tile.toString('hex');let id=patternIds.get(key);
+  const background=values.map(v=>ty===objOnlyRow?0:Math.max(0,bgPalettes[best.palette].indexOf(v))),tile=encodeTile(background),key=tile.toString('hex');let id=patternIds.get(key);
   if(id===undefined){id=patterns.length;check(id<256,'Composition BG tile capacity');patternIds.set(key,id);patterns.push(tile);}
   map[ty*cols+tx]=id;attributes[ty*cols+tx]=best.palette;
-  const uncovered=values.map(v=>!bgPalettes[best.palette].includes(v));
+  const uncovered=values.map(v=>ty===objOnlyRow?v!==0:!bgPalettes[best.palette].includes(v));
   for(const p of best.layers){const indices=values.map((v,i)=>{const n=objPalettes[p].indexOf(v,1);if(!uncovered[i]||n<0)return 0;uncovered[i]=false;return n;});
    if(!indices.some(Boolean))continue;check(sprites.length<40,'Composition OAM capacity');const i=sprites.length;sprites.push({x:tx*8,y:ty*8,h:8,palette:p,tile:i});objTiles.push(encodeTile(indices));for(let y=ty*8;y<ty*8+8;y++)lines[y]++;
   }
   check(!uncovered.some(Boolean),'Uncovered composition pixels');
  }
- check(Math.max(...lines)<=10,'Composition scanline capacity');
+ check(Math.max(...lines)<=10,'Composition scanline capacity '+Math.max(...lines)+' at '+[...lines].findIndex(n=>n>10));
  const oam=Buffer.alloc(160);sprites.forEach((s,i)=>oam.set([s.y+16,s.x+8,s.tile,8+s.palette],i*4));
  const palette=Buffer.alloc(64);bgPalettes.forEach((p,i)=>p.forEach((v,j)=>palette.writeUInt16LE(v,(i*4+j)*2)));
  return {width,height,pixels,background:Buffer.concat(patterns),map,attributes,bgPalette:palette,objPalette,objGraphics:Buffer.concat(objTiles),oam,sprites,stats:{bgTiles:patterns.length,bgPalettes:bgPalettes.length,objects:sprites.length,peak:Math.max(...lines)}};

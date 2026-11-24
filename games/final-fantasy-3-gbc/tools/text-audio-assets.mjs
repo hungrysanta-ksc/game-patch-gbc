@@ -14,7 +14,7 @@ export async function textAudioAssets(rom,gen,out,selector,{cycles=2}={}){
  check(hash(table)==='4fe09777e2b2d7a51782b944a03b050484e00fc183c0c5eb3d422a7f8f90489c','Adopted native audio conversion changed');
  await bank(6,table);await fs.writeFile(out+'/conversion.bin',table);
  check(banks.slice(0,5).every((b,i)=>b.n===i+1&&b.bytes.length===8192)&&banks.find(b=>b.n===6)?.bytes.length===4128,'Bounded audio lookup bank contract');
- check(Number.isInteger(cycles)&&cycles>=2&&cycles<=3,'Bounded audio stress repetitions');
+ check(Number.isInteger(cycles)&&cycles>=2&&cycles<=6,'Bounded audio stress repetitions');
  const ticks=liveTicks*cycles,plan=Array.from({length:cycles},(_,i)=>i*liveTicks).flatMap(base=>livePlan.map(([t,op,arg])=>[base+t,op,(op===2||op===3)&&arg===32?song:arg]));
  await fs.writeFile(gen+'/native-assets.h','#define NATIVE_PLAN_COUNT '+plan.length+'u\n#define NATIVE_TEST_TICKS '+ticks+'ul\nstatic const uint16_t native_plan_ticks[]={'+plan.map(e=>e[0])+'};\nstatic const uint8_t native_plan_ops[]={'+plan.map(e=>e[1])+'};\nstatic const uint8_t native_plan_args[]={'+plan.map(e=>e[2])+'};\n');
  const fold=b=>{let h=0;for(const v of b)h=((h<<1)^v)&65535;return h;};

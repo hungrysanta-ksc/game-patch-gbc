@@ -8,7 +8,10 @@ export function originalSelectionView(rom,{back=false,actor=0,queued}={}){
  const hp=[],labels=[],step=c.step;c.step=function(){if(this.banks[0]===0x34&&this.pc===0xa609&&this.x===13)labels.push({actor:this.m[0x52],id:0x620+this.a});if(this.banks[0]===0x34&&this.pc===0x9cbe)hp.push(Buffer.from(this.m.subarray(0x7ad7,0x7ae9)));step.call(this);};
  select(c,0x1a);c.call(0x9d06);c.call(0x9ba2);c.m[0x52]=0;c.call(0xa541);c.call(0x9d9e);c.call(0x9a69);const commands=Buffer.from(c.m.subarray(0x7400,0x7404)),rowCommands=Buffer.from(c.m.subarray(0x7404,0x7406));
  select(c,0x17);c.call(0x9e80);c.call(0xb5b8);c.call(0xb304);if(actor<4){c.x=actor;m.call(0xb3cd);}c.call(0xaeec);c.call(0xf8c5);
- const layout=formationPixels(rom,f,{retreat:8}).layout,frame={...scenePixels(c,m.ppu,{back,layout,formation:f,partyY:[10,34,58,82],enemyY:18,terrainHeight:11,statusOwners:true}),phase:'command-selection',numberObjects:[],numberFrame:null,sourceBoundary:0};
+ // Expanded selection panel: preserve every party pixel by moving the
+ // formation up 3px and cropping 3px from the terrain strip. Enemies move
+ // up 4px so their feet remain above the shared panel tile row.
+ const layout=formationPixels(rom,f,{retreat:8}).layout,frame={...scenePixels(c,m.ppu,{back,layout,formation:f,partyY:[7,31,55,79],enemyY:14,terrainHeight:8,statusOwners:true}),cursorLayout:true,phase:'command-selection',numberObjects:[],numberFrame:null,sourceBoundary:0};
  const menuTiles=convertTiles(m.ppu.bytes.subarray(0x1000,0x2000)),sourceUi=Buffer.from(m.ppu.bytes.subarray(0x2260,0x23a0)),{tables}=selectionTables(rom),env=Buffer.from([...tables.ff3_target_layouts.subarray(f.layout*8,f.layout*8+8),...c.m.subarray(0x7da7,0x7daf),...c.m.subarray(0x7d8b,0x7d8f),...c.m.subarray(0x7e22,0x7e26),+back]);
  check(hp.length===4&&commands.equals(tables.ff3_job_commands.subarray(0,4)),'Original selection UI boundary');
  // Obtain the actual four-tile hand and its orientation from the renderer.
@@ -19,10 +22,12 @@ export function originalSelectionView(rom,{back=false,actor=0,queued}={}){
   const parts=[];for(let at=0x220;at<0x260;at+=4){const [y,tile,attr,x]=c.m.subarray(at,at+4);if(y>=239||!menuTiles.subarray(tile*16,tile*16+16).some(v=>v))continue;parts.push({x,y:y+1,tile,attr});}
   if(id<8&&env[8+id]===255){cursors.push([]);continue;}check(parts.length===4,'Original hand population '+id+' '+parts.length);
   const left=Math.min(...parts.map(p=>p.x)),top=Math.min(...parts.map(p=>p.y));let x,y;
-  if(id<8){const canonical=back?240-left:left;[x,y]=adaptPoint(f,canonical,top);x=rearX(back?144-x:x,layout,back);y+=2;}
-  else{x=back?left-16:left-80;y=top-[44,72,100,128][id-8]+[10,34,58,82][id-8];}
-  x=Math.max(0,Math.min(144,x));y=Math.max(0,Math.min(128,y));cursors.push(parts.map(p=>({...p,x:x+p.x-left,y:y+p.y-top})));
+  if(id<8){const canonical=back?240-left:left;[x,y]=adaptPoint(f,canonical,top);x=rearX(back?144-x:x,layout,back);y-=2;}
+  else{x=back?left-16:left-80;y=top-[44,72,100,128][id-8]+[7,31,55,79][id-8];}
+  x=Math.max(0,Math.min(144,x));y=Math.max(0,Math.min(128,y+3));cursors.push(parts.map(p=>({...p,x:x+p.x-left,y:y+p.y-top})));
  }
- select(c,0x1a);c.m[0x55]=0;c.m[0x1a]=0;c.call(0x8966);const commandHand=[];for(let at=0x220;at<0x230;at+=4){const [y,tile,attr,x]=c.m.subarray(at,at+4);commandHand.push({x:x-32+4,y:y+1-169+104,tile,attr});}
+ // Top=103, hand origin=top+1: fingertip, not 16px icon midpoint,
+ // addresses the 7x7 text. Last-row hand still ends at screen y=143.
+ select(c,0x1a);c.m[0x55]=0;c.m[0x1a]=0;c.call(0x8966);const commandHand=[];for(let at=0x220;at<0x230;at+=4){const [y,tile,attr,x]=c.m.subarray(at,at+4);commandHand.push({x:x-32+4,y:y+1-169+(103+1),tile,attr});}
  return {frame,env,monsterStatus:Buffer.from(Array.from({length:8},(_,i)=>c.m[0x7676+i*64])),hp:hp.map(raw=>({name:[...raw.subarray(1,7)],value:[...raw.subarray(8,17)]})),...(queued?{labels}:{}),commands,rowCommands,menuTiles,menuPalette:frame.sourcePalettes.subarray(24,32),sourceUi,cursors,commandHand,formation:f,scope:'Live selection function boundary, first-battle formation/counts; explicit diagnostic names and HP, no effect calculator'};
 }
