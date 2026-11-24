@@ -20,7 +20,10 @@ static uint8_t selection_commands_local[4],selection_left,selection_right;
 static void selection_cursor(uint8_t page);
 #ifdef FF3_PARTY_COMMANDS
 #include "battle-party.h"
+#include "inventory.h"
+#include "platform.h"
 Ff3Party selection_party;
+uint8_t party_used_equipped[4];
 uint8_t party_display_commands[4];
 static uint8_t party_cached_commands[8],party_valid_pages;
 static void party_overlay(uint8_t page);

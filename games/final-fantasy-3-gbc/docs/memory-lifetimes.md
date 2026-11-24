@@ -178,3 +178,11 @@ IRQ 진입 은행과 시간을 읽는다. 기존 음원 APU 쓰기·원작 상�
 - 사양: [Pan Docs의 SVBK](https://github.com/gbdev/pandocs/blob/master/src/CGB_Registers.md#ff70--svbkwbk-cgb-mode-only-wram-bank). 고정 은행 0과 선택 창 1–7의 구분. 사이트 직접 열기/다운로드가 실패해 같은 문서의 GitHub 원문으로 확인했다.
 - 도구: [GBDK 코딩 지침](https://gbdk.org/docs/api/docs_coding_guidelines.html). 고정 4.5.0 도구의 실제 생성 코드도 별도로 검사하며, 최신 웹 문서를 ABI 증거로 대체하지 않는다.
 - 원작 구조: [고정 참조 리비전](https://github.com/everything8215/ff3/tree/1acef8117120ff891003de249b1a74bc8d94d674)의 RAM 지도와 [원작 상태/RNG 소비자 대조](state-save-rng.md). 주석 지도만으로 미래 전투 메모리 완료를 주장하지 않는다.
+
+## 공통 가방 예약 반환 후속
+
+[아이템 선택 경계](battle-items.md)는 기존 GameState+$C0의 64바이트를 정본으로 빌린다.
+별도 상주 가방 없이 아군별 장비 예약 표시 4바이트만 추가했다. 현재 전투 표시 빌드의 정적
+WRAM 끝은 0xCE9D, 0xCF00까지 99바이트다. 레이아웃 변환의 두 버퍼는 겹치지 않아야 하며
+호출자 소유 작업 공간이다. 목록 렌더러의 은행별 래스터/글꼴 작업 공간은 다음 단계에서
+오디오·VBlank 전송과 동시에 사용하는 수명을 정한다.

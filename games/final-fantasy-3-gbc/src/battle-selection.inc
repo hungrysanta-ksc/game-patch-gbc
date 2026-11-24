@@ -28,7 +28,7 @@ static void selection_begin(void){
  selection_held=selection_delay=0;selection_repeat=8;
  selection_glyphs_loaded[0]=selection_glyphs_loaded[1]=0;
 #ifdef FF3_PARTY_COMMANDS
- memset(&selection_party,0,sizeof(selection_party));memset(selection_party.command,255,4);party_valid_pages=0;party_enter();
+ memset(&selection_party,0,sizeof(selection_party));memset(party_used_equipped,0,4);memset(selection_party.command,255,4);party_valid_pages=0;party_enter();
 #endif
  action_profile_index=4+selection_back;action_mask=3;ff3_scene_rom_copy(7,selection_uis+selection_back,&action_ui_index,1);ff3_scene_rom_copy(7,selection_frames+SELECTION_VIEW,(void*)&scene_page,1);action_dirty=1;show();selection_serial++;
  /* Warm the inactive page before accepting a key. Moving the hand must not

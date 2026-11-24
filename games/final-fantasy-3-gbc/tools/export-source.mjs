@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/battle-items.md','src/inventory.h','src/inventory.c','src/battle-items.h','src/battle-items.c','src/battle-items-test.c','tools/battle-items-source.mjs','tools/build-battle-items.mjs','tools/audit-battle-items-observations.mjs','tests/battle-items.test.mjs',
  'docs/battle-party-commands.md','src/battle-party.h','src/battle-party.c','src/battle-party-test.c','src/battle-party-flow.inc','tools/battle-party-source.mjs','tools/build-battle-party.mjs','tools/battle-party-ui.mjs','tools/battle-party-verifier.mjs','tools/audit-battle-party-observations.mjs','tests/battle-party.test.mjs',
  'docs/battle-selection.md','src/battle-select.h','src/battle-select.c','src/battle-select-test.c','src/battle-selection.inc',
  'tools/battle-select-source.mjs','tools/build-battle-select.mjs','tools/verify-battle-select.mjs','tools/battle-select-view-source.mjs','tools/battle-select-view-assets.mjs','tools/battle-selection-verifier.mjs','tools/audit-battle-selection-observations.mjs','tests/battle-select.test.mjs',
