@@ -18,7 +18,7 @@
     "verify:memory": "node tools/verify-memory.mjs",
     "build:audio": "node tools/build-audio.mjs",
     "build:timed": "node tools/build-timed.mjs",
-    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs tests/render-budget.test.mjs tests/npc-composition.test.mjs tests/composition-kernel.test.mjs tests/composition-cache.test.mjs tests/composition-input.test.mjs tests/composition-window.test.mjs tests/battle-display.test.mjs tests/battle-composition.test.mjs tests/battle-timeline.test.mjs",
+    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs tests/render-budget.test.mjs tests/npc-composition.test.mjs tests/composition-kernel.test.mjs tests/composition-cache.test.mjs tests/composition-input.test.mjs tests/composition-window.test.mjs tests/battle-display.test.mjs tests/battle-composition.test.mjs tests/battle-timeline.test.mjs tests/battle-placement.test.mjs",
     "test:vgm": "node --test tests/vgm.test.mjs tests/timed-stream.test.mjs",
     "verify:timed": "node tools/verify-timed.mjs",
     "build:control": "node tools/build-control.mjs",
@@ -54,7 +54,8 @@
     "build:battle-composition": "node tools/build-composition-window.mjs --battle",
     "verify:battle-composition": "node tools/verify-composition-window.mjs --battle",
     "build:battle-timeline": "node tools/build-composition-window.mjs --timeline",
-    "verify:battle-timeline": "node tools/verify-composition-window.mjs --timeline"
+    "verify:battle-timeline": "node tools/verify-composition-window.mjs --timeline",
+    "audit:battle-placement": "node tools/audit-battle-placement.mjs"
   },
   "engines": {
     "node": ">=20"

@@ -3,6 +3,36 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "docs/battle-placement.md",
+      "bytes": 11608,
+      "sha256": "ea1ded33bc074c613540df3a15c6bef3b1e6e2c0915f7710458dfee5a80f87b4",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-placement-source.mjs",
+      "bytes": 7256,
+      "sha256": "410358eefa54b73a764bcdb5d6ace5a6fcf7af98f4d9460f286a4ff1dac1b4fa",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-placement-budget.mjs",
+      "bytes": 8848,
+      "sha256": "101d16ee96253925cdb327a226a7642c8457d48a901d4309e68dc486288a68aa",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/audit-battle-placement.mjs",
+      "bytes": 636,
+      "sha256": "d9d82766fbb41970ac97229c52b71d29d58724cb51ff40d4489fc9e4f8b8a481",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/battle-placement.test.mjs",
+      "bytes": 4051,
+      "sha256": "7a363eb03538675edf9b8d5a4ace83977dfbad15574f6f89342d6f84d05dbc88",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "docs/battle-timeline.md",
       "bytes": 9731,
       "sha256": "6c67f1a93c56f9bd010b5128214a213f5bd68a07823608881a02931a223e63cd",
@@ -550,8 +580,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 19517,
-      "sha256": "750f410dad885ead9a799e00b7f1a7acab6231be4a2373c16659c8f07951d42a",
+      "bytes": 19907,
+      "sha256": "1c229febaa298e68e8eec450d44853b0695b107080ae0eb2d0f091411c86e9a5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -568,14 +598,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 3854,
-      "sha256": "9e0bd2f20f9ce17e33b45c992373983151acae8a592d3e3602bd9dde3528d035",
+      "bytes": 3957,
+      "sha256": "646028366a84a65bbcc1b3de5921726f6d2a1be8a69422e8639481a3a107b201",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 23058,
-      "sha256": "e479c4946a3e7e99b07c65036f42078be85e4c063321fdb670a6c63b7fbc3e36",
+      "bytes": 24562,
+      "sha256": "c81e3874b3b0ae662ed78122fccb6252957a9ea3f71a3246cca54853c072f29c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -586,8 +616,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 7756,
-      "sha256": "965e92dfe206c996c967f5473ebf1a5d1322270ec9608e8681036d3c2da7b02a",
+      "bytes": 8381,
+      "sha256": "5a7fffdcb35de678ad05a5dc443a30424435464402238cb38d272d81ef75163e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1408,8 +1438,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 8697,
-      "sha256": "37c0ad9ee8522607478e316b606747c8952f834e6b059a9e0d3ec84048fefb85",
+      "bytes": 8867,
+      "sha256": "e4dd13ce5bcd5280660c21132ddb39e092d1b37f018c2befa096e7e38bbeba2b",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
