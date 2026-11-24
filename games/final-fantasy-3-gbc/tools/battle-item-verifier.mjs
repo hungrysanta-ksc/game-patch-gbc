@@ -7,7 +7,7 @@ import {sourceItemCursor,sourceInventory} from './battle-items-source.mjs';
 import {sourceItemUse,sourceItemAutoTargets,sourceItemEligibility} from './battle-item-use-source.mjs';
 import {sourceEquipmentSwap,sourceEquipmentStats} from './battle-equipment-source.mjs';
 import {sourceTarget} from './battle-select-source.mjs';
-import {selectionHand} from './battle-selection-verifier.mjs';
+import {selectionHand,cursorTile} from './battle-selection-verifier.mjs';
 import {selectionViewProfile} from './battle-select-view-assets.mjs';
 import {addTextAssets} from './korean-text.mjs';
 import {makeMapAssets} from './map-assets.mjs';
@@ -23,7 +23,7 @@ export function selectionSequence(){const out=[];for(const back of [0,1]){const 
  // Potion: HP target cancel, then reservation, previous actor refunds once.
  route([16,1,1,1,32,2,16,1,1,1,32,1,2]);
  // Long supplied name, selected-row marquee, two-hand invalid pair, cancel.
- route([16,1,128,32]);if(!back)out.push({op:9,page:back,key:0,hold:360});out.push(...[1,32,1,2,2].map(key=>({op:9,page:back,key})));
+ route([16,1,128,32]);if(!back)out.push({op:9,page:back,key:0,hold:360,marqueeCapture:true});out.push(...[1,32,1,2,2].map(key=>({op:9,page:back,key})));
  // Enemy-target item (south wind), then target cancel and confirm.
  route([16,1,128,128,128,1,1,2,16,1,128,128,128,1,1,1]);
  // Earth drum's automatic all-enemy mask uses all eight status records.
@@ -32,6 +32,8 @@ export function selectionSequence(){const out=[];for(const back of [0,1]){const 
  route([16,1,64,1,1,1,2]);
  // Disabled armor/spell item and an empty slot must not reserve anything.
  route([16,1,128,128,128,128,128,128,128,32,1,1,2,32,1,1,2,32,1,1,2,2]);
+ // Row arrow cancel/reserve, previous actor, then item cursor glyph restore.
+ const d=back?64:128;route([d,d,d^192,d,d,1,2,16,1,2]);
  // Original equipment error (potion in the bag) keeps the list open.
  route([16,1,64,1,128,1]);
  }for(const back of [0,1])for(let seed=0;seed<8;seed++){out.push({op:8,page:back,equipmentSeed:seed});const keys=[16,1,1,64,...(seed===4||seed===6||seed===7?[32]:[]),1];for(const key of keys)out.push({op:9,page:back,key});
@@ -42,7 +44,7 @@ export function selectionSequence(){const out=[];for(const back of [0,1]){const 
 function enter(rom,s){s.party=sourceParty(rom,s.party,1);if(s.party[1]===3){const a=s.party[0],r=Buffer.alloc(72);r.set(s.bag);r[64]=s.party[50+a];r[65]=s.equipped[a];const v=sourceInventory(rom,r,4,Buffer.from([0,a])).state;s.bag=Buffer.from(v.subarray(0,64));s.party[50+a]=v[64];s.equipped[a]=v[65];s.party[1]=0;}s.display=Buffer.from(s.party.subarray(2,6));s.mode=s.party[1]===0?0:2;s.row=s.left=s.right=s.dispatch=0;}
 export function itemStep(rom,profile,state,q,equipment,jobs){
  if(q.itemSeed!==undefined)state={...state,bag:Buffer.from(itemBags()[q.itemSeed],'hex')};
- if(q.op===8||state.mode<3){const s=partyStep(rom,profile,state,q);s.cursor=Buffer.from(state?.cursor??Buffer.alloc(6));s.hp=state?.hp??0;s.id=state?.id??0;
+ if(q.op===8||state.mode<3||state.mode===5){const s=partyStep(rom,profile,state,q,equipment);s.cursor=Buffer.from(state?.cursor??Buffer.alloc(6));s.hp=state?.hp??0;s.id=state?.id??0;
   if(s.mode===2&&s.dispatch===20){s.mode=3;s.dispatch=0;s.party[1]=0;s.hp=0;s.cursor.set([0,1,1,0]);}return s;}
  const s={...state,cursor:Buffer.from(state.cursor),party:Buffer.from(state.party),bag:Buffer.from(state.bag),equipped:Buffer.from(state.equipped),target:Buffer.from(state.target)},actor=s.party[0],at=10+actor*3;
  const reserve=()=>{s.party[at]=s.id;if(s.cursor[1]){const r=Buffer.alloc(72);r.set(s.bag);r[64]=s.party[50+actor];const v=sourceInventory(rom,r,3,Buffer.from([(s.cursor[1]-1)*4+s.cursor[0],actor])).state;s.bag=Buffer.from(v.subarray(0,64));s.party[50+actor]=v[64];}else{s.party[50+actor]=s.id;s.equipped[actor]=1;}s.party[0]++;enter(rom,s);};
@@ -71,11 +73,11 @@ export async function verifySelection({data,local,report,actual,cfg,dir,shots,se
  const assets=await addTextAssets(data,makeObjectAssets(data,makeMapAssets(data,{verify:false}),{verify:false}),local.text),profiles=[false,true].map(back=>Array.from({length:5},(_,actor)=>selectionViewProfile(data,assets.text,{back,actor,party:true}))),a=await itemAssets(data,assets.text,profiles[0][0].source.menuTiles,local.text);for(const group of profiles)for(const p of group)p.source.frame.composition=actionComposition(p.source.frame);
  let game,battle=Buffer.alloc(256),s,count=0,maxObjects=0,maxLine=0,serial;const seeds=equipmentSeeds(data);const examples=[],marqueeWindows=[],latencies={open:[],scrollWithPreparation:[],otherInput:[],start:[]};
  for(const [i,p]of actual.pages.entries()){
-  const q=sequence[i%sequence.length],profile=report.battle.action.selectionViews[q.page];game??=Buffer.from(p.gameState,'hex');if(q.equipmentSeed!==undefined){game=Buffer.from(seeds[q.equipmentSeed],'hex');battle.fill(0);s={...s,bag:Buffer.from(game.subarray(0xc0,0x100))};}const equipment=game.subarray(0x200,0x300),jobs=Array.from({length:4},(_,a)=>game[0x100+a*64]),old=s;s=itemStep(data,profile,s,q,equipment,jobs);game.set(s.bag,0xc0);if(q.op!==8&&old?.mode>=3&&s.mode<3){const a=old.party[0]*64,r=sourceEquipmentStats(data,Buffer.concat([game.subarray(0x100+a,0x140+a),game.subarray(0x200+a,0x240+a),battle.subarray(a,a+64)]));game.set(r.subarray(0,64),0x100+a);game.set(r.subarray(64,128),0x200+a);battle.set(r.subarray(128),a);}
+  const q=sequence[i%sequence.length],profile=report.battle.action.selectionViews[q.page];game??=Buffer.from(p.gameState,'hex');if(q.equipmentSeed!==undefined){game=Buffer.from(seeds[q.equipmentSeed],'hex');battle.fill(0);s={...s,bag:Buffer.from(game.subarray(0xc0,0x100))};}const equipment=game.subarray(0x200,0x300),jobs=Array.from({length:4},(_,a)=>game[0x100+a*64]),old=s;s=itemStep(data,profile,s,q,equipment,jobs);game.set(s.bag,0xc0);if(q.op!==8&&[3,4].includes(old?.mode)&&s.mode<3){const a=old.party[0]*64,r=sourceEquipmentStats(data,Buffer.concat([game.subarray(0x100+a,0x140+a),game.subarray(0x200+a,0x240+a),battle.subarray(a,a+64)]));game.set(r.subarray(0,64),0x100+a);game.set(r.subarray(64,128),0x200+a);battle.set(r.subarray(128),a);}
   const timing=q.op===8?'start':old?.mode===0&&s.mode===3?'open':old?.mode===3&&s.mode===3&&old.cursor[2]!==s.cursor[2]?'scrollWithPreparation':'otherInput';latencies[timing].push(p.seconds);
   check(p.op===q.op&&p.page===q.page,'Item request order');for(const k of ['mode','row','back','dispatch','sound'])check(p.selection[k]===s[k],'Item '+k+' at '+i+': '+p.selection[k]+' != '+s[k]);
   check(p.gameState===game.toString('hex'),'Complete GameState after equipment/stat update '+i);check(p.equipmentBattle===battle.toString('hex'),'Banked equipment-derived battle fields '+i);
-  check(p.selection.target===s.target.toString('hex'),'Original item target '+i);check(p.party===s.party.toString('hex'),'Original item action '+i);check(p.partyDisplay===s.display.toString('hex'),'Item HP labels '+i);check(p.bag===s.bag.toString('hex')&&p.usedEquipped===s.equipped.toString('hex'),'Item reservation/refund '+i);check(p.item.cursor===s.cursor.toString('hex')&&!p.item.rasterFault,'Item cursor/raster '+i);
+  check(p.selection.target===s.target.toString('hex'),'Original item target '+i);check(p.party===s.party.toString('hex'),'Original item action '+i);check(p.rowState===s.rowState.toString('hex'),'Item row state '+i);check(p.partyDisplay===s.display.toString('hex'),'Item HP labels '+i);check(p.bag===s.bag.toString('hex')&&p.usedEquipped===s.equipped.toString('hex'),'Item reservation/refund '+i);check(p.item.cursor===s.cursor.toString('hex')&&!p.item.rasterFault,'Item cursor/raster '+i);
   if(serial!==undefined)check(((p.selection.serial-serial)&65535)===1,'Item publication serial');serial=p.selection.serial;
   if(old?.mode===3&&s.mode===3&&(old.cursor[0]!==s.cursor[0]||old.cursor[1]!==s.cursor[1]))check(p.item.marquee===0,'Changed cursor resets name offset '+i);
   const visible=s.mode===3||(s.mode===4&&!s.hp);check(p.item.visible===+visible,'Item visibility '+i);check(p.item.marquee<=92,'Marquee bound');if(q.hold>=360){const id=s.bag[(s.cursor[1]-1)*4+s.cursor[0]];marqueeWindows.push({from:p.completedMaster,to:p.captureMaster,maxOffset:a.widths[id]-36});}if(!p.screenshot)continue;
@@ -87,7 +89,7 @@ export async function verifySelection({data,local,report,actual,cfg,dir,shots,se
   check(hand.filter(Boolean).every(q=>q.x>=0&&q.y>=0&&q.x+8<=160&&q.y+8<=144),'Complete hand stays inside viewport '+i);
   for(const q of hand.filter(Boolean).reverse())for(let y=0;y<8;y++)for(let x=0;x<8;x++){const v=pixel(tiles,q.tile,q.attr&64?7-x:x,q.attr&128?7-y:y);if(v&&q.x+x>=0&&q.x+x<160&&q.y+y>=0&&q.y+y<144)rgb.set(obj[(q.attr&3)*4+v],((q.y+y)*160+q.x+x)*3);}
   const image=await fs.readFile(cfg.home+'/Screenshots/'+shots[p.screenshotOrdinal]),actualRgb=screenshotRgb(image);if(!actualRgb.equals(rgb)){await fs.writeFile(dir+'/item-expected-'+i+'.rgb',rgb);throw Error('Actual item pixels '+i+' mode '+s.mode+' marquee '+p.item.marquee);}
-  const expectedOam=Buffer.alloc(160),base=Buffer.from(f.atlas.oam.data),page=visible?1:(p.lcdc>>3)&1,n=f.stats.objects;for(let j=0;j<n;j++)base[j*4+2]+=page*64;base.copy(expectedOam,hand.length*4,0,n*4);for(const [j,q]of hand.entries())if(q)expectedOam.set([q.y+16,q.x+8,60+q.tile-89+page*64,11+((q.attr&64)?32:0)+((q.attr&128)?64:0)],j*4);
+  const expectedOam=Buffer.alloc(160),base=Buffer.from(f.atlas.oam.data),page=visible?1:(p.lcdc>>3)&1,n=f.stats.objects;for(let j=0;j<n;j++)base[j*4+2]+=page*64;base.copy(expectedOam,hand.length*4,0,n*4);for(const [j,q]of hand.entries())if(q)expectedOam.set([q.y+16,q.x+8,cursorTile(q)+page*64,11+((q.attr&64)?32:0)+((q.attr&128)?64:0)],j*4);
   const oam=Buffer.from(p.oam,'hex');check(oam.equals(expectedOam)&&!(p.lcdc&4),'Complete item OAM '+i);const lines=Array(144).fill(0);let objects=0;for(let j=0;j<40;j++){const y=oam[j*4]-16;if(y>=144||y+8<=0)continue;objects++;for(let yy=Math.max(0,y);yy<Math.min(144,y+8);yy++)lines[yy]++;}maxObjects=Math.max(maxObjects,objects);maxLine=Math.max(maxLine,...lines);check(objects<=40&&Math.max(...lines)<=10,'Item OAM capacity '+i);check(p.scx===0&&p.scy===6,'V6 item viewport');
   if(i<sequence.length){const file='item-'+i+'.png';await fs.writeFile(dir+'/'+file,image);examples.push({file,...q,mode:s.mode,actor:s.party[0],cursor:[...s.cursor],marquee:p.item.marquee});}count++;
  }

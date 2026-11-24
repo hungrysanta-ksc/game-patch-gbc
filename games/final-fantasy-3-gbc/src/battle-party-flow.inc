@@ -1,6 +1,6 @@
 /* Original 34/986F collector + 35/A843/A877/A8AB reservation boundaries.
  * Only the current diagnostic job/formation is supplied by this bridge.
- * AUTO, row changes and submenus remain explicit callers. Reservation
+ * AUTO and unsupported submenus remain explicit callers. Reservation
  * returns borrow the persistent canonical bag, never a display-only copy. */
 /* Fixed 80-byte transparent mask merge. Stack ABI is explicit; no bank
  * switching or interrupt masking. Service audio between these short runs. */
@@ -28,14 +28,14 @@ static void party_overlay(uint8_t page){uint8_t r,x,n,variant,cmd,*mask=(uint8_t
  if((party_valid_pages&(1<<page))&&last_frame[page]==scene_page&&!memcmp(party_cached_commands+page*4,party_display_commands,4))return;
  ff3_scene_rom_copy(7,party_ui_base,text_staging,480);
  for(r=0;r<4;r++){
-  cmd=party_display_commands[r];if(cmd!=255&&cmd!=4&&cmd!=5&&cmd!=6
+  cmd=party_display_commands[r];if(cmd!=255&&cmd!=2&&cmd!=3&&cmd!=4&&cmd!=5&&cmd!=6
 #ifdef FF3_ITEM_WINDOW
  &&cmd!=20
 #endif
  ){scene_error=16;return;}
-  variant=cmd==255?0:cmd-3;
+  variant=cmd==255?0:cmd<4?cmd+2:cmd-3;
 #ifdef FF3_ITEM_WINDOW
-  if(cmd==20)variant=4;
+  if(cmd==20)variant=6;
 #endif
   for(n=0;n<2;n++){
    ff3_scene_rom_copy(7,party_ui_masks+(uint16_t)variant*160+(uint16_t)n*80,mask,80);
@@ -79,6 +79,14 @@ static void party_enter(void){
  selection_row=selection_left=selection_right=selection_dispatch=0;selection_repeat=8;selection_delay=0;
 }
 static void party_key(uint8_t key){uint8_t bit=key&((uint8_t)(~key)+1),command,slot;
+ if(selection_mode==5){
+  ff3_row_key(&selection_row_state,key);selection_sound=selection_row_state.sound|0x80;
+  if(selection_row_state.phase==FF3_ROW_RESERVED){
+   selection_party.action[selection_party.actor*3]=selection_row_state.action;
+   selection_party.actor=selection_row_state.actor;party_enter();
+  }else if(selection_row_state.phase==FF3_ROW_CANCELLED)party_enter();
+  return;
+ }
  if(selection_mode==0){
   if(key)selection_sound=0x98;selection_row=ff3_command_cursor(selection_row,0,key);
   if(bit==2){ff3_party_previous(&selection_party);party_enter();return;}
@@ -88,6 +96,18 @@ static void party_key(uint8_t key){uint8_t bit=key&((uint8_t)(~key)+1),command,s
   else if(bit!=1)return;
   command=slot<4?selection_commands_local[slot]:slot-2;selection_sound=0x85;
   ff3_party_pick(&selection_party,slot,command);
+  if(command==2||command==3){
+   memset(&selection_row_state,0,sizeof(selection_row_state));
+   selection_row_state.actor=selection_party.actor;
+   selection_row_state.equipment_row=ff3_game_state[0x20fu+(uint16_t)selection_party.actor*64];
+   selection_row_state.formation=selection_back?8:0;selection_row_state.command=command;
+   selection_row_state.action=selection_party.action[selection_party.actor*3];selection_row_state.sound=selection_sound&0x7f;
+   if(!ff3_row_begin(&selection_row_state)){scene_error=16;return;}
+   selection_sound=selection_row_state.sound|0x80;
+   if(selection_row_state.phase==FF3_ROW_REJECTED)party_enter();
+   else{selection_mode=5;selection_repeat=8;selection_delay=0;}
+   return;
+  }
   #ifdef FF3_ITEM_WINDOW
   if(command==20){item_open();return;}
 #endif

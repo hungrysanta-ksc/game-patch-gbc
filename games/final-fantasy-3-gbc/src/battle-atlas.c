@@ -20,6 +20,7 @@ static uint8_t selection_commands_local[4],selection_left,selection_right;
 static void selection_cursor(uint8_t page);
 #ifdef FF3_PARTY_COMMANDS
 #include "battle-party.h"
+#include "battle-row.h"
 #include "inventory.h"
 #ifdef FF3_ITEM_WINDOW
 #include "battle-items.h"
@@ -38,6 +39,7 @@ static void item_key(uint8_t key);
 #endif
 #include "platform.h"
 Ff3Party selection_party;
+Ff3Row selection_row_state;
 uint8_t party_used_equipped[4];
 uint8_t party_display_commands[4];
 static uint8_t party_cached_commands[8],party_valid_pages;
