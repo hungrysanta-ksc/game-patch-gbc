@@ -16,13 +16,19 @@ export function stableSceneTiles(compositions){
 // VRAM BG banks hold active/next patterns; total animation union is irrelevant.
 export function battleSceneAssets(rom,{numbers=true,enemyValues=Array(8).fill(1234)}={}){
  const profiles=[false,true].map(back=>sceneComposition(rom,{back,numbers,enemyValues}));
- const source={source:{profiles:profiles.map(p=>p.source),scope:profiles[0].source.scope},frames:profiles.flatMap(p=>p.frames.map(f=>({...f,back:p.source.back}))),summary:{observations:profiles.reduce((n,p)=>n+p.summary.observations,0),failed:profiles.reduce((n,p)=>n+p.summary.failed,0),maxBgTiles:Math.max(...profiles.map(p=>p.summary.maxBgTiles)),maxObjects:Math.max(...profiles.map(p=>p.summary.maxObjects)),maxLine:Math.max(...profiles.map(p=>p.summary.maxLine))}},frames=[],visuals=new Map();check(!source.summary.failed,'Whole scene composition failures');
+ const source={source:{profiles:profiles.map(p=>p.source),scope:profiles[0].source.scope},frames:profiles.flatMap(p=>p.frames.map(f=>({...f,back:p.source.back}))),summary:{observations:profiles.reduce((n,p)=>n+p.summary.observations,0),failed:profiles.reduce((n,p)=>n+p.summary.failed,0),maxBgTiles:Math.max(...profiles.map(p=>p.summary.maxBgTiles)),maxObjects:Math.max(...profiles.map(p=>p.summary.maxObjects)),maxLine:Math.max(...profiles.map(p=>p.summary.maxLine))}};const {frames,visuals}=packBattleFrames(source);
+ const blank=Buffer.alloc(80);
+ return {jobs:[{bytes:blank,expected:blank,static:true}],frames,blocks:Buffer.alloc(16),bgTiles:Buffer.alloc(16),palettes:7,battle:{source:source.source,numberTimeline:numbers?numberTimeline(frames):null,numberRuns:profiles.map(p=>({back:p.source.back,runs:p.numberRuns})),summary:source.summary,hostComposed:true,streamed:true,uniqueVisuals:visuals.size,scope:'Sequential original source-state fixtures and autonomous 32-frame numeral bodies. Immediate caller clear is a diagnostic handoff; not whole battle timing, game rules, other effects or battle messages'}};
+}
+export function packBattleFrames(source){
+ const frames=[],visuals=new Map();check(!source.summary.failed,'Whole scene composition failures');
  const stable=stableSceneTiles(source.frames.map(f=>f.composition));
  for(const [fi,f] of source.frames.entries()){const c=stable[fi],raw=compositionRgb(c),rgb=Buffer.alloc(160*144*3),ids=Array.from(c.map),maps=[Buffer.alloc(608),Buffer.alloc(608),Buffer.alloc(608)];
-  for(let y=0;y<144;y++)raw.copy(rgb,y*480,y*504,y*504+480);
+  const scroll=f.scroll??[0,0],oam=Buffer.from(c.oam);for(let i=0;i<c.sprites.length;i++)oam[i*4]-=scroll[1];
+  for(let y=0;y<144;y++)raw.copy(rgb,y*480,(y+scroll[1])*504,(y+scroll[1])*504+480);
   for(let i=0;i<399;i++){const at=(i/21|0)*32+i%21;maps[0][at]=(c.map[i]+128)&255;maps[1][at]=c.attributes[i];maps[2][at]=c.attributes[i]|8;}
-  const palette=Buffer.concat([c.bgPalette,c.objPalette]),key=hash(Buffer.concat([c.background,...maps,c.objGraphics,c.oam,palette]));if(!visuals.has(key))visuals.set(key,visuals.size);
-  frames.push({label:f.phase,back:f.back,trace:f.index,numberFrame:f.numberFrame,numberFrames:f.numberFrames,scroll:[0,0],ids,attributes:c.attributes,palette,rgb,stats:c.stats,partyEnemyOverlapPixels:f.partyEnemyOverlapPixels,sourceFrame:null,sourceByteIndex:null,sourceOamSha256:f.sourceOamSha256,sourceDurationFrames:null,sourceBoundaryCalls:f.boundaries,atlas:{blocks:Buffer.alloc(76),maps:Buffer.concat(maps),background:c.background,objects:c.objGraphics,oam:c.oam,visual:visuals.get(key)}});
+  const palette=Buffer.concat([c.bgPalette,c.objPalette]),key=hash(Buffer.concat([c.background,...maps,c.objGraphics,oam,palette]));if(!visuals.has(key))visuals.set(key,visuals.size);
+  frames.push({label:f.phase,back:f.back,trace:f.index,numberFrame:f.numberFrame,numberFrames:f.numberFrames,scroll,ids,attributes:c.attributes,palette,rgb,stats:c.stats,partyEnemyOverlapPixels:f.partyEnemyOverlapPixels,sourceFrame:null,sourceByteIndex:null,sourceOamSha256:f.sourceOamSha256,sourceDurationFrames:null,sourceBoundaryCalls:f.boundaries,atlas:{blocks:Buffer.alloc(76),maps:Buffer.concat(maps),background:c.background,objects:c.objGraphics,oam,visual:visuals.get(key)}});
  }
  // One bit per changed 16-byte block, relative to the *same inactive page*.
  // IDs/attrs/BG/OBJ occupy 5/5/32/5 bytes in each 48-byte row. Include the
@@ -35,6 +41,5 @@ export function battleSceneAssets(rom,{numbers=true,enemyValues=Array(8).fill(12
    for(let i=0;i<a.length;i+=16)if(!a.subarray(i,i+16).equals(b.subarray(i,i+16)))spans[v*48+[0,5,10,42][part]+(i>>7)]|=1<<((i>>4)&7);
   }
  }f.atlas.spans=spans;}
- const blank=Buffer.alloc(80);
- return {jobs:[{bytes:blank,expected:blank,static:true}],frames,blocks:Buffer.alloc(16),bgTiles:Buffer.alloc(16),palettes:7,battle:{source:source.source,numberTimeline:numbers?numberTimeline(frames):null,numberRuns:profiles.map(p=>({back:p.source.back,runs:p.numberRuns})),summary:source.summary,hostComposed:true,streamed:true,uniqueVisuals:visuals.size,scope:'Sequential original source-state fixtures and autonomous 32-frame numeral bodies. Immediate caller clear is a diagnostic handoff; not whole battle timing, game rules, other effects or battle messages'}};
+ return {frames,visuals};
 }

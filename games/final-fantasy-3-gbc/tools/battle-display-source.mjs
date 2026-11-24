@@ -10,8 +10,8 @@ function cpu(rom,pair=0x19){const c=new Driver6502(rom);c.banks=[pair*2,pair*2+1
 // deliberately not a PPU/CHR mapper emulator. Reject unexpected PPU accesses.
 export function recordTransfers(c){
  const bytes=Buffer.alloc(0x4000,0xa5),written=new Uint32Array(0x4000),lastPc=new Uint16Array(0x4000);
- let address=0,high=true,control=0;const read=c.read.bind(c),write=c.write.bind(c);
- c.read=a=>{if(a===0x2002){high=true;return 0;}return read(a);};
+ let address=0,high=true,control=0,buffer=0;const read=c.read.bind(c),write=c.write.bind(c);
+ c.read=a=>{if(a===0x2002){high=true;return 0;}if(a===0x2007){check(address>=0x2000&&address<0x3000,'Sequential PPU underlay read');const v=buffer;buffer=bytes[address];address=(address+((control&4)?32:1))&0x3fff;return v;}return read(a);};
  c.write=(a,v)=>{if(a===0x2000){control=v;return;}if(a===0x2005){high=!high;return;}if(a===0x2006){address=high?((v&63)<<8):((address&0x3f00)|v);high=!high;return;}
   if(a===0x2007){bytes[address]=v;written[address]++;lastPc[address]=(c.pc-3)&65535;address=(address+((control&4)?32:1))&0x3fff;return;}
   check(!(a>=0x2000&&a<=0x2007),'Unexpected PPU write '+a.toString(16)+' at '+c.pc.toString(16));write(a,v);};

@@ -130,7 +130,13 @@ void ff3_battle_commit(uint8_t page,uint8_t palette) NONBANKED {
  __asm ei __endasm;
  if(palette)palette_copy();
  if((STAT_REG&3)!=1||LY_REG>152)scene_error=8;
- SCX_REG=SCY_REG=0;LCDC_REG=0x83|(page?8:0);
+ SCX_REG=0;
+#ifdef FF3_ACTION_FLOW
+ SCY_REG=6;
+#else
+ SCY_REG=0;
+#endif
+ LCDC_REG=0x83|(page?8:0);
  __asm di __endasm;
 }
 #endif
