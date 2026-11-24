@@ -1,7 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
- 'docs/battle-numbers.md','tools/battle-number-source.mjs','tools/audit-battle-numbers.mjs','tests/battle-numbers.test.mjs',
+ 'docs/battle-numbers.md','tools/battle-number-source.mjs','tools/battle-number-composition.mjs','tools/audit-battle-numbers.mjs','tests/battle-numbers.test.mjs',
  'docs/battle-scene-composition.md','tools/battle-scene-pixels.mjs','tools/battle-scene-assets.mjs','tools/battle-scene-audit.lua','tools/battle-layout.mjs','tests/battle-scene-composition.test.mjs',
  'docs/battle-transitions.md','tools/battle-transition-source.mjs','tools/audit-battle-transitions.mjs','tests/battle-transitions.test.mjs',
  'docs/battle-scene-contract.md','tools/battle-scene-source.mjs','tools/battle-scene-contract.mjs','tools/audit-battle-scene.mjs','tests/battle-scene.test.mjs',

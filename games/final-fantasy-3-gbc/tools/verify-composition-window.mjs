@@ -19,7 +19,7 @@ const table=await fs.readFile(dir+'/conversion.bin');check(hash(table)===report.
 for(const f of actual.frames){check(!f.error&&!f.cacheError&&!f.platformError&&!f.memoryFault&&!f.transferFault&&!f.maxLate&&!f.underruns,'Runtime/audio fault '+f.frame);check(f.mapIntact&&f.fieldIntact&&f.guard==='a7'.repeat(48)&&(f.svbk&7)===1&&(f.key1&128)&&(f.lcdc&128),'Memory/video contract');const b=Buffer.from(f.consumed,'hex'),events=b.readUInt32LE(4);if(events){end=ref.advanceToEvent(events);check(end.ticks===b.readUInt32LE(0)&&end.sourceHash===b.readUInt16LE(8)&&end.gbHash===b.readUInt16LE(10)&&end.done===f.done,'Original consumed output '+events);}else check(b.equals(Buffer.alloc(12))&&!f.done,'Initial output');if(previous!==undefined)clock+=(f.timer-previous+65536)&65535;previous=f.timer;if(events&&!f.done){first??={clock,master:f.master,rate:f.rate};last={clock,master:f.master,rate:f.rate};}}
 check(end?.done&&end.ticks===report.audio.ticks,'Complete native schedule');const drift=(last.clock-first.clock)/4096-(last.master-first.master)/last.rate;check(Math.abs(drift)<0.003,'Timer drift');
 const shots=(await fs.readdir(cfg.home+'/Screenshots').catch(e=>{if(idle&&e.code==='ENOENT')return [];throw e;})).filter(p=>p.endsWith('.png')).sort();let shot=0;
-let beforeOpen;
+let beforeOpen,numberOamSamples=0,numberOamMax=0,numberLineMax=0;
 for(const [i,p]of actual.pages.entries()){
  const action=sequence[i%sequence.length];check(p.page===action.page&&p.op===action.op,'Requested action order');
  if(p.op===1&&i>0&&actual.pages[i-1].page===p.page&&[1,4].includes(actual.pages[i-1].op))check(!p.misses&&!p.composed&&!p.transfers,'Unchanged/after-close frame must retain cache');
@@ -30,6 +30,13 @@ for(const [i,p]of actual.pages.entries()){
   if(p.visible){const expectedCells=Buffer.alloc(320);report.text.pages[p.textPage-1].cells.forEach((v,i)=>expectedCells.writeUInt16LE(v,i*2));check(p.cells===expectedCells.toString('hex'),'Actual Korean glyph layout');}
  }
  if(p.bgPalette)check(p.bgPalette.slice(0,112)===report.frames[p.page].palette.slice(0,112)&&p.objPalette===report.frames[p.page].palette.slice(128),'Original colors excluding window palette');
+ if(streamMode&&p.op===1&&p.oam&&report.frames[p.page].stats.numberObjects){
+  const bytes=Buffer.from(p.oam,'hex'),expected=Buffer.from(report.frames[p.page].atlas.oam.data);
+  for(let n=0;n<report.frames[p.page].stats.objects;n++)expected[n*4+2]+=((p.lcdc>>3)&1)*64;
+  check(bytes.equals(expected)&&!(p.lcdc&4),'Actual complete 8x8 numeral OAM');
+  const lines=Array(144).fill(0);let count=0;for(let at=0;at<160;at+=4){const y=bytes[at]-16;if(y>=144||y+8<=0)continue;count++;for(let yy=Math.max(0,y);yy<Math.min(144,y+8);yy++)lines[yy]++;}
+  check(count===report.frames[p.page].stats.objects&&count<=40&&Math.max(...lines)<=10,'Actual numeral OAM capacity');numberOamSamples++;numberOamMax=Math.max(numberOamMax,count);numberLineMax=Math.max(numberLineMax,...lines);
+ }
  check(p.scx===report.frames[p.page].scroll[0]&&p.scy===report.frames[p.page].scroll[1],'Fine scroll');
 }
 check(idle?!actual.pages.length:actual.pages.length>=sequence.length*2&&!actual.pages[sequence.length*2-1].audioDone,'Two cycles under audio');if(timelineMode)for(const pic of actual.pictures.filter(p=>p.kind==='entry')){check(screenshotRgb(await fs.readFile(cfg.home+'/Screenshots/'+shots[pic.ordinal])).equals(await fs.readFile(dir+'/frame'+pic.entry+'.rgb')),'Autonomous actual pixels '+pic.run+'/'+pic.entry);shot++;}
@@ -42,6 +49,7 @@ const result={romSha256,coreSha256,home:cfg.home,mode:tag,frames:report.frames.l
 result.changed=summarize(actual.pages.filter((p,i)=>p.op===1&&(i===0||actual.pages[i-1].page!==p.page)));
 result.changedAfterInitial=summarize(actual.pages.filter((p,i)=>p.op===1&&i>0&&actual.pages[i-1].page!==p.page));
 result.unchanged=summarize(actual.pages.filter((p,i)=>p.op===1&&i>0&&actual.pages[i-1].page===p.page));
+if(streamMode&&!idle){check(numberOamSamples>0,'Missing numeral hardware samples');result.numbers={oamSamples:numberOamSamples,maxObjects:numberOamMax,maxLine:numberLineMax,transitions:summarize(actual.pages.filter((p,i)=>p.op===1&&i>0&&actual.pages[i-1].op===1&&p.page!==actual.pages[i-1].page&&report.frames[p.page].stats.numberObjects&&report.frames[actual.pages[i-1].page].stats.numberObjects))};}
 if(battleMode){result.battle={source:report.battle.source,frameOrder:report.frames.map(f=>f.sourceFrame),sourceFramesPerEntry:4,sourceSecondsPerEntry:4/(1789772.7272727273/29780.5),scope:'Captured function-boundary frames, not autonomous original-timed playback; timings exclude verifier screenshot hold'};}
 if(battleMode&&!streamMode&&!timelineMode&&!idle){const transitions=actual.pages.filter((p,i)=>p.op===1&&i>0&&actual.pages[i-1].op===1&&report.frames[p.page].atlas.visual!==report.frames[actual.pages[i-1].page].atlas.visual);result.battle.visualTransitions=summarize(transitions);result.battle.deadlineMisses=transitions.filter(p=>p.seconds>result.battle.sourceSecondsPerEntry).length;result.battle.initialLoadMs=actual.pages[0].seconds*1000;}
 if(battleMode&&!streamMode&&!timelineMode&&!idle){const spell=actual.pages.filter((p,i)=>p.op===1&&i>0&&actual.pages[i-1].op===1&&p.page>actual.pages[i-1].page&&report.frames[p.page].atlas.visual!==report.frames[actual.pages[i-1].page].atlas.visual);result.battle.spellTransitions=summarize(spell);result.battle.spellDeadlineMisses=spell.filter(p=>p.seconds>result.battle.sourceSecondsPerEntry).length;result.battle.timingGatePassed=spell.length>0&&!result.battle.spellDeadlineMisses;}

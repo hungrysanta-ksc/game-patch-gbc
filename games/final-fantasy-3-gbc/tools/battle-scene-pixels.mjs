@@ -8,6 +8,7 @@ import {originalFormation} from './battle-placement-source.mjs';
 import {formationPixels,adaptPoint} from './battle-placement-budget.mjs';
 import {rearX} from './battle-layout.mjs';
 import {originalNumberRun} from './battle-number-source.mjs';
+import {composeBattleNumbers} from './battle-number-composition.mjs';
 const W=168,H=152,sourceY=[44,72,100,128],targetY=[10,34,58,82];
 const select=(c,p)=>{c.banks=[p*2,p*2+1,0x3e,0x3f];c.m[0x7cf6]=p;};
 function bgPixel(b,x,y,table=0){
@@ -32,14 +33,15 @@ export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0},numberOw
  for(let slot=0;slot<4;slot++)for(let sy=[40,72,96,128][slot];sy<[72,96,128,152][slot];sy++)for(let sx=160;sx<256;sx++){
   const q=bgPixel(b,back?255-sx:sx,sy);if(q.opaque){const x=back?159-(sx-80):sx-80,y=sy-sourceY[slot]+targetY[slot];put(x,y,q.index);if(x>=0&&x<160&&y>=0&&y<144)party[y*W+x]=1;}
  }
+ const basePixels=pixels.slice(),baseUsed=new Uint8Array(W*H),numberObjects=[];
  for(let i=0;i<64;i++){
   const at=0x200+i*4,sy=c.m[at]+1,sx=c.m[at+3],tile=c.m[at+1],attr=c.m[at+2];if(sy>239)continue;
   check(!(attr&32),'Unsupported behind-BG source OBJ in scene adapter');
   const slot=i>=40?Math.floor((i-40)/6):target;
+  const owner=i<40?numberOwners[i]:null,number=owner?{sourceSlot:i,target:owner.target,enemy:owner.enemy,palette:attr&3,pixels:new Uint8Array(64)}:null;
   for(let y=0;y<8;y++)for(let x=0;x<8;x++){
    const px=attr&64?7-x:x,py=attr&128?7-y:y,k=0x1000+tile*16+py,bit=7-px,v=(b[k]>>bit&1)|((b[k+8]>>bit&1)<<1);if(!v)continue;
    const canonical=back?255-(sx+x):sx+x;let dx=back?159-(canonical-80):canonical-80,dy=sy+y-sourceY[slot]+targetY[slot];
-   const owner=i<40?numberOwners[i]:null;
    if(owner){
     numberCoverage.sourcePixels++;
     if(owner.enemy){check(formation,'Enemy numeral formation');const cx=c.m[0x7dd7+owner.target*2],bottom=c.m[0x7e07+owner.target]+1,[ax,ay]=adaptPoint(formation,cx,bottom),anchor=rearX(back?159-ax:ax,layout,back),sourceCenter=back?254-cx:cx;
@@ -50,12 +52,14 @@ export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0},numberOw
     // The cropped terrain leaves less room above party slot 0 than NES.
     // Contain the entire 8px glyph at the viewport edge, never its pixels.
     dy=Math.max(0,Math.min(136,dy-y))+y;
+    number.x=dx-x;number.y=dy-y;number.pixels[y*8+x]=v;
    }
-   if(dx<0||dx>=160||dy<0||dy>=144)continue;if(owner)numberCoverage.viewportPixels++;const p=dy*W+dx;if(i>=40)party[p]=1;if(used[p])continue;used[p]=1;put(dx,dy,16+(attr&3)*4+v);
+   if(dx<0||dx>=160||dy<0||dy>=144)continue;if(owner)numberCoverage.viewportPixels++;const p=dy*W+dx;if(!owner&&!baseUsed[p]){baseUsed[p]=1;basePixels[p]=colors.readUInt16LE((16+(attr&3)*4+v)*2);}if(i>=40)party[p]=1;if(used[p])continue;used[p]=1;put(dx,dy,16+(attr&3)*4+v);
   }
+  if(number?.pixels.some(Boolean))numberObjects.push(number);
  }
  check(numberCoverage.sourcePixels===numberCoverage.viewportPixels,'Number glyph clipped by viewport');
- return {pixels,numberCoverage,objPalette:colors.subarray(32),sourcePalettes:colors,sourcePaletteSha256:hash(b.subarray(0x3f00,0x3f20)),partyEnemyOverlapPixels:party.reduce((n,v,i)=>n+(v&&enemy[i]?1:0),0)};
+ return {pixels,basePixels,numberObjects,numberCoverage,objPalette:colors.subarray(32),sourcePalettes:colors,sourcePaletteSha256:hash(b.subarray(0x3f00,0x3f20)),partyEnemyOverlapPixels:party.reduce((n,v,i)=>n+(v&&enemy[i]?1:0),0)};
 }
 export function originalSceneSequence(rom,{back=false,retreat=8,numbers=false,enemyValues=[65535,65535,65535,1234,65535,65535,65535,65535]}={}){
  const formation=originalFormation(rom,3),layout=formationPixels(rom,formation,{retreat}).layout;
@@ -95,7 +99,7 @@ export function sceneComposition(rom,options={}){
   // Residual OBJ need enemy colors too: copying only NES OBJ palettes leaves
   // mixed enemy cells uncovered. This four-palette choice is a fixture policy,
   // not a universal solver. Failure is retained rather than dropping pixels.
-  try{const objPalette=Buffer.concat([0,1,5,7].map(p=>f.sourcePalettes.subarray(p*8,p*8+8))),palettes=groups.get(hash(objPalette)).palettes,c=compilePixelComposition(f.pixels,objPalette,{width:W,height:H,palettes});
+  try{const objPalette=Buffer.concat([0,1,5,7].map(p=>f.sourcePalettes.subarray(p*8,p*8+8))),palettes=groups.get(hash(objPalette)).palettes,c=f.numberObjects.length&&options.layeredNumbers!==false?composeBattleNumbers(f,{width:W,height:H}):compilePixelComposition(f.pixels,objPalette,{width:W,height:H,palettes});
    check(compositionWords(c).every((v,i)=>v===f.pixels[i]),'Whole scene RGB555 roundtrip');frames.push({...f,index:i,composition:c});
   }catch(e){if(!/^Composition (OAM|scanline|BG tile) capacity$|^No lossless global palette cover$/.test(e.message))throw e;failures.push({index:i,phase:f.phase,numberFrame:f.numberFrame,reason:e.message});}
  }

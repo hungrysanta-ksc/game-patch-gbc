@@ -5,6 +5,7 @@ import {initializedBattle} from '../tools/battle-transition-source.mjs';
 import {originalNumberRun} from '../tools/battle-number-source.mjs';
 import {originalSceneSequence,sceneComposition} from '../tools/battle-scene-pixels.mjs';
 import {originalFormation} from '../tools/battle-placement-source.mjs';
+import {compositionWords} from '../tools/npc-composition.mjs';
 
 test('original numeral conversion distinguishes zero, leading zeros, MISS, recovery and absent targets',async()=>{
  const {data}=await input();
@@ -43,12 +44,24 @@ test('same scene displays and clears single-enemy damage plus party zero/MISS/re
  }
 });
 
-test('eight simultaneous four-digit values remain an explicit unresolved whole-scene capacity case',async()=>{
+test('eight four-digit values preserve every source pixel and fit 32 numeral plus 8 residual OBJ',async()=>{
  const {data}=await input();for(const back of [false,true]){
   const options={back,numbers:true,enemyValues:Array(8).fill(1234)},raw=originalSceneSequence(data,options),s=sceneComposition(data,options);
   assert.equal(raw.numberRuns[0].frames.length,32);assert.ok(raw.numberRuns[0].frames.every(f=>f.allocated===32&&f.groups.length===8));
-  // This is a limitation regression, never a fit pass or filtered ROM input.
-  assert.ok(s.failures.length>0);assert.equal(s.frames.length+s.failures.length,s.summary.observations);
-  assert.ok(s.failures.every(f=>f.phase==='enemy-numbers'&&/capacity/.test(f.reason)));
+  const old=sceneComposition(data,{...options,layeredNumbers:false});assert.equal(old.failures.length,back?18:16);
+  assert.equal(s.failures.length,0);assert.equal(s.frames.length,raw.observations.length);
+  for(const f of s.frames){assert.deepEqual(f.composition.pixels,raw.observations[f.index].pixels);assert.deepEqual(compositionWords(f.composition),raw.observations[f.index].pixels);
+   if(f.phase==='enemy-numbers'&&f.numberObjects.length){assert.equal(f.numberObjects.length,32);assert.equal(new Set(f.numberObjects.map(o=>o.target)).size,8);assert.equal(f.composition.stats.objects,40);assert.equal(f.composition.stats.baseObjects,8);assert.ok(f.composition.stats.peak<=8);}
+  }
+  const moving=s.frames.filter(f=>f.phase==='enemy-numbers'&&f.numberObjects.length);
+  for(const f of moving){assert.deepEqual(f.composition.background,moving[0].composition.background);assert.deepEqual(f.composition.map,moving[0].composition.map);assert.deepEqual(f.composition.objGraphics,moving[0].composition.objGraphics);}
+ }
+});
+
+test('all-target distinct damage/recovery and MISS values use source glyphs with the same capacity bound',async()=>{
+ const {data}=await input();for(const back of [false,true])for(const enemyValues of [[9999,8765,4321,1000,0x8000|9876,0x8000|5432,0x8000|1098,0x8000|7654],[0,1,10,999,9999,0x4000,0x8038,65535]]){
+  const s=sceneComposition(data,{back,numbers:true,enemyValues});assert.equal(s.failures.length,0);
+  assert.ok(s.frames.every(f=>f.composition.stats.objects<=40&&f.composition.stats.peak<=10));
+  assert.ok(s.frames.every(f=>f.numberCoverage.sourcePixels===f.numberCoverage.viewportPixels));
  }
 });
