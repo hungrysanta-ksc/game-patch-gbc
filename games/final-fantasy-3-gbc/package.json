@@ -18,7 +18,7 @@
     "verify:memory": "node tools/verify-memory.mjs",
     "build:audio": "node tools/build-audio.mjs",
     "build:timed": "node tools/build-timed.mjs",
-    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs tests/render-budget.test.mjs tests/npc-composition.test.mjs tests/composition-kernel.test.mjs tests/composition-cache.test.mjs tests/composition-input.test.mjs tests/composition-window.test.mjs tests/battle-display.test.mjs tests/battle-composition.test.mjs tests/battle-timeline.test.mjs tests/battle-placement.test.mjs tests/battle-scene.test.mjs tests/battle-transitions.test.mjs tests/battle-scene-composition.test.mjs tests/battle-numbers.test.mjs tests/battle-number-timeline.test.mjs tests/battle-action.test.mjs tests/battle-select.test.mjs tests/battle-party.test.mjs tests/battle-items.test.mjs tests/battle-item-use.test.mjs tests/battle-equipment.test.mjs tests/battle-row.test.mjs tests/battle-physical.test.mjs tests/battle-weapon-duration.test.mjs",
+    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs tests/render-budget.test.mjs tests/npc-composition.test.mjs tests/composition-kernel.test.mjs tests/composition-cache.test.mjs tests/composition-input.test.mjs tests/composition-window.test.mjs tests/battle-display.test.mjs tests/battle-composition.test.mjs tests/battle-timeline.test.mjs tests/battle-placement.test.mjs tests/battle-scene.test.mjs tests/battle-transitions.test.mjs tests/battle-scene-composition.test.mjs tests/battle-numbers.test.mjs tests/battle-number-timeline.test.mjs tests/battle-action.test.mjs tests/battle-select.test.mjs tests/battle-party.test.mjs tests/battle-items.test.mjs tests/battle-item-use.test.mjs tests/battle-equipment.test.mjs tests/battle-row.test.mjs tests/battle-physical.test.mjs tests/battle-weapon-duration.test.mjs tests/battle-fight.test.mjs",
     "test:vgm": "node --test tests/vgm.test.mjs tests/timed-stream.test.mjs",
     "verify:timed": "node tools/verify-timed.mjs",
     "build:control": "node tools/build-control.mjs",
@@ -80,7 +80,9 @@
     "verify:battle-row": "node tools/verify-battle-select.mjs --row",
     "build:battle-physical": "node tools/build-battle-physical.mjs",
     "verify:battle-physical": "node tools/verify-battle-select.mjs --physical",
-    "verify:battle-weapon-duration": "node tools/verify-battle-weapon-duration.mjs"
+    "verify:battle-weapon-duration": "node tools/verify-battle-weapon-duration.mjs",
+    "build:battle-fight": "node tools/build-battle-fight.mjs",
+    "verify:battle-fight": "node tools/verify-battle-select.mjs --fight"
   },
   "engines": {
     "node": ">=20"
