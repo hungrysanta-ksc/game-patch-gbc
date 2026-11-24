@@ -11,6 +11,7 @@ end,emu.callbackType.write,0xff46,0xff46,emu.cpuType.gameboy)
 emu.addMemoryCallback(function(a,v)
  local t=emu.getState()
  emu.log(string.format('battle-present:%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d',word(__BATTLE_RUN__),emu.read(__BATTLE_ENTRY__,bm),word(__BATTLE_ORIGIN__),word(__BATTLE_DUE__),word(__BATTLE_COMMITTED__),word(__BATTLE_PREPARED__),word(__BATTLE_MISSES__),t.masterClock,t.clockRate,emu.read(0xff40,bm),emu.read(0xff44,bm)))
+ emu.log(string.format('battle-visible:%d,%d,%d',word(__BATTLE_RUN__),emu.read(__BATTLE_ENTRY__,bm),t.frameCount))
 end,emu.callbackType.write,__BATTLE_SERIAL__,__BATTLE_SERIAL__,emu.cpuType.gameboy)
 emu.addEventCallback(function()emu.log(string.format('battle-oam:%d,%d',oams,badoam))end,emu.eventType.codeBreak)
 

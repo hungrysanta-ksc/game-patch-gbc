@@ -4,6 +4,13 @@ local mem=emu.memType.gameboyDebug
 local writes,bad,palettes,badpalette=0,0,0,0
 local publications,badpublication=0,0
 local criticalStart,criticalRate,criticalMax,criticalCount=nil,0,0,0
+local numberFrames,numberStorageWrites=0,0
+emu.addMemoryCallback(function()if emu.read(__SCENE_PHASE__,mem)==8 then numberStorageWrites=numberStorageWrites+1 end end,emu.callbackType.write,0x8000,0x9fff,emu.cpuType.gameboy)
+for _,a in ipairs({0xff40,0xff69,0xff6b}) do
+ emu.addMemoryCallback(function()if emu.read(__SCENE_PHASE__,mem)==8 then numberStorageWrites=numberStorageWrites+1 end end,emu.callbackType.write,a,a,emu.cpuType.gameboy)
+end
+emu.addMemoryCallback(function()if emu.read(__SCENE_PHASE__,mem)==8 then numberFrames=numberFrames+1 end end,emu.callbackType.write,0xff46,0xff46,emu.cpuType.gameboy)
+emu.addEventCallback(function()emu.log(string.format('number-storage:%d,%d',numberFrames,numberStorageWrites))end,emu.eventType.codeBreak)
 emu.addMemoryCallback(function()local t=emu.getState();criticalStart=t.masterClock;criticalRate=t.clockRate end,emu.callbackType.exec,__SCENE_DMA_BEGIN__,__SCENE_DMA_BEGIN__,emu.cpuType.gameboy)
 emu.addMemoryCallback(function()
  local t=emu.getState();if not criticalStart then error('Missing DMA critical start') end

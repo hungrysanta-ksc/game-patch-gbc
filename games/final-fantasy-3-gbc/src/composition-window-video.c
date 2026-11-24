@@ -2,7 +2,7 @@
 #include <string.h>
 #include "composition-window.h"
 #include "text-vblank.h"
-#ifdef FF3_BATTLE_TIMELINE
+#if defined(FF3_BATTLE_TIMELINE) || defined(FF3_NUMBER_TIMELINE)
 #include "battle-timeline.h"
 #endif
 uint8_t scene_palette[96];
@@ -98,7 +98,7 @@ static void palette_copy(void) __naked {__asm
 }
 #endif
 static void publish_irq(void) NONBANKED {
-#ifdef FF3_BATTLE_TIMELINE
+#if defined(FF3_BATTLE_TIMELINE) || defined(FF3_NUMBER_TIMELINE)
  if(battle_active){ff3_battle_vblank();return;}
 #endif
  if(!scene_pending)return;
@@ -122,7 +122,7 @@ void ff3_battle_oam_refresh(void) __naked {__asm
  __endasm;
 }
 #endif
-#ifdef FF3_BATTLE_TIMELINE
+#if defined(FF3_BATTLE_TIMELINE) || defined(FF3_NUMBER_TIMELINE)
 /* Called with interrupts disabled, during VBlank. Refresh OAM here because
  * GBDK's regular OAM copy can precede this handler. BG and OBJ change together. */
 void ff3_battle_commit(uint8_t page,uint8_t palette) NONBANKED {
@@ -132,6 +132,18 @@ void ff3_battle_commit(uint8_t page,uint8_t palette) NONBANKED {
  if((STAT_REG&3)!=1||LY_REG>152)scene_error=8;
  SCX_REG=SCY_REG=0;LCDC_REG=0x83|(page?8:0);
  __asm di __endasm;
+}
+#endif
+#ifdef FF3_NUMBER_TIMELINE
+void ff3_number_commit(uint8_t page) NONBANKED {
+ __asm di __endasm;
+ if(battle_entry==255){ff3_battle_commit(page,1);return;}
+ /* OAM buffering is independent of the pinned BG/OBJ graphics page. */
+ _shadow_OAM_base=page?0xdd:0xdc;ff3_battle_oam_refresh();
+ /* Allow the timer between DMA and scheduler bookkeeping, as in the
+  * map commit path. Masking both together can lose a pending timer edge. */
+ __asm ei __endasm;
+ if((STAT_REG&3)!=1||LY_REG>152)scene_error=8;
 }
 #endif
 void ff3_scene_video_init(void) NONBANKED {CRITICAL{add_VBL(publish_irq);}}

@@ -1,6 +1,7 @@
 import {check,hash} from './source.mjs';
 import {sceneComposition} from './battle-scene-pixels.mjs';
 import {compositionRgb} from './npc-composition.mjs';
+import {numberTimeline} from './battle-number-timeline.mjs';
 // Preserve still-needed tile IDs before filling released slots. This needs
 // only the current frame and previous storage, never the animation union.
 export function stableSceneTiles(compositions){
@@ -21,7 +22,7 @@ export function battleSceneAssets(rom,{numbers=true,enemyValues=Array(8).fill(12
   for(let y=0;y<144;y++)raw.copy(rgb,y*480,y*504,y*504+480);
   for(let i=0;i<399;i++){const at=(i/21|0)*32+i%21;maps[0][at]=(c.map[i]+128)&255;maps[1][at]=c.attributes[i];maps[2][at]=c.attributes[i]|8;}
   const palette=Buffer.concat([c.bgPalette,c.objPalette]),key=hash(Buffer.concat([c.background,...maps,c.objGraphics,c.oam,palette]));if(!visuals.has(key))visuals.set(key,visuals.size);
-  frames.push({label:f.phase,back:f.back,trace:f.index,numberFrame:f.numberFrame,scroll:[0,0],ids,attributes:c.attributes,palette,rgb,stats:c.stats,partyEnemyOverlapPixels:f.partyEnemyOverlapPixels,sourceFrame:null,sourceByteIndex:null,sourceOamSha256:f.sourceOamSha256,sourceDurationFrames:null,sourceBoundaryCalls:f.boundaries,atlas:{blocks:Buffer.alloc(76),maps:Buffer.concat(maps),background:c.background,objects:c.objGraphics,oam:c.oam,visual:visuals.get(key)}});
+  frames.push({label:f.phase,back:f.back,trace:f.index,numberFrame:f.numberFrame,numberFrames:f.numberFrames,scroll:[0,0],ids,attributes:c.attributes,palette,rgb,stats:c.stats,partyEnemyOverlapPixels:f.partyEnemyOverlapPixels,sourceFrame:null,sourceByteIndex:null,sourceOamSha256:f.sourceOamSha256,sourceDurationFrames:null,sourceBoundaryCalls:f.boundaries,atlas:{blocks:Buffer.alloc(76),maps:Buffer.concat(maps),background:c.background,objects:c.objGraphics,oam:c.oam,visual:visuals.get(key)}});
  }
  // One bit per changed 16-byte block, relative to the *same inactive page*.
  // IDs/attrs/BG/OBJ occupy 5/5/32/5 bytes in each 48-byte row. Include the
@@ -35,5 +36,5 @@ export function battleSceneAssets(rom,{numbers=true,enemyValues=Array(8).fill(12
   }
  }f.atlas.spans=spans;}
  const blank=Buffer.alloc(80);
- return {jobs:[{bytes:blank,expected:blank,static:true}],frames,blocks:Buffer.alloc(16),bgTiles:Buffer.alloc(16),palettes:7,battle:{source:source.source,numberRuns:profiles.map(p=>({back:p.source.back,runs:p.numberRuns})),summary:source.summary,hostComposed:true,streamed:true,uniqueVisuals:visuals.size,scope:'Sequential original source-state fixtures including all eight enemy damage targets and party zero/MISS/recovery/absent probes. Current formation capacity only; not game rules, other effects, battle messages or source-frame timing proof'}};
+ return {jobs:[{bytes:blank,expected:blank,static:true}],frames,blocks:Buffer.alloc(16),bgTiles:Buffer.alloc(16),palettes:7,battle:{source:source.source,numberTimeline:numbers?numberTimeline(frames):null,numberRuns:profiles.map(p=>({back:p.source.back,runs:p.numberRuns})),summary:source.summary,hostComposed:true,streamed:true,uniqueVisuals:visuals.size,scope:'Sequential original source-state fixtures and autonomous 32-frame numeral bodies. Immediate caller clear is a diagnostic handoff; not whole battle timing, game rules, other effects or battle messages'}};
 }
