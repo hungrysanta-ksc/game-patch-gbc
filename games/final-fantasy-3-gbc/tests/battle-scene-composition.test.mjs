@@ -32,7 +32,7 @@ test('same source scene composes entry, stone/toad restoration and item return i
  }
 });
 test('inactive-page dirty masks reconstruct every pattern/map/OBJ occupant and invalidate after window borrowing',async()=>{
- const {data}=await input(),s=battleSceneAssets(data);assert.equal(s.frames.length,112);
+ const {data}=await input(),s=battleSceneAssets(data);assert.equal(s.frames.length,226);
  for(const f of s.frames){assert.ok(f.stats.bgTiles<=256);assert.ok(f.atlas.background.length<=4096);
   for(let page=0;page<2;page++)for(const old of [undefined,...s.frames]){
    const at=(old?.atlas.visual??s.battle.uniqueVisuals)*48;
@@ -53,7 +53,7 @@ test('stable tile IDs preserve exact source pixels and reuse surviving patterns 
  for(const [i,c]of stable.entries()){assert.deepEqual(compositionWords(c),frames[i].pixels);assert.ok(c.background.length<=4096);
   if(i){const old=stable[i-1];for(let p=0;p<c.background.length;p+=16){const key=c.background.subarray(p,p+16);for(let q=0;q<old.background.length;q+=16)if(key.equals(old.background.subarray(q,q+16))&&c.map.includes(p/16))assert.equal(p,q);}}
  }
- const assets=battleSceneAssets(data);for(const [i,f]of assets.frames.entries()){const raw=compositionRgb(stable[i]),rgb=Buffer.alloc(160*144*3);for(let y=0;y<144;y++)raw.copy(rgb,y*480,y*504,y*504+480);assert.deepEqual(f.rgb,rgb);}
+ const assets=battleSceneAssets(data,{numbers:false});for(const [i,f]of assets.frames.entries()){const raw=compositionRgb(stable[i]),rgb=Buffer.alloc(160*144*3);for(let y=0;y<144;y++)raw.copy(rgb,y*480,y*504,y*504+480);assert.deepEqual(f.rgb,rgb);}
 });
 test('rear retreat preserves enemy pixels and relative anchors, reduces party overlap, and moves hit centers with the formation',async()=>{
  const {data}=await input();for(const id of budgetFormationIds){const f=originalFormation(data,id),a=formationPixels(data,f),b=formationPixels(data,f,{retreat:8});
