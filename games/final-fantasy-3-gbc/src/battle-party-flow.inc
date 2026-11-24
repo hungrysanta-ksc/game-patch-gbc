@@ -1,6 +1,7 @@
 /* Original 34/986F collector + 35/A843/A877/A8AB reservation boundaries.
  * Only the current diagnostic job/formation is supplied by this bridge.
- * AUTO, inventory return, row changes and submenus remain explicit callers. */
+ * AUTO, row changes and submenus remain explicit callers. Reservation
+ * returns borrow the persistent canonical bag, never a display-only copy. */
 /* Fixed 80-byte transparent mask merge. Stack ABI is explicit; no bank
  * switching or interrupt masking. Service audio between these short runs. */
 static void party_or(uint8_t *destination,const uint8_t *mask) __sdcccall(0) __naked {__asm
@@ -52,7 +53,12 @@ static void party_overlay(uint8_t page){uint8_t r,x,n,variant,cmd,*mask=(uint8_t
  flush();memcpy(party_cached_commands+page*4,party_display_commands,4);party_valid_pages|=1<<page;
 }
 static void party_enter(void){
- ff3_party_enter(&selection_party);memcpy(party_display_commands,selection_party.command,4);
+ ff3_party_enter(&selection_party);
+ if(selection_party.phase==FF3_PARTY_RETURN_ITEM){
+  if(!ff3_inventory_return(ff3_game_state+0xc0,selection_party.used+selection_party.actor,party_used_equipped+selection_party.actor)){scene_error=16;return;}
+  selection_party.phase=FF3_PARTY_SELECT;
+ }
+ memcpy(party_display_commands,selection_party.command,4);
  selection_mode=selection_party.phase==FF3_PARTY_SELECT?0:2;
  selection_row=selection_left=selection_right=selection_dispatch=0;selection_repeat=8;selection_delay=0;
 }
