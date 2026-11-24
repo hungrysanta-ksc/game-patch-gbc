@@ -15,3 +15,5 @@ local.json
 *.mss
 bin/
 obj/
+*.avi
+*.dib
