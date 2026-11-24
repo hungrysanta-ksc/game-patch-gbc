@@ -3,6 +3,42 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "docs/battle-scene-composition.md",
+      "bytes": 9396,
+      "sha256": "b967ed3bbfd7ec72d83262a4b5f9efecfdca838278757749ae154e386c77b14d",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-scene-pixels.mjs",
+      "bytes": 6708,
+      "sha256": "075a60def3c4ac6848f6a171e1083aaf70bb31f547cd27567139c0207ccb1f20",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-scene-assets.mjs",
+      "bytes": 3242,
+      "sha256": "bd3fe2b048504ff52f3b414120f6609729732f0826dc992927ab2ba273f4a4ec",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-scene-audit.lua",
+      "bytes": 1160,
+      "sha256": "63b3737afcf206adba202ba869a2f00044e0f7013bda3852ceda09d35ff0b9cb",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-layout.mjs",
+      "bytes": 913,
+      "sha256": "0607083dacc71e5ed677327b3bbe8d52e66559ee505db7768a38248aac3ba91c",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/battle-scene-composition.test.mjs",
+      "bytes": 4174,
+      "sha256": "97a0d4daab24d065d23aabcab3a4cd2e81bc748c487daab20b3294310636feff",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "docs/battle-transitions.md",
       "bytes": 9517,
       "sha256": "1fb27d7348c6f67ed5940b1064e1f879c3ac48430596124cc606d2bdfc0e8a2c",
@@ -10,8 +46,8 @@
     },
     {
       "path": "tools/battle-transition-source.mjs",
-      "bytes": 12065,
-      "sha256": "2a6e87dbd24e961ed2280ec31f867ac97cf52421ca931a154e90104f50c20947",
+      "bytes": 12124,
+      "sha256": "aa806d4ad4ce38b155de016b1cf16ffec80e0f600659b6605bff3f2e86343fd2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -70,14 +106,14 @@
     },
     {
       "path": "tools/battle-placement-budget.mjs",
-      "bytes": 8848,
-      "sha256": "101d16ee96253925cdb327a226a7642c8457d48a901d4309e68dc486288a68aa",
+      "bytes": 9338,
+      "sha256": "8c9363260f6146e5227746dede63f002b17f5fa1b261730a94bc96ca33008638",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/audit-battle-placement.mjs",
-      "bytes": 636,
-      "sha256": "d9d82766fbb41970ac97229c52b71d29d58724cb51ff40d4489fc9e4f8b8a481",
+      "bytes": 768,
+      "sha256": "f8294a10b679092b06b648f333efde825fe1f33f30d0523c77ba80946dd72a02",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -130,8 +166,8 @@
     },
     {
       "path": "src/battle-atlas.c",
-      "bytes": 7404,
-      "sha256": "2e04729c3d40d8a8d5452ea8d5ec6a426ef3afcf3a62e4971db3666d250239e2",
+      "bytes": 7783,
+      "sha256": "18f90df1191d0000e9908a2c0732fa1a0c7516b5d288feabee1d547ed3a5bcb4",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -214,14 +250,14 @@
     },
     {
       "path": "tools/build-composition-window.mjs",
-      "bytes": 11874,
-      "sha256": "36cbb8b2642fce7774a0d2a553a27ac5d04ba4317fcaba6c62b0dd8766210922",
+      "bytes": 12860,
+      "sha256": "bbb65e9ad84c77fa28ab4172a2664a763b89d9bd164b8f58b4cc3b81b0933fd6",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/verify-composition-window.mjs",
-      "bytes": 11662,
-      "sha256": "2271c7fd5805ee467af2603da341e9e4e7e148c011294c43dca31a7c62674bd5",
+      "bytes": 12436,
+      "sha256": "799c7793225bfe69067bdfe70153d13f48e88423883d95350c1daaf3ed509c2b",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -634,8 +670,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 20865,
-      "sha256": "751da38fbe0dd1721c8649fcea51e028704e2d509bb55decc166e8ce28e7f7fd",
+      "bytes": 21021,
+      "sha256": "521f8aeb1e551eb2b62235c89b693d03f29ab4613e491ad4f99adb62095a62d2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -652,14 +688,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 4157,
-      "sha256": "9cde75ceaae4aa7c82b5d57e7c9293c6f59099a4284b9c5ebd2c1c1954f00ba3",
+      "bytes": 4353,
+      "sha256": "65b13c6183217aa8e0a3be181c0341bf50ecaf7eccdf65afe08b74424138c704",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 27051,
-      "sha256": "5c091e484dac360cd3eb74341deb56f6696920ba394e5d8a658448d68bb06642",
+      "bytes": 28218,
+      "sha256": "cb2398fa401bd819e70ebd20e79c0cd1e77e49476399576903916e1d9e493a80",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -670,8 +706,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 9626,
-      "sha256": "a15ce0d07ed53c5c88075975c20fb0a1d5e26213619c436b63ff6e2394229746",
+      "bytes": 10191,
+      "sha256": "7b88331d9587852ba0f76081a31fa247c83c1c237bf1a766e2e43a259b4b0645",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1492,8 +1528,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 9169,
-      "sha256": "a879593ca5680c25c532ac0af490d6cc371f18323d3d83091991a237fbd76fdc",
+      "bytes": 9369,
+      "sha256": "ec25014b55eda897a85b14ecc2823e2654adbd8a9b939b0ddb194ca77af69de2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

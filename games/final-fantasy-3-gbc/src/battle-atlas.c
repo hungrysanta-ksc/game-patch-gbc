@@ -56,17 +56,30 @@ static void queue(uint8_t bank,const uint8_t *source,uint8_t vram,uint16_t desti
 }
 static void read_frame(uint8_t n,SceneBattleFrame *out){ff3_scene_rom_copy(7,scene_battle_frames+n,out,sizeof(*out));}
 static void preload(void){
+#ifndef FF3_BATTLE_STREAM
  queue(SCENE_BLOCK_BANK,scene_bg_tiles,0,0x9000u,SCENE_JOB_COUNT*16u);scene_misses+=SCENE_JOB_COUNT;
  flush();memset(scene_pins,1,SCENE_JOB_COUNT);loaded=1;
+#else
+ loaded=1;
+#endif
 }
 static void prepare(uint8_t page){uint8_t i,bank,old,*oam=page?scene_oam1:scene_oam0;uint16_t *spans=(uint16_t*)scene_input;
  read_frame(scene_page,&target);
  if(last_frame[page]==255)old=SCENE_VISUAL_COUNT;
  else {read_frame(last_frame[page],&previous);old=previous.visual;}
+#ifdef FF3_BATTLE_STREAM
+ ff3_scene_rom_copy(target.bank,target.spans+(uint16_t)old*12,scene_input,12);
+ queue(target.bank,target.background+spans[4],page,0x8800u+spans[4],spans[5]);
+#else
  ff3_scene_rom_copy(target.bank,target.spans+(uint16_t)old*8,scene_input,8);
+#endif
  scene_phase=2;
  for(bank=0;bank<2;bank++){
-  queue(target.bank,target.maps+(uint16_t)bank*608+spans[bank*2],bank,(page?0x9c00u:0x9800u)+spans[bank*2],spans[bank*2+1]);
+  queue(target.bank,target.maps+(uint16_t)bank*608
+#ifdef FF3_BATTLE_STREAM
+   +(bank&&page?608u:0u)
+#endif
+   +spans[bank*2],bank,(page?0x9c00u:0x9800u)+spans[bank*2],spans[bank*2+1]);
  }
  scene_phase=3;
  if(last_frame[page]==255||previous.visual!=target.visual){
@@ -82,7 +95,12 @@ static void show(void){uint8_t page=active_page^1;
  if(active_frame!=255){read_frame(active_frame,&previous);if(previous.visual==target.visual){active_frame=scene_page;scene_hits++;scene_frames++;return;}}
  scene_phase=1;if(!loaded)preload();if(scene_error)return;
  prepare(page);if(scene_error)return;ff3_scene_rom_copy(7,scene_frames_data+scene_page,&frame,sizeof(frame));
- scene_phase=4;ff3_scene_rom_copy(frame.bank,frame.palette,scene_palette,96);ff3_scene_publish(page,active_frame==255,0,0);
+ scene_phase=4;ff3_scene_rom_copy(frame.bank,frame.palette,scene_palette,96);
+#ifdef FF3_BATTLE_STREAM
+ ff3_scene_publish(page,1,0,0);
+#else
+ ff3_scene_publish(page,active_frame==255,0,0);
+#endif
  active_page=page;active_frame=scene_page;scene_frames++;
 }
 static void open(void){

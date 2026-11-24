@@ -9,7 +9,7 @@ const select=(c,pair)=>{c.banks=[pair*2,pair*2+1,0x3e,0x3f];c.m[0x7cf6]=pair;};
 function ret(c){c.pc=((c.pop()|(c.pop()<<8))+1)&65535;}
 function call(c,address){c.pc=address;c.push(0x4f);c.push(0xff);let n=0;while(c.pc!==0x5000){check(++n<=3000000,'Battle transition instruction budget at '+c.pc.toString(16));c.step();}return n;}
 
-export function presentationMachine(rom){
+export function presentationMachine(rom,{capture}={}){
  const c=battleCpu(rom),ppu=recordTransfers(c),write=c.write.bind(c),step=c.step.bind(c);
  const waits=[],scroll=[],songs=[];let tracing=false,last=ppu.written.slice();
  c.write=(a,v)=>{if(a!==0x2001)write(a,v);}; // PPUMASK side effects are outside this non-raster reference
@@ -19,7 +19,7 @@ export function presentationMachine(rom){
    if(run&&run.end===a&&run.kind===kind){run.end++;run.writes+=n;}else{run={begin:a,end:a+1,writes:n,kind};ranges.push(run);}
   }last=ppu.written.slice();
   const row={boundary:waits.length,reason,enemyScroll:c.m[15],menuScroll:c.m[16],menuRemaining:c.m[4],partyX:[...c.m.subarray(0xc0,0xc4)],poses:[...c.m.subarray(0x7d83,0x7d87)],ranges,transfers:totals,oamSha256:hash(Buffer.from(c.m.subarray(0x200,0x300))),chrSha256:hash(ppu.bytes.subarray(0,0x2000)),mapSha256:hash(ppu.bytes.subarray(0x2000,0x2800))};
-  waits.push(row);return row;
+  waits.push(row);capture?.(row,c,ppu);return row;
  }
  c.step=function(){
   if(this.pc===0xfb80){if(tracing)checkpoint('before-NMI-wait');ret(this);return;}
@@ -35,10 +35,10 @@ function initializedParty(rom,{jobs=[0,1,2,3],back=false,rows=[0,0,0,0]}={}){
  // consumers. Entry settles canonical coordinates; the renderer flips them.
  const {m}=initializedBattle(rom,{formation:3,back,rows,terrain:0,jobs});m.call(0xb469);return m;
 }
-function initializedBattle(rom,{formation,back,rows,terrain,jobs=[0,1,2,3]}){
+export function initializedBattle(rom,{formation,back,rows,terrain,jobs=[0,1,2,3],capture}){
  check(rows.length===4&&rows.every(r=>r===0||r===1),'Entry rows');
  const f=originalFormation(rom,formation);check(!f.unresolved,'Entry formation unresolved');
- const m=presentationMachine(rom),c=m.c;c.m[0x78c3]=back?0x88:0;c.m[0x7ced]=formation&255;c.m[0x7ed8]=formation>>8;c.m[0x7cef]=terrain;
+ const m=presentationMachine(rom,{capture}),c=m.c;c.m[0x78c3]=back?0x88:0;c.m[0x7ced]=formation&255;c.m[0x7ed8]=formation>>8;c.m[0x7cef]=terrain;
  // Actual reset up to RNG initialization, then explicit table-bound counts.
  // Encounter selection/RNG is deliberately outside this diagnostic.
  segment(c,0x9e8e,0x9f28);segment(c,0xa02a,0xa0b7);c.m.set(f.counts,0x7d6f);c.call(0x9faa);c.call(0xa31f);c.call(0xb909);
