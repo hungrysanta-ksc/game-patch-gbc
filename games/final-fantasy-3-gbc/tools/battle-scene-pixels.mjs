@@ -33,12 +33,13 @@ export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0},numberOw
  for(let slot=0;slot<4;slot++)for(let sy=[40,72,96,128][slot];sy<[72,96,128,152][slot];sy++)for(let sx=160;sx<256;sx++){
   const q=bgPixel(b,back?255-sx:sx,sy);if(q.opaque){const x=back?159-(sx-80):sx-80,y=sy-sourceY[slot]+partyY[slot]+partyShift;put(x,y,q.index);if(x>=0&&x<160&&y>=0&&y<144)party[y*W+x]=1;}
  }
- const basePixels=pixels.slice(),baseUsed=new Uint8Array(W*H),numberObjects=[];
+ const backgroundPixels=pixels.slice(),basePixels=pixels.slice(),baseUsed=new Uint8Array(W*H),numberObjects=[],nativeObjects=[];
  for(let i=0;i<64;i++){
   const at=0x200+i*4,sy=c.m[at]+1,sx=c.m[at+3],tile=c.m[at+1],attr=c.m[at+2];if(sy>239)continue;
   check(!(attr&32),'Unsupported behind-BG source OBJ in scene adapter');
   const slot=i>=40?Math.floor((i-40)/6):statusOwners&&i<8?Math.floor(i/2):target;
   const owner=i<40?numberOwners[i]:null,number=owner?{sourceSlot:i,target:owner.target,enemy:owner.enemy,palette:attr&3,pixels:new Uint8Array(64)}:null;
+  let objectX,objectY,objectPixels=0;
   for(let y=0;y<8;y++)for(let x=0;x<8;x++){
    const px=attr&64?7-x:x,py=attr&128?7-y:y,k=0x1000+tile*16+py,bit=7-px,v=(b[k]>>bit&1)|((b[k+8]>>bit&1)<<1);if(!v)continue;
    const canonical=back?255-(sx+x):sx+x;let dx=back?159-(canonical-80):canonical-80,dy=sy+y-sourceY[slot]+partyY[slot]+partyShift;
@@ -56,12 +57,15 @@ export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0},numberOw
     number.x=dx-x;number.y=dy-y;number.pixels[y*8+x]=v;
    }
    if(i>=40)partyCoverage.sourcePixels++;if(statusOwners&&i<8)statusCoverage.sourcePixels++;
-   if(dx<0||dx>=160||dy<0||dy>=144)continue;if(i>=40)partyCoverage.viewportPixels++;if(statusOwners&&i<8)statusCoverage.viewportPixels++;if(owner)numberCoverage.viewportPixels++;const p=dy*W+dx;if(!owner&&!baseUsed[p]){baseUsed[p]=1;basePixels[p]=colors.readUInt16LE((16+(attr&3)*4+v)*2);}if(i>=40)party[p]=1;if(used[p])continue;used[p]=1;put(dx,dy,16+(attr&3)*4+v);
+   if(dx<0||dx>=160||dy<0||dy>=144)continue;
+   objectX=dx-x;objectY=dy-y;objectPixels++;
+   if(i>=40)partyCoverage.viewportPixels++;if(statusOwners&&i<8)statusCoverage.viewportPixels++;if(owner)numberCoverage.viewportPixels++;const p=dy*W+dx;if(!owner&&!baseUsed[p]){baseUsed[p]=1;basePixels[p]=colors.readUInt16LE((16+(attr&3)*4+v)*2);}if(i>=40)party[p]=1;if(used[p])continue;used[p]=1;put(dx,dy,16+(attr&3)*4+v);
   }
   if(number?.pixels.some(Boolean))numberObjects.push(number);
+  if(objectPixels)nativeObjects.push({sourceSlot:i,kind:owner?'number':i>=40?'party':statusOwners&&i<8?'status':'effect',x:objectX,y:objectY,tile,attr,pixels:objectPixels});
  }
  check(numberCoverage.sourcePixels===numberCoverage.viewportPixels,'Number glyph clipped by viewport');
- return {pixels,basePixels,numberObjects,numberCoverage,partyCoverage,statusCoverage,objPalette:colors.subarray(32),sourcePalettes:colors,sourcePaletteSha256:hash(b.subarray(0x3f00,0x3f20)),partyEnemyOverlapPixels:party.reduce((n,v,i)=>n+(v&&enemy[i]?1:0),0)};
+ return {pixels,backgroundPixels,basePixels,numberObjects,nativeObjects,numberCoverage,partyCoverage,statusCoverage,objPalette:colors.subarray(32),sourcePalettes:colors,sourcePaletteSha256:hash(b.subarray(0x3f00,0x3f20)),partyEnemyOverlapPixels:party.reduce((n,v,i)=>n+(v&&enemy[i]?1:0),0)};
 }
 export function originalSceneSequence(rom,{back=false,retreat=8,numbers=false,enemyValues=[65535,65535,65535,1234,65535,65535,65535,65535]}={}){
  const formation=originalFormation(rom,3),layout=formationPixels(rom,formation,{retreat}).layout;
