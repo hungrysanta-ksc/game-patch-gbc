@@ -38,15 +38,17 @@ ineffective:s->target_mask&=(uint8_t)~(128u>>s->target_slot);
 }
 uint8_t ff3_fight_resolved(FF3BattleRng *rng,Ff3Fight *s) FF3_STATE_BANKED {
  uint8_t *a=s->actor,*t=s->target,self,dual,hands,hand,row=0,inverted=0,hit[2]={0,0},stats[18],attack[5];
- uint8_t chance,evades,crit,death,consumed,i;uint16_t old_a,old_t,damage,net=0,power,hp,delta;Ff3Physical p;
+ uint8_t chance,evades,crit,death,consumed,i,run,carry=0;uint16_t old_a,old_t,damage,net=0,power,hp,delta;Ff3Physical p;
  self=(a[44]&0x87)==(t[44]&0x87);if(self)t=a;
  if((a[44]&7)>=((a[44]&128)?8:4)||(t[44]&7)>=((t[44]&128)?8:4)||s->target_slot>7||
     (a[1]&0xc0)||(a[2]&1)||(t[1]&0xc0)||(t[2]&1)||!word(a+3)||!word(t+3)||
-    s->running||((t[44]&128)&&t[56]==0x4f)||s->message_count>15)return 0;
+    ((t[44]&128)&&t[56]==0x4f)||s->message_count>(s->running?14:15))return 0;
  s->split_id=255;s->actual_hits[0]=s->actual_hits[1]=0;
  s->actor_status[0]=a[1];s->actor_status[1]=a[2];s->target_status[0]=t[1];s->target_status[1]=t[2];
  old_a=word(a+3);old_t=word(t+3);
- dual=!(a[44]&128)&&(((a[49]&0x81)==1&&(a[50]&0x81)==1)||!(a[49]|a[50]));hands=dual?2:1;
+ run=s->running&&(a[44]&128)&&!(t[44]&128);if(run)t[39]++;
+ /* Original 9F19 falls into the two-hand test if this byte wraps to zero. */
+ dual=(!(a[44]&128)||(run&&!t[39]))&&(((a[49]&0x81)==1&&(a[50]&0x81)==1)||!(a[49]|a[50]));hands=dual?2:1;
  for(i=0;i<10;i++)stats[i]=a[22+i];for(i=0;i<5;i++)stats[10+i]=t[32+i];for(i=0;i<3;i++)stats[15+i]=a[39+i];
  for(hand=0;hand<hands;hand++){
   for(i=0;i<5;i++)attack[i]=stats[hand*5+i];chance=attack[2];if(s->actor_status[0]&4)chance>>=1;
@@ -54,7 +56,7 @@ uint8_t ff3_fight_resolved(FF3BattleRng *rng,Ff3Fight *s) FF3_STATE_BANKED {
   hit[hand]=ff3_physical_hits(rng,attack[1],chance);
   chance=stats[12];if(s->target_status[0]&4)chance>>=1;
   evades=ff3_physical_hits(rng,(s->target_status[0]&0x28)||t[39]?0:stats[11],chance);if(row)evades++;
-  hit[hand]=hit[hand]<evades?0:hit[hand]-evades;
+  carry=hit[hand]>=evades;hit[hand]=carry?hit[hand]-evades:0;
   if(!hit[hand]){a[39]=0;continue;}
   p.multiplier=(t[18]&attack[0])?4:(stats[10]==2||(stats[10]&attack[0]))?1:2;
   power=attack[3];if(!(a[44]&128))power+=(uint16_t)a[56]+a[57];
@@ -84,10 +86,13 @@ uint8_t ff3_fight_resolved(FF3BattleRng *rng,Ff3Fight *s) FF3_STATE_BANKED {
  if(!(hit[0]|hit[1])){put(s->target_number,0x4000);goto finish;}
  if(!self){hp=word(a+3);if(old_a>=hp){put(s->actor_number,old_a-hp);if((a[22]|a[27])&1)s->messages[s->message_count]=0x27;}
   else{put(s->actor_number,(hp-old_a)|0x8000);s->messages[s->message_count]=(a[44]&128)?0x26:0x25;}}
- consumed=s->messages[s->message_count]!=255;if(consumed)s->message_count++;
+ consumed=s->messages[s->message_count]!=255;carry=!consumed;if(consumed)s->message_count++;
  if(!(word(s->actor_number)&0x7fff)){put(s->actor_number,0xffff);if(consumed)s->messages[--s->message_count]=255;}
+ if(inverted)carry=word(t+3)>=old_t;
  delta=inverted?(uint16_t)((word(t+3)-old_t)|0x8000):net;put(s->target_number,delta);
 finish:
+ /* A275 uses the incoming carry (there is no SEC before SBC #1). */
+ if(run){t[39]-=1+!carry;if(hit[0])queue(s,0x55);}
  if(!(a[44]&128)){
   if((a[49]&0x81)!=1&&!hit[1]){s->animation_hits[1]=hit[0];s->animation_hits[0]=0;}
   if(a[51]&4)s->animation_hits[0]=hit[0]+hit[1];
