@@ -3,6 +3,18 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "docs/battle-render-architecture.md",
+      "bytes": 9368,
+      "sha256": "b3cedcc783e6ae9bd4e2229a95ffa1f77fec38d05fa6d8b951eb53ad42e45643",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-render-architecture.mjs",
+      "bytes": 2954,
+      "sha256": "6e1f4f04a009a415646be4feed9081b871c9fce21eb5045d72c413c1d54a7b2c",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "docs/audio-refill-latency.md",
       "bytes": 9141,
       "sha256": "48fbd298c4654faac8bd8ef70151c08c42a37ca49b7422eaaa0a97b1e48aea11",
@@ -1534,8 +1546,8 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 45406,
-      "sha256": "b1b3528d158e217ce72b9a6cc58c9449187bf6e7717adcfe80d6d25106049f46",
+      "bytes": 45924,
+      "sha256": "f0e1c93968f05e5d2541cfb2e34a121b03c580e48d50eaa4b8938a88ce6654be",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1546,8 +1558,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 21141,
-      "sha256": "dce98767db57f5d83d316694979095dda9992eb6e7f47214d9bf15eea8744044",
+      "bytes": 21784,
+      "sha256": "d23a9348cb3e34a819f0efdde502c99a952b465111cf68ce1b02366f1eaef018",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2368,8 +2380,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 13749,
-      "sha256": "5da3508630aea748018a04d024138580924f94e89c8e2d23512846307fb90a9e",
+      "bytes": 13827,
+      "sha256": "aea0dd04c1f01ae47056362bb19ae16d9d14dbef3cd783d8eab1a31a30da4f71",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
