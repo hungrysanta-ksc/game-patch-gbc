@@ -124,4 +124,5 @@ if(timelineMode||streamMode){check(bytes.subarray(symbols._ff3_battle_oam_refres
 if(streamMode){check(symbols._scene_dma_begin>0&&symbols._scene_dma_begin<symbols._scene_dma_end&&symbols._scene_dma_end<0x4000,'Fixed DMA critical observation boundaries');report.memory={...report.memory,residentBgTiles:0,bgPageCapacity:256,bgPageBanks:[0,1],bgPageRange:[0x8800,0x9800],dmaBytesMax:256};report.scope=scene.battle.scope;}
 if(timelineMode)report.scope='Autonomous original non-reflect hit-script entries and final clear; resident diagnostic atlas, Korean window and independent field-audio stress; not full battle gameplay';
 if(itemMode)report.items=items.report;
+if(openingMode)report.openingPipeline={lookahead:1,regularEntriesOnly:true,sourceAcknowledgementAfterHold:true};
 await fs.writeFile(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify({romSha256:report.romSha256,jobs:jobs.length,frames:frames.length,palettes,textSource:chosen.source,pages:chosen.pages.length,memory:report.memory}));

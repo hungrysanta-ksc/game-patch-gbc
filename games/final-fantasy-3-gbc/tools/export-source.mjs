@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/battle-opening-pipeline.md','tools/battle-opening-pipeline.mjs',
  'docs/battle-opening-performance.md','tools/battle-opening-performance.mjs',
  'docs/battle-opening-video.md','src/battle-opening-video.inc','tools/battle-opening-assets.mjs','tests/battle-opening-video.test.mjs',
  'docs/battle-opening-flow.md','src/battle-opening.h','src/battle-opening.c','src/battle-opening-test.c','tools/battle-opening-source.mjs','tools/build-battle-opening.mjs','tools/audit-battle-opening.mjs','tests/battle-opening.test.mjs',
