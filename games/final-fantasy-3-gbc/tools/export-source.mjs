@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/battle-opening-flow.md','src/battle-opening.h','src/battle-opening.c','src/battle-opening-test.c','tools/battle-opening-source.mjs','tools/build-battle-opening.mjs','tools/audit-battle-opening.mjs','tests/battle-opening.test.mjs',
  'docs/battle-entry-context.md','src/battle-context.h','src/battle-context.c','src/battle-context-test.c','tools/battle-context-source.mjs','tools/build-battle-context.mjs','tests/battle-context.test.mjs',
  'docs/battle-fight.md','src/battle-fight.h','src/battle-fight.c','src/battle-fight-test.c','tools/battle-fight-source.mjs','tools/build-battle-fight.mjs','tests/battle-fight.test.mjs',
  'docs/battle-weapon-duration.md','tools/battle-weapon-duration.mjs','tools/prepare-battle-weapon-duration.mjs','tools/verify-battle-weapon-duration.mjs','tools/battle-weapon-audit.lua','tools/ObserveBattleWeapon/Program.cs','tools/ObserveBattleWeapon/DurationCapture.csproj','tests/battle-weapon-duration.test.mjs',
