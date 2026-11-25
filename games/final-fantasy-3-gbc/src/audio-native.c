@@ -207,15 +207,24 @@ if(!ff3_error)dispatch_due();if(native_playing){CRITICAL{TIMA_REG=TMA_REG=128;IF
 #ifdef FF3_TEXT_AUDIO
 /* Fixed-bank cooperative service. Text code may call from any mapped bank;
  * the timer consumer never calls the producer or changes ROM/WRAM banks. */
-void ff3_native_service(void) NONBANKED {uint8_t op,arg;native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_playing){op=native_request;arg=native_argument;start(0);native_request=op;native_argument=arg;}while(preparing&&!full()){
+void ff3_native_service(void) NONBANKED {uint8_t op,arg;
 #ifdef FF3_OPENING_VIDEO
- /* A VBlank may finish the caller's transfer while this producer refills.
-  * Return after two source ticks are queued instead of chasing the third
-  * tick after the awaited work is already done. Never interrupt a packet,
-  * defer a pending command, or lower the target before C composition. */
- if(cache_request&&!native_request&&!battle_active&&
-    ((text_transfer_busy&&!transfer_pending)||(scene_phase==4&&!scene_pending))&&
-    (int16_t)(prepare_due-ff3_clock_now())>136)break;
+ int16_t lead;
+#endif
+native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_playing){op=native_request;arg=native_argument;start(0);native_request=op;native_argument=arg;}while(preparing
+#ifndef FF3_OPENING_VIDEO
+ &&!full()
+#endif
+ ){
+#ifdef FF3_OPENING_VIDEO
+ /* Keep the established three-tick budget and completed-wait-only yield.
+  * One atomic clock sample serves both decisions. Check its lead before
+  * reading the caller's flags; no packet or pending command is skipped. */
+ if(((native_tail+1)&15)==native_head)break;
+ lead=(int16_t)(prepare_due-ff3_clock_now());
+ if(lead>FF3_AUDIO_AHEAD)break;
+ if(lead>136&&cache_request&&!native_request&&!battle_active&&
+    ((text_transfer_busy&&!transfer_pending)||(scene_phase==4&&!scene_pending)))break;
 #endif
 #if defined(FF3_COMPOSITION_CACHE) && !defined(FF3_OPENING_VIDEO)
  /* Same two-tick cooperative yield used by exploration. Do not hold a due

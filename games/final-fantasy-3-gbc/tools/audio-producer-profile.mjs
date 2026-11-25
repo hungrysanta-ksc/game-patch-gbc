@@ -2,8 +2,9 @@ import {check} from './source.mjs';
 import fs from 'node:fs/promises';
 export async function audioProducerAudit(dir,symbols,rom){
  const sites=audioProducerSites(await fs.readFile(dir+'/obj/12.lst','utf8'),symbols,rom);
- return '\nlocal audioProducerBusy='+symbols.native_busy+';local audioProducerRequest='+symbols.scene_request+'\nlocal audioProducerSites={'+sites.map(s=>'{at='+s.at+',finish='+s.end+',kind='+s.kind+'}').join(',')+'}\n'+await fs.readFile(new URL('./audio-producer-audit.lua',import.meta.url),'utf8');
+ return '\nlocal audioProducerBusy='+symbols.native_busy+';local audioProducerRequest='+symbols.scene_request+'\nlocal audioProducerSites={'+sites.map(s=>'{at='+s.at+',finish='+s.end+',kind='+s.kind+'}').join(',')+'}\n'+await fs.readFile(new URL('./audio-producer-audit.lua',import.meta.url),'utf8')+await refillAudit(symbols);
 }
+export async function refillAudit(s){const fields={busy:s.native_busy,request:s.scene_request,phase:s.scene_phase,transfer:s.text_transfer_busy,queue:s.native_queue,head:s.native_head,tail:s.native_tail,clock:s.native_clock,profile:s.action_profile,step:s.action_step};for(const [k,v]of Object.entries(fields))check(Number.isInteger(v)&&v>=0xc000&&v<0xe000,'Refill RAM symbol '+k);return '\nlocal refillAddresses={'+Object.entries(fields).map(([k,v])=>k+'='+v).join(',')+'}\n'+await fs.readFile(new URL('./audio-refill-audit.lua',import.meta.url),'utf8');}
 export const audioCostNames=['packetWork','originalVm','outputConversion','metadataAndHashes','serviceControl','snapshots'];
 export function audioProducerCosts(log,parents){
  const rows=[...new Set([...log.matchAll(/audio-cost:([\d,]+)/g)].map(m=>m[1]))].map(s=>s.split(',').map(Number)),seen=new Set();
