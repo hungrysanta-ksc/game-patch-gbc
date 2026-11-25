@@ -29,8 +29,9 @@ export function makeMapAssets(rom,{verify=true}={}){
  const profiles=[];for(let world=0;world<3;world++)for(let id=0;id<256;id++){const s=mapSelection(world,id),p=groups.properties[s.property],[layout,graphics]=groups.selection[s.selection],tileset=p[0]>>5;profiles.push({world,id,...s,layout,graphics,tileset,highPatternTiles:[...new Set([...groups.layout[layout]].flatMap(m=>[...groups.metas[tileset].subarray(m*4,m*4+4)]).filter(x=>x>=112))].sort((a,b)=>a-b)});}
  return {groups,provenance,comparisons,profiles};
 }
-export function packMapAssets(assets,order=kinds){
- const banks=new Map(),descriptors=[],groups=[];let bank=16,offset=0,index=0;
+export function packMapAssets(assets,order=kinds,{firstBank=16}={}){
+ check(Number.isInteger(firstBank)&&firstBank>=16&&firstBank<256,'First asset bank');
+ const banks=new Map(),descriptors=[],groups=[];let bank=firstBank,offset=0,index=0;
  const put=(n,at,bytes)=>{if(!banks.has(n))banks.set(n,Buffer.alloc(16384));bytes.copy(banks.get(n),at);};
  for(const kind of order){groups.push({kind,offset:index*5,count:assets.groups[kind].length});for(const bytes of assets.groups[kind]){check(bytes.length>0&&bytes.length<=16384,'Asset empty or exceeds bank');if(offset+bytes.length>16384){bank++;offset=0;}const d=Buffer.alloc(5);d[0]=bank;d.writeUInt16LE(offset,1);d.writeUInt16LE(bytes.length,3);descriptors.push(d);put(bank,offset,bytes);offset+=bytes.length;index++;}}
  const directory=Buffer.concat(descriptors);check(directory.length<=16384&&bank<256,'Asset catalog capacity');put(12,0,directory);

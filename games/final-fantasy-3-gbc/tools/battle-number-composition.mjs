@@ -8,8 +8,8 @@ export function composeBattleNumbers(frame,{width=168,height=152,objOnlyRow=-1}=
  // Palette 7 is the original numeral palette; GBC OBJ palette 3 owns it.
  // A different residual set lets the party live mostly in BG while the
  // moving numerals retain their original 8x8 boundaries and OAM priority.
- const objPalette=Buffer.concat([0,1,4,7].map(p=>sourcePalettes.subarray(p*8,p*8+8)));
- const palettes=pixelCompositionPalettes([basePixels],objPalette,{width,height,maxPalettes:7});
+ const objPalette=Buffer.concat((frame.residualPalettes??[0,1,4,7]).map(p=>sourcePalettes.subarray(p*8,p*8+8)));
+ const palettes=frame.fixedSourcePalettes?Array.from({length:7},(_,p)=>Array.from({length:4},(_,i)=>sourcePalettes.readUInt16LE(p*8+i*2))):pixelCompositionPalettes([basePixels],objPalette,{width,height,maxPalettes:7,weighted:!!frame.weightedPalettes});
  const base=compilePixelComposition(basePixels,objPalette,{width,height,palettes,objOnlyRow}),count=numberObjects.length;
  const sprites=[...numberObjects.map((o,tile)=>({x:o.x,y:o.y,h:8,palette:3,tile})),...base.sprites.map(s=>({...s,tile:s.tile+count}))];
  check(sprites.length<=40,'Composition OAM capacity');const lines=new Uint8Array(height);

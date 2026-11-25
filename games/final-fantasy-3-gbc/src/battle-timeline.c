@@ -8,6 +8,10 @@
 volatile uint8_t battle_active,battle_entry=255,battle_ready,battle_serial;
 volatile uint16_t battle_run,battle_origin,battle_due,battle_committed,battle_prepared,battle_misses;
 static uint8_t next_entry,supplied_entry,supplied_page;
+#ifdef FF3_OPENING_VIDEO
+const uint8_t *battle_oam_source;
+uint8_t battle_oam_bank,battle_oam_storage,battle_oam_objects;
+#endif
 extern volatile uint16_t native_clock;
 void ff3_battle_supply(uint8_t entry,uint8_t page) NONBANKED {
  if(battle_ready){scene_error=12;return;}
@@ -65,6 +69,17 @@ void ff3_battle_vblank(void) NONBANKED {
 #endif
   return;}
  battle_due=battle_origin+battle_offsets[next_entry];
+#ifdef FF3_OPENING_VIDEO
+ /* Pin the whole numeral run before admission. Copy the next immutable OAM
+  * immediately after publication, with timer IRQs enabled. The main-thread
+  * music decoder cannot delay a subsequent numeral supply. Restore ROM bank;
+  * WRAM bank and stack never move. Only the inactive shadow is written. */
+ {uint8_t i,page=supplied_page^1,*oam=page?scene_oam1:scene_oam0;
+  ff3_scene_rom_copy(battle_oam_bank,battle_oam_source+(uint16_t)next_entry*160,oam,160);
+  for(i=0;i<battle_oam_objects;i++)oam[i*4+2]+=battle_oam_storage*64;
+  ff3_battle_supply(next_entry,page);
+ }
+#endif
 #ifdef FF3_NUMBER_TIMELINE
  __asm di __endasm;
 #endif

@@ -30,10 +30,10 @@ export function sharedCompositionPalettes(scenes,{maxPalettes=8}={}){
 export function compileComposition(scene,{palettes}={}){
  return compilePixelComposition(composePixels(scene),scene.objPalette,{width:scene.width??160,height:scene.height??144,palettes});
 }
-export function pixelCompositionPalettes(images,objPalette,{width=160,height=144,maxPalettes=8}={}){
+export function pixelCompositionPalettes(images,objPalette,{width=160,height=144,maxPalettes=8,weighted=false}={}){
  check(images.length>0&&width>0&&height>0&&width%8===0&&height%8===0,'Pixel palette dimensions');check([16,32].includes(objPalette.length)&&maxPalettes>=1&&maxPalettes<=8,'Pixel palette budget');
  const cells=new Map();for(const pixels of images){check(pixels.length===width*height,'Pixel dimensions');for(let ty=0;ty<height/8;ty++)for(let tx=0;tx<width/8;tx++){
-  const values=[...new Set(Array.from({length:64},(_,i)=>pixels[(ty*8+(i>>3))*width+tx*8+(i&7)]))].sort((a,b)=>a-b);cells.set(values.join(),values);
+  const values=[...new Set(Array.from({length:64},(_,i)=>pixels[(ty*8+(i>>3))*width+tx*8+(i&7)]))].sort((a,b)=>a-b);cells.set(weighted?cells.size:values.join(),values);
  }}return choosePalettes([...cells.values()],Array.from({length:objPalette.length/8},(_,p)=>Array.from({length:4},(_,i)=>objPalette.readUInt16LE((p*4+i)*2))),maxPalettes);
 }
 // objOnlyRow reserves one black BG tile row for a UI overlay. Its original

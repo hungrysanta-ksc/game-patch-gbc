@@ -267,7 +267,11 @@ static void prepare(uint8_t page){uint8_t i,bank,old,*oam=page?scene_oam1:scene_
  if(last_frame[page]==255)old=SCENE_VISUAL_COUNT;
  else {read_frame(last_frame[page],&previous);old=previous.visual;}
 #ifdef FF3_BATTLE_STREAM
+#ifdef FF3_OPENING_VIDEO
+ {uint8_t ref[3];ff3_scene_rom_copy(target.bank,target.spans+(uint16_t)old*3,ref,3);ff3_scene_rom_copy(ref[0],(const void*)((uint16_t)ref[1]|((uint16_t)ref[2]<<8)),scene_input,48);}
+#else
  ff3_scene_rom_copy(target.bank,target.spans+(uint16_t)old*48,scene_input,48);
+#endif
  queue_mask(target.bank,target.background,page,0x8800u,scene_input+10,32);
 #else
  ff3_scene_rom_copy(target.bank,target.spans+(uint16_t)old*8,scene_input,8);
@@ -365,9 +369,13 @@ static void play_numbers(void){uint8_t n,i,page=active_page^1,storage=page,*oam;
   * numeral VBlank, not by a main-loop observer that may resume a frame later. */
  action_next_profile=action_profile_index;action_next_live=action_mask;action_next_frame=scene_page;
 #endif
+#ifdef FF3_OPENING_VIDEO
+ battle_oam_source=run.oam;battle_oam_bank=run.bank;battle_oam_storage=storage;battle_oam_objects=run.objects;
+#endif
  ff3_battle_start(page);
  while(battle_entry==255&&!scene_error){ff3_native_service();__asm halt __endasm;}
  scene_phase=8;
+#ifndef FF3_OPENING_VIDEO
  for(n=1;n<SCENE_NUMBER_ENTRIES&&!scene_error;n++){
   page^=1;oam=page?scene_oam1:scene_oam0;
   ff3_scene_rom_copy(run.bank,run.oam+(uint16_t)n*160,oam,160);
@@ -375,7 +383,11 @@ static void play_numbers(void){uint8_t n,i,page=active_page^1,storage=page,*oam;
   ff3_battle_supply(n,page);
   while(battle_entry<n&&battle_active&&!scene_error){ff3_native_service();__asm halt __endasm;}
  }
+#endif
  while(battle_active&&!scene_error){ff3_native_service();__asm halt __endasm;}
+#ifdef FF3_OPENING_VIDEO
+ page=storage^((SCENE_NUMBER_ENTRIES-1)&1);
+#endif
  /* Both shadow buffers now differ from the regular scene-frame cache.
   * The next ordinary owner must rebuild, even for an identical clear view. */
  active_page=storage;active_frame=255;last_frame[0]=last_frame[1]=255;
@@ -395,6 +407,9 @@ static void play_numbers(void){uint8_t n,i,page=active_page^1,storage=page,*oam;
 #endif
 #ifdef FF3_ACTION_FLOW
 #include "battle-action.inc"
+#ifdef FF3_OPENING_VIDEO
+#include "battle-opening-video.inc"
+#endif
 #endif
 #ifdef FF3_SELECTION_FLOW
 #include "battle-selection.inc"
@@ -410,7 +425,12 @@ void ff3_scene_run(void) BANKED {
 #endif
  if(scene_request==8)selection_begin();else if(scene_request==9)selection_input();else
  #endif
- if(scene_request!=7)scene_error=15;else play_action();
+ if(scene_request!=7)scene_error=15;else
+#ifdef FF3_OPENING_VIDEO
+ play_opening();
+#else
+ play_action();
+#endif
 #else
 #ifdef FF3_NUMBER_TIMELINE
  if(scene_request==6)play_numbers();else

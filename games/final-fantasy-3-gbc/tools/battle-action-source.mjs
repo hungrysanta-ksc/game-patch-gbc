@@ -11,7 +11,7 @@ import {messageWindowDescriptors} from './battle-ui-observation.mjs';
 // FA0E switches $34/$35 to $2E/$2F without changing that saved bank.
 const select=(c,p)=>{c.banks=[p*2,p*2+1,0x3e,0x3f];};
 const ret=c=>{c.pc=((c.pop()|(c.pop()<<8))+1)&65535;};
-export function originalActionFlow(rom,{back=false,enemy=false}={}){
+export function originalActionFlow(rom,{back=false,enemy=false,health=[[9999,9999],[1234,5678],[56,128],[999,4321]]}={}){
  const formation=originalFormation(rom,3),layout=formationPixels(rom,formation,{retreat:8}).layout;
  const frames=[],events=[],hp=[],strings=[];let phase='setup',command=255,numberFrame=null,numberOwners=[],numberActive=false,numberPending=false,record=false,live=0,geometryMap;
  const capture=(boundary,c,ppu)=>{
@@ -26,7 +26,6 @@ export function originalActionFlow(rom,{back=false,enemy=false}={}){
  const {m}=initializedBattle(rom,{formation:3,back,rows:[0,0,0,0],terrain:0,capture}),c=m.c;m.call(0xb469);geometryMap=Buffer.from(m.ppu.bytes.subarray(0x2000,0x2800));
  c.m[0x57]=0;c.m[0x58]=0x61;c.m[0x5b]=0;c.m[0x5c]=0x75;c.m[0x6e]=0;c.m[0x6f]=0x75;
  c.m[0x6010]=4;c.m[0x7cf3]=1;c.m[0x7ce8]=255;c.m[0x78d3]=0;
- const health=[[9999,9999],[1234,5678],[56,128],[999,4321]];
  for(let i=0;i<4;i++){c.m.set([0x80+i,255,255,255,255,255],0x6106+i*64);c.m[0x7500+i*64]=i;c.m[0x7501+i*64]=[0,3,4,17][i];c.m[0x7503+i*64]=health[i][0]&255;c.m[0x7504+i*64]=health[i][0]>>8;c.m[0x7505+i*64]=health[i][1]&255;c.m[0x7506+i*64]=health[i][1]>>8;}
  const step=c.step;
  c.step=function(){

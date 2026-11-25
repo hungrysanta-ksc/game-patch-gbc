@@ -15,7 +15,7 @@ export function actionComposition(f){
  const shift=p=>{const q=new Uint16Array(168*152).fill(f.sourcePalettes.readUInt16LE(0));q.set(p.subarray(0,168*146),168*6);return q;};
  if(f.cursorLayout)check(f.sourcePalettes.readUInt16LE(0)===0,'Selection padding requires original black background');
  const shifted={...f,pixels:shift(f.pixels),basePixels:shift(f.basePixels),numberObjects:f.numberObjects.map(o=>({...o,y:o.y+6}))};
- const obj=Buffer.concat([0,1,4,7].map(p=>f.sourcePalettes.subarray(p*8,p*8+8))),c=f.numberObjects.length?composeBattleNumbers(shifted,{objOnlyRow:f.cursorLayout?13:-1}):compilePixelComposition(shifted.pixels,obj,{width:168,height:152,objOnlyRow:f.cursorLayout?13:-1,palettes:pixelCompositionPalettes([shifted.pixels],obj,{width:168,height:152,maxPalettes:7})});
+ const obj=Buffer.concat((f.residualPalettes??[0,1,4,7]).map(p=>f.sourcePalettes.subarray(p*8,p*8+8))),c=f.numberObjects.length?composeBattleNumbers(shifted,{objOnlyRow:f.cursorLayout?13:-1}):compilePixelComposition(shifted.pixels,obj,{width:168,height:152,objOnlyRow:f.cursorLayout?13:-1,palettes:f.fixedSourcePalettes?Array.from({length:7},(_,p)=>Array.from({length:4},(_,i)=>f.sourcePalettes.readUInt16LE(p*8+i*2))):pixelCompositionPalettes([shifted.pixels],obj,{width:168,height:152,maxPalettes:7,weighted:!!f.weightedPalettes})});
  check(compositionWords(c).every((v,i)=>v===shifted.pixels[i]),'Shifted V6 geometry lossless');return c;
 }
 function literal(text,id){const i=text.sourceIds.indexOf(id);check(i>=0,'Reviewed battle text binding required: '+id);const words=[];for(let p=0;p<text.messages[i].length;p+=2){const v=text.messages[i].readUInt16LE(p);if(v===0)break;check(v>=0x8000,'Unsupported battle text control '+id);words.push(v-0x8000);}return words;}

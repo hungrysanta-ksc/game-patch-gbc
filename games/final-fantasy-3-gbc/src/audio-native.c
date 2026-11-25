@@ -72,6 +72,10 @@ static void silence(void){NR12_REG=NR22_REG=NR32_REG=NR42_REG=0;}
 static void text(const char *p){while(*p)putchar(*p++);}
 #endif
 static void command(uint8_t op,uint8_t arg){switch(op){case 2:case 3:if(!ff3_music_request(&ff3_state,arg,op==3))ff3_error=6;break;case 4:ff3_music_resume(&ff3_state);break;case 5:case 6:ff3_music_stop(&ff3_state,op==6);break;case 7:if(!ff3_audio_effect(&ff3_state,arg))ff3_error=6;break;case 8:ff3_audio_stop_effect(&ff3_state);break;default:ff3_error=6;}}
+#ifdef FF3_OPENING_VIDEO
+volatile uint16_t native_external_serial,native_external_tick;
+volatile uint8_t native_external_op,native_external_arg;
+#endif
 static void put16(uint8_t at,uint16_t value){slot[at]=(uint8_t)value;slot[at+1]=value>>8;}
 static void put32(uint8_t at,uint32_t value){put16(at,(uint16_t)value);put16(at+2,(uint16_t)(value>>16));}
 /* Publish one immutable completed-event record. Banked storage is diagnostic
@@ -103,7 +107,11 @@ static void prepare(void){uint8_t end=0,advanced=0;
   ff3_scene_before(native_ticks);
   #else
   if(automatic){while(plan_index<NATIVE_PLAN_COUNT&&native_plan_ticks[plan_index]==native_ticks){command(native_plan_ops[plan_index],native_plan_args[plan_index]);plan_index++;}}
+#ifdef FF3_OPENING_VIDEO
+  if(native_request&&native_request!=255){command(native_request,native_argument);native_external_tick=(uint16_t)native_ticks;native_external_op=native_request;native_external_arg=native_argument;native_external_serial++;native_request=0;}
+#else
   else if(native_request&&native_request!=255){command(native_request,native_argument);native_request=0;}
+#endif
   #endif
   ff3_pop_seen=0;ff3_engine_tick();
   #ifdef FF3_SCENE
@@ -149,7 +157,7 @@ if(!ff3_error)dispatch_due();if(native_playing){CRITICAL{TIMA_REG=TMA_REG=128;IF
 /* Fixed-bank cooperative service. Text code may call from any mapped bank;
  * the timer consumer never calls the producer or changes ROM/WRAM banks. */
 void ff3_native_service(void) NONBANKED {uint8_t op,arg;native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_playing){op=native_request;arg=native_argument;start(0);native_request=op;native_argument=arg;}while(preparing&&!full()){
-#ifdef FF3_COMPOSITION_CACHE
+#if defined(FF3_COMPOSITION_CACHE) && !defined(FF3_OPENING_VIDEO)
  /* Same two-tick cooperative yield used by exploration. Do not hold a due
   * display update hostage to repeatedly refilling the third lookahead tick. */
  if(cache_request&&(int16_t)(prepare_due-ff3_clock_now())>136)break;
