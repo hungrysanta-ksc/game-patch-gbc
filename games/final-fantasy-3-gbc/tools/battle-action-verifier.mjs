@@ -66,6 +66,7 @@ export async function verifyAction({data,report,actual,cfg,dir,out,output,romSha
  if(opening)result.phaseCosts=phaseCosts;
  if(report.openingPipeline){
   result.callerCosts=(await import('./battle-opening-costs.mjs')).openingCosts(log,actual.pages);
+  result.audioProducerCosts=(await import('./audio-producer-profile.mjs')).audioProducerCosts(log,result.callerCosts);
   const p=actual.openingPipeline,expected=profiles.reduce((sum,profile)=>sum+profile.entries.slice(0,-1).filter((e,i)=>e.run===255&&profile.entries[i+1].run===255).length,0)*2;
   check(p&&p.prefetches===expected&&p.overlapTicks>0&&p.late<=p.prefetches,'Every eligible lookahead and measured overlap');
   check(p.overlapTicks<report.audio.ticks*4096/60,'Bounded overlap clock');

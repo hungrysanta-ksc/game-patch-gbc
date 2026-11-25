@@ -1,0 +1,16 @@
+import fs from 'node:fs/promises';import {ROOT,check,hash} from './source.mjs';import {openingCosts} from './battle-opening-costs.mjs';import {audioProducerCosts} from './audio-producer-profile.mjs';
+const base=process.argv[2];check(base,'Usage: node tools/audio-producer-performance.mjs <PR51-baseline-folder>');const read=async p=>JSON.parse(await fs.readFile(p));
+const before=await read(base+'/report.json'),old=await read(base+'/load.json'),profile=await read(base+'/profile.json'),after=await read(ROOT+'/build/battle-opening-video/report.json'),actual=await read(ROOT+'/evidence/battle-opening-video/load.json'),result=await read(ROOT+'/evidence/battle-opening-video/load-result.json');
+check(before.romSha256==='6372bb8522117bcd2ef8a0bc8a308a9fa7f0775e5f19fe6920a198031990206f'&&old.romSha256===before.romSha256&&profile.romSha256===before.romSha256,'PR 51 identity');
+check(after.romSha256===actual.romSha256&&result.romSha256===actual.romSha256&&actual.coreSha256===old.coreSha256&&profile.coreSha256===old.coreSha256,'Verified candidate/core identity');
+for(const k of ['sourceSha256','frames','battle','text','audio'])check(JSON.stringify(before[k])===JSON.stringify(after[k]),'Unchanged source contract '+k);
+check(actual.pages.length===8&&old.pages.length===8&&profile.pages.length===1&&!profile.done,'Eight acceptance requests / bounded baseline');
+check(profile.pages[0].seconds===old.pages[0].seconds,'Observers preserve baseline timing');
+const runs=actual.pages.map((p,i)=>{const b=old.pages[i];check(p.op===b.op&&p.page===b.page&&p.seconds<b.seconds,'Every original route improves');return {profile:i%4,cycle:i>>2,beforeMs:b.seconds*1000,afterMs:p.seconds*1000,reductionPercent:(1-p.seconds/b.seconds)*100};});
+const log=await fs.readFile(base+'/profile.json.lua.log','utf8'),baseline=audioProducerCosts(log,openingCosts(log,profile.pages))[0],candidate=result.audioProducerCosts[0];
+check(result.openingPipeline.sourceHoldsPreserved&&result.numberTimeline.timingGatePassed&&!result.maxLate&&!result.underruns,'Preserved source waits/numbers/audio');
+const probe=await read(ROOT+'/build/audio-read-probe/result.json'),objects=await read(ROOT+'/build/audio-read-probe/object-identities.json');
+check(probe.status===1&&!probe.failure&&probe.testCase===327680&&probe.coreSha256===actual.coreSha256&&hash(await fs.readFile(ROOT+'/build/audio-read-probe/audio-read-probe.gbc'))===probe.romSha256,'Exhaustive GBC read probe');
+for(const o of objects)check(hash(await fs.readFile(ROOT+'/build/battle-opening-video/obj/'+o.path))===o.sha256,'Probe uses candidate engine object '+o.path);
+const output={baselineRomSha256:before.romSha256,romSha256:after.romSha256,runs,baseline,candidate,probe,wholeSceneTimingGatePassed:false,scope:'Same bounded opening fixtures. Exclusive elapsed costs include nested IRQs; compare time per call as well as shorter request totals.'};
+await fs.writeFile(ROOT+'/evidence/battle-opening-video/audio-performance.json',JSON.stringify(output,null,2));console.log(JSON.stringify(output,null,2));
