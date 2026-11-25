@@ -40,14 +40,15 @@ export function residentOam(p,f,a){const out=Buffer.alloc(160),party=v6PartyOam(
  for(let y=0;y<144;y++)check(Array.from({length:40},(_,i)=>y>=out[i*4]-16&&y<out[i*4]-8).filter(Boolean).length<=10,'Resident native scanline budget');return out;
 }
 const rgb=v=>{const r=v&31,g=(v>>5)&31,b=v>>10;return [Math.min(240,(r*26+g*4+b*2)>>2),Math.min(240,(g*24+b*8)>>2),Math.min(240,(r*6+g*4+b*22)>>2)];};
-export function residentRgb(p,f,a){const map=residentMap(a,residentScroll(f.state)),oam=residentOam(p,f,a),tiles=nativePartyTiles(p.chr),out=Buffer.alloc(160*144*3),scroll=residentScroll(f.state)&255;
+export function residentRgb(p,f,a,terrainPixel){const map=residentMap(a,residentScroll(f.state)),oam=residentOam(p,f,a),tiles=nativePartyTiles(p.chr),out=Buffer.alloc(160*144*3),scroll=residentScroll(f.state)&255;
  for(let y=0;y<144;y++)for(let x=0;x<160;x++){
   let color=0;if(f!==p.frames[0]&&y>=16&&y<104){const px=(x+scroll)&255,at=((y-16)>>3)*32+(px>>3),t=map[at]*16+(y&7)*2,bit=7-(px&7),v=(a.patterns[t]>>bit&1)|((a.patterns[t+1]>>bit&1)<<1);color=a.palette.readUInt16LE(((map[352+at]&7)*4+v)*2);}
+  if(terrainPixel&&y<11)color=terrainPixel(x,y);
   for(let i=0;i<40;i++){const at=i*4,sx=oam[at+1]-8,sy=oam[at]-16,attr=oam[at+3];if(x<sx||x>=sx+8||y<sy||y>=sy+8)continue;const xx=attr&32?7-(x-sx):x-sx,yy=attr&64?7-(y-sy):y-sy,t=oam[at+2]*16+yy*2,bits=attr&8?a.patterns:tiles,v=(bits[t]>>(7-xx)&1)|((bits[t+1]>>(7-xx)&1)<<1);if(v){const palette=attr&8?a.palette:p.pal;color=palette.readUInt16LE((((attr&7)%4)*4+v)*2);break;}}
   out.set(rgb(color),(y*160+x)*3);
  }return out;
 }
-export function originalResidentRgb(p,f){const c={m:new Uint8Array(65536)};c.m.fill(0xf0,0x200,0x300);c.m.set(f.original,0x2a0);c.m[15]=f.state[29];c.m[7]=f.state[32];
- const words=scenePixels(c,{bytes:f.ppu},{back:p.back,layout:{shift:8},partyY:[10,34,58,82],terrainHeight:0}).pixels,out=Buffer.alloc(160*144*3);
+export function originalResidentRgb(p,f,terrainHeight=0){const c={m:new Uint8Array(65536)};c.m.fill(0xf0,0x200,0x300);c.m.set(f.original,0x2a0);c.m[15]=f.state[29];c.m[7]=f.state[32];
+ const words=scenePixels(c,{bytes:f.ppu},{back:p.back,layout:{shift:8},partyY:[10,34,58,82],terrainHeight}).pixels,out=Buffer.alloc(160*144*3);
  for(let y=0;y<144;y++)for(let x=0;x<160;x++)out.set(rgb(words[y*168+x]),(y*160+x)*3);return out;
 }

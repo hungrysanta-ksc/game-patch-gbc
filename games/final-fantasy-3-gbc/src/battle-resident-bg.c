@@ -4,6 +4,7 @@
 #include "resident-bg-assets.h"
 #include "text-vblank.h"
 #include "memory.h"
+#include "platform.h"
 void ff3_native_service(void) NONBANKED;
 volatile uint8_t resident_scroll,resident_page,resident_error;
 volatile uint16_t resident_map_bytes,resident_map_updates;
