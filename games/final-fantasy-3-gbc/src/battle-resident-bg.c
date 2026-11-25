@@ -6,6 +6,7 @@
 #include "memory.h"
 #include "platform.h"
 void ff3_native_service(void) NONBANKED;
+void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED;
 volatile uint8_t resident_scroll,resident_page,resident_error;
 volatile uint16_t resident_map_bytes,resident_map_updates;
 volatile uint16_t resident_max_fill,resident_max_transfer,resident_max_service;
@@ -22,12 +23,12 @@ void ff3_resident_load(uint8_t profile) NONBANKED {uint8_t saved=CURRENT_BANK,ba
  if(profile>=RESIDENT_PROFILES){resident_error=1;return;}active_profile=profile;a=resident_bg_assets+profile;
  memset((void*)0xd4c0,0xa6,16);
  if(a->count>16||a->bytes>4096){resident_error=2;return;}
- memset(text_staging,0,256);wait_vbl_done();set_bkg_palette(0,4,(const palette_color_t*)text_staging);
+ memset(text_staging,0,256);ff3_party_palette(1,0,4,text_staging);
  for(bank=0;bank<2;bank++)for(offset=0;offset<2048;offset+=256){memset(text_staging,0,256);ff3_text_copy(bank,0x9800+offset,text_staging,256);ff3_native_service();}
  for(offset=0;offset<a->bytes;offset+=n){n=a->bytes-offset;if(n>256)n=256;SWITCH_ROM(a->bank);memcpy(text_staging,a->patterns+offset,n);SWITCH_ROM(saved);ff3_text_copy(1,0x8000+offset,text_staging,n);ff3_native_service();}
- SWITCH_ROM(a->bank);memcpy(text_staging,a->palette,32);SWITCH_ROM(saved);wait_vbl_done();
+ SWITCH_ROM(a->bank);memcpy(text_staging,a->palette,32);SWITCH_ROM(saved);
  // Four original BG palettes also supply the separate color-residual OBJ.
- for(i=0;i<4;i++){set_bkg_palette(i,1,(const palette_color_t*)(text_staging+i*8));set_sprite_palette(i+4,1,(const palette_color_t*)(text_staging+i*8));}
+ for(i=0;i<4;i++){ff3_party_palette(1,i,1,text_staging+i*8);ff3_party_palette(0,i+4,1,text_staging+i*8);}
  cached[0]=cached[1]=255;resident_page=0;
 }
 static uint8_t contains(uint8_t origin,uint8_t coarse){uint8_t delta;if(origin>=56)return 0;delta=coarse+56-origin;if(delta>=56)delta-=56;return delta<12;}
