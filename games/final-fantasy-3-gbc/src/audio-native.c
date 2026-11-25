@@ -80,7 +80,7 @@ volatile uint16_t native_external_serial,native_external_tick;
 volatile uint8_t native_external_op,native_external_arg;
 #endif
 static void put16(uint8_t at,uint16_t value){slot[at]=(uint8_t)value;slot[at+1]=value>>8;}
-#ifndef FF3_OPENING_VIDEO
+#if !defined(FF3_OPENING_VIDEO) && !defined(FF3_AUDIO_FAST)
 static void put32(uint8_t at,uint32_t value){put16(at,(uint16_t)value);put16(at+2,(uint16_t)(value>>16));}
 #else
 /* Keep all twelve metadata bytes, but copy their SM83 little-endian storage
@@ -169,7 +169,7 @@ static void prepare(void){uint8_t end=0,advanced=0;
  }
  ff3_backend_flush(pop_active);native_events++;
  slot[2]=emitted;slot[3]=end;
-#ifdef FF3_OPENING_VIDEO
+#if defined(FF3_OPENING_VIDEO) || defined(FF3_AUDIO_FAST)
  packet_metadata();
 #else
  put32(4,native_ticks);put32(8,native_events);put16(12,native_source_hash);put16(14,native_gb_hash);

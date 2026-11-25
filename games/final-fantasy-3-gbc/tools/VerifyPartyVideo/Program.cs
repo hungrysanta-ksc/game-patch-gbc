@@ -21,6 +21,7 @@ class Program {
  NativeLibrary.SetDllImportResolver(typeof(Core).Assembly,(n,a,p)=>n=="MesenCore.dll"?NativeLibrary.Load(Text("dll")):IntPtr.Zero);Directory.CreateDirectory(Text("home"));
  try{Core.InitDll();Core.InitializeEmu(Text("home"),IntPtr.Zero,IntPtr.Zero,true,true,true,true);Audit.ConfigureVideo();Core.SetEmulationConfig(new Core.Speed{speed=0,turbo=0,rewind=100});if(!Core.LoadRom(Text("rom"),IntPtr.Zero))throw new Exception("ROM load");Core.InitializeDebugger();Core.Pause();Wait(()=>Core.IsExecutionStopped()&&Core.IsPaused());
  for(int i=0;Num("party_ready")!=0xa5;i++){if(i>500)throw new Exception("Boot timeout");Step();}Observe();
+ int costs=-1;if(c.TryGetProperty("preparationAudit",out var costScript)&&costScript.ValueKind==JsonValueKind.String){costs=Audit.LoadScript("preparation-costs",Text("auditPath"),costScript.GetString()!,-1);if(costs<0)throw new Exception("Preparation audit load");}
  var counts=c.GetProperty("counts").EnumerateArray().Select(x=>x.GetInt32()).ToArray();
  for(int p=0;p<counts.Length;p++){
   Put("party_profile",(byte)p);Put("party_request",1);
@@ -31,6 +32,7 @@ class Program {
    if(stone){var e=c.GetProperty("expected")[p][f];string Expected(string k)=>e.GetProperty(k).GetString()!;var expectedOam=e.TryGetProperty("nativePages",out var no)?no[(int)picture.bgPage].GetString():Expected("native");if(picture.source!=Expected("original")||picture.state!=Expected("state")||picture.oam!=expectedOam)throw new Exception("Live original OAM/state mismatch "+p+"/"+f);}
   }
  }
+ if(costs>=0){var costLog=new StringBuilder(3000000);Audit.GetScriptLog(costs,costLog,3000000);File.WriteAllText(Text("output")+".preparation.log",costLog.ToString());}
  // Same artifact and loaded assets, then uninterrupted repeated live entry
  // motion across the remaining original music/SFX/fade schedule.
  var script=Audit.LoadScript("party-residency",Text("auditPath"),Text("audit"),-1);if(script<0)throw new Exception("Audit load");Put("party_pause",0);

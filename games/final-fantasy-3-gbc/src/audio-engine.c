@@ -16,7 +16,7 @@ static uint8_t source_byte(uint8_t bank,uint16_t offset){if(bank==0x36)return ff
 uint8_t ff3_engine_read36(uint16_t address){if(address<0x8000||address>=0xa000){ff3_error=1;return 0;}return source_byte(0x36,address&8191);}
 uint8_t ff3_engine_read(uint16_t address){uint8_t id=ff3_state.ram[3],index;
  if(address>=0x8000&&address<0xa000){
-#if defined(FF3_OPENING_VIDEO) && defined(FF3_BANKED_RUNTIME)
+#if (defined(FF3_OPENING_VIDEO) || defined(FF3_AUDIO_FAST)) && defined(FF3_BANKED_RUNTIME)
   return ff3_audio_bank36[address&8191];
 #else
   return ff3_engine_read36(address);
@@ -24,7 +24,7 @@ uint8_t ff3_engine_read(uint16_t address){uint8_t id=ff3_state.ram[3],index;
  }
  if(address<0xa000||address>=0xc000){ff3_error=2;return 0;}if(id!=mapped_song){index=id<0x19?0:id<0x2b?1:id<0x3b?2:3;mapped_source=ff3_engine_read36(0x89bf+index);mapped_song=id;}return source_byte(mapped_source,address&8191);
 }
-#ifdef FF3_OPENING_VIDEO
+#if defined(FF3_OPENING_VIDEO) || defined(FF3_AUDIO_FAST)
 /* Only a word entirely inside the local immutable bank-36 copy is direct.
  * At 9FFF/BFFF/FFFF retain both ordered reads, mapping and error behavior. */
 uint16_t ff3_engine_read_word(uint16_t address){uint8_t lo;

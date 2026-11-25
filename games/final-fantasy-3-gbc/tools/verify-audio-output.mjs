@@ -1,7 +1,7 @@
 import {writeFileSync} from "node:fs";import fs from 'node:fs/promises';import {execFileSync} from 'node:child_process';import {ROOT,input,check,hash} from './source.mjs';
-const {local}=await input(),base=ROOT+'/build/battle-opening-video',out=ROOT+'/build/audio-output-probe';await fs.mkdir(out,{recursive:true});
+const resident=process.argv.includes('--resident'),{local}=await input(),base=ROOT+'/build/'+(resident?'battle-stone-overlap':'battle-opening-video'),out=ROOT+'/build/'+(resident?'audio-output-resident-probe':'audio-output-probe');await fs.mkdir(out,{recursive:true});
 const compiler=local.gbdk+'/bin/lcc.exe',lock=JSON.parse(await fs.readFile(ROOT+'/spec/toolchain.json'));check(hash(await fs.readFile(compiler))===lock.gbdk.lccSha256,'Pinned compiler');
-const object=base+'/obj/11.o',identity=hash(await fs.readFile(object)),rom=out+'/audio-output-probe.gbc',logs=[];
+const object=base+(resident?'/audio-output.o':'/obj/11.o'),identity=hash(await fs.readFile(object)),rom=out+'/audio-output-probe.gbc',logs=[];
 function compile(args){try{logs.push(execFileSync(compiler,args,{cwd:out,encoding:'utf8',maxBuffer:8e6}));}catch(e){logs.push(String(e.stdout)+String(e.stderr));throw e;}finally{writeFileSync(out+'/compiler.log',logs.join('\n'));}}
 const names=['reset','write','sweep','flush','restore'].map(n=>'-Dff3_backend_'+n+'=reference_'+n);
 compile(['-msm83:gb','-DFF3_SINGLE_ENGINE',...names,'-Dff3_pop_seen=reference_pop_seen','-I'+ROOT+'/src','-c','-o',out+'/reference.o',ROOT+'/src/audio-output.c']);
@@ -12,4 +12,4 @@ const config={dll:local.mesenCore,home:await fs.mkdtemp(ROOT+'/.local/mesen-outp
 const dotnet=local.dotnet||'dotnet',env={...process.env,APPDATA:ROOT+'/.local/config',DOTNET_CLI_HOME:ROOT+'/.local/dotnet',DOTNET_CLI_TELEMETRY_OPTOUT:'1'};
 await fs.writeFile(out+'/verifier-build.log',execFileSync(dotnet,['build',ROOT+'/tools/VerifyState/VerifyState.csproj','-c','Release','--configfile',ROOT+'/tools/Capture/NuGet.Config'],{env,encoding:'utf8',maxBuffer:8e6}));
 await fs.writeFile(out+'/runtime.log',execFileSync(dotnet,[ROOT+'/tools/VerifyState/bin/Release/net8.0/VerifyState.dll',out+'/config.json'],{env,encoding:'utf8',maxBuffer:8e6,timeout:600000}));
-const r=JSON.parse(await fs.readFile(out+'/result.json'));check(r.status===1&&!r.failure&&r.testCase===8192,'Ordered output equivalence');await fs.writeFile(out+'/object-identity.json',JSON.stringify({path:'11.o',sha256:identity}));console.log(JSON.stringify({cases:r.testCase,romSha256:r.romSha256,objectSha256:identity}));
+const r=JSON.parse(await fs.readFile(out+'/result.json'));check(r.status===1&&!r.failure&&r.testCase===8192,'Ordered output equivalence');await fs.writeFile(out+'/object-identity.json',JSON.stringify({path:resident?'audio-output.o':'11.o',sha256:identity}));console.log(JSON.stringify({cases:r.testCase,romSha256:r.romSha256,objectSha256:identity}));

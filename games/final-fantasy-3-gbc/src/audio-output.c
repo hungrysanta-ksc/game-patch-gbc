@@ -12,7 +12,7 @@ void ff3_backend_write(uint8_t r,uint8_t v){
  static const uint8_t masks[24]={1,1,1,1,2,2,2,2,4,0,4,4,8,0,8,8,0,8,0,0,0,0,0,0};
  dirty|=masks[r];switch(r){case 1:reload[0]=1;break;case 5:reload[1]=1;break;case 2:period_lo[0]=v;break;case 3:period_hi[0]=v&7;trigger|=1;break;case 6:period_lo[1]=v;break;case 7:period_hi[1]=v&7;trigger|=2;break;case 15:trigger|=8;break;case 17:trigger|=8;if(v&127)ff3_pop_seen=1;break;}
 }
-#ifdef FF3_OPENING_VIDEO
+#if defined(FF3_OPENING_VIDEO) || defined(FF3_AUDIO_FAST)
 /* Fixed channels also remove repeated sweep-state address calculations. */
 #define SWEEP_BODY(ch) {uint8_t s,shift;uint16_t t,delta,target;s=ff3_state.apu[ch*4+1];shift=s&7;t=period_lo[ch]|((uint16_t)period_hi[ch]<<8);delta=t>>shift;target=(s&8)?t-delta-(ch?0:1):t+delta;if(!divider[ch]&&(s&128)&&shift&&t>=8&&target<=2047){period_lo[ch]=(uint8_t)target;period_hi[ch]=target>>8;dirty|=1<<ch;}if(!divider[ch]||reload[ch]){divider[ch]=(s>>4)&7;reload[ch]=0;}else divider[ch]--;}
 void ff3_backend_sweep(void){SWEEP_BODY(0) SWEEP_BODY(1)}
@@ -20,7 +20,7 @@ void ff3_backend_sweep(void){SWEEP_BODY(0) SWEEP_BODY(1)}
 #else
 void ff3_backend_sweep(void){uint8_t ch,s,shift;uint16_t t,delta,target;for(ch=0;ch<2;ch++){s=ff3_state.apu[ch*4+1];shift=s&7;t=period_lo[ch]|((uint16_t)period_hi[ch]<<8);delta=t>>shift;target=(s&8)?t-delta-(ch?0:1):t+delta;if(!divider[ch]&&(s&128)&&shift&&t>=8&&target<=2047){period_lo[ch]=(uint8_t)target;period_hi[ch]=target>>8;dirty|=1<<ch;}if(!divider[ch]||reload[ch]){divider[ch]=(s>>4)&7;reload[ch]=0;}else divider[ch]--;}}
 #endif
-#ifdef FF3_OPENING_VIDEO
+#if defined(FF3_OPENING_VIDEO) || defined(FF3_AUDIO_FAST)
 /* Channel identities are fixed by flush; constant indices avoid repeated
  * address/mask arithmetic without changing writes, sweep or retriggers. */
 #define PULSE_BODY(ch) uint8_t base=ch*4,gb=ch*5,s=ff3_state.apu[base+1],v=ff3_state.apu[base]&15,d=ff3_state.apu[base]&192,h;uint16_t t=period_lo[ch]|((uint16_t)period_hi[ch]<<8),f;if(t<8||(!(s&8)&&t+(t>>(s&7))>2047))v=0;f=ff3_pitch_lookup(t&2047);h=f>>8;if(duty[ch]!=d)ff3_gb_write(gb+1,d);ff3_gb_write(gb+3,(uint8_t)f);if(volume[ch]!=v||(trigger&(1<<ch))){ff3_gb_write(gb+2,v<<4);ff3_gb_write(gb+4,h|(v?128:0));}else if(high[ch]!=h)ff3_gb_write(gb+4,h);volume[ch]=v;duty[ch]=d;high[ch]=h;

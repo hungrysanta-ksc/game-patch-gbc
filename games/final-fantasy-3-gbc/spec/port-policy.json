@@ -11,6 +11,21 @@
   "nextImplementation": "Follow docs/implementation-roadmap.md as the authoritative current implementation order and acceptance gates; no invented gameplay samples",
   "runtimeArchitecture": "Source-corresponding native GBC logic plus converted ROM data; no claim of an existing fully automatic 6502-to-SM83 compiler",
   "releaseInputs": "Port implementation, versioned extraction/conversion rules, source-linked Korean translation records, permitted font/toolchain dependencies; original ROM and generated original-game asset files are supplied or generated locally",
-  "releaseChecks": ["clean offline build from supported ROM", "input integrity and output reproducibility", "source-relative behavior comparisons", "reachable-content completeness", "Korean text/control preservation", "save and reload", "full game progression through ending"],
-  "currentReleaseReady": false
+  "releaseChecks": [
+    "clean offline build from supported ROM",
+    "input integrity and output reproducibility",
+    "source-relative behavior comparisons",
+    "reachable-content completeness",
+    "Korean text/control preservation",
+    "save and reload",
+    "full game progression through ending"
+  ],
+  "currentReleaseReady": false,
+  "battlePreparationPolicy": {
+    "decisionDate": "2026-11-25",
+    "entryBudgetMs": 500,
+    "scope": "Approximate user-accepted initial battle-entry resource preparation; not a per-frame or action delay allowance",
+    "overlap": "Keep the currently published screen visible while staging inactive resources; preserve source state and publish boundaries",
+    "audio": "Do not hide audio CPU cost inside the entry budget. Preserve music/SFX/fade scheduling, effect ownership and restoration; compare output continuity separately from timbre"
+  }
 }
