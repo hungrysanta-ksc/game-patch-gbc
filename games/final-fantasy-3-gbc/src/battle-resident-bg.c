@@ -20,7 +20,7 @@ uint8_t __at(0xd200) resident_map[704];
 static void transfer(uint8_t bank,uint16_t address,const uint8_t*src,uint16_t n){uint16_t offset=0,size;
  while(offset<n){size=n-offset;if(size>256)size=256;memcpy(text_staging,src+offset,size);ff3_text_copy(bank,address+offset,text_staging,size);offset+=size;service();}
 }
-void ff3_resident_load(uint8_t profile) NONBANKED {uint8_t saved=CURRENT_BANK,bank,i;uint16_t offset,n;const ResidentBgAsset*a;
+void ff3_resident_load(uint8_t profile) NONBANKED {uint8_t saved=CURRENT_BANK,bank;uint16_t offset,n;const ResidentBgAsset*a;
  if(profile>=RESIDENT_PROFILES){resident_error=1;return;}active_profile=profile;a=resident_bg_assets+profile;
  memset((void*)0xd4c0,0xa6,16);
  if(a->count>16||a->bytes>4096){resident_error=2;return;}
@@ -29,7 +29,7 @@ void ff3_resident_load(uint8_t profile) NONBANKED {uint8_t saved=CURRENT_BANK,ba
  for(offset=0;offset<a->bytes;offset+=n){n=a->bytes-offset;if(n>256)n=256;SWITCH_ROM(a->bank);memcpy(text_staging,a->patterns+offset,n);SWITCH_ROM(saved);ff3_text_copy(1,0x8000+offset,text_staging,n);ff3_native_service();}
  SWITCH_ROM(a->bank);memcpy(text_staging,a->palette,32);SWITCH_ROM(saved);
  // Four original BG palettes also supply the separate color-residual OBJ.
- for(i=0;i<4;i++){ff3_party_palette(1,i,1,text_staging+i*8);ff3_party_palette(0,i+4,1,text_staging+i*8);}
+ ff3_party_palette(1,0,4,text_staging);ff3_party_palette(0,4,4,text_staging);
  cached[0]=cached[1]=255;resident_page=0;resident_fixed=0;
 }
 void ff3_resident_fix(void) NONBANKED {resident_fixed=1;cached[0]=cached[1]=255;}
