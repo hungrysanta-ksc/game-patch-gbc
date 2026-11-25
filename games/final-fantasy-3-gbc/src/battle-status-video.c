@@ -52,7 +52,7 @@ uint8_t ff3_status_video_advance(void) BANKED {
  else return 0; /* same command wait: original counter advances in objects() */
 #ifdef FF3_STONE
  if(status_tail.phase==FF3_TAIL_DONE&&a->clear_after&&!refreshed){
-  if(a->clear_after==2){for(n=0;n<4;n++)status_tail.motion.status[n]&=247;}
+  if(a->clear_after==2||a->clear_after==3){for(n=0;n<4;n++)status_tail.motion.status[n]&=a->clear_after==3?191:247;}
   else {memset(status_tail.motion.status,0,4);memset(status_tail.status2,0,4);}
   if(!ff3_entry_tail_refresh(&status_tail))return 4;refreshed=1;
  }

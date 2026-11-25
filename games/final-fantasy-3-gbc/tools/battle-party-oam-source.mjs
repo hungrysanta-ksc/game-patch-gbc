@@ -36,9 +36,9 @@ export function partyOamCases(rom){
 }
 // This is an oracle, not runtime frame data. The video runs the C entry
 // state machine; these observations remain in private verification files.
-export function partyEntryOracle(rom,{back=false,partyStatus=[0,0,0,0],cache,normalized,second}={}){
+export function partyEntryOracle(rom,{back=false,partyStatus=[0,0,0,0],cache,normalized,second,formation=3,counts}={}){
  const frames=[];let seed;
- const {m}=initializedBattle(rom,{formation:3,back,rows:[0,1,0,1],terrain:0,partyStatus,capture:(b,c,p)=>{if(b.reason==='before-NMI-wait')frames.push({input:partyOamInput(c),original:Buffer.from(c.m.subarray(0x2a0,0x300)),state:entryState(c),palette:cgbPalette(p.bytes.subarray(0x3f10,0x3f20)),rawPalette:Buffer.from(p.bytes.subarray(0x3f10,0x3f20)),ppu:Buffer.from(p.bytes),chrSha256:hash(p.bytes.subarray(0x1000,0x2000))});}});
+ const {m}=initializedBattle(rom,{formation,counts,back,rows:[0,1,0,1],terrain:0,partyStatus,capture:(b,c,p)=>{if(b.reason==='before-NMI-wait')frames.push({input:partyOamInput(c),original:Buffer.from(c.m.subarray(0x2a0,0x300)),state:entryState(c),palette:cgbPalette(p.bytes.subarray(0x3f10,0x3f20)),rawPalette:Buffer.from(p.bytes.subarray(0x3f10,0x3f20)),ppu:Buffer.from(p.bytes),chrSha256:hash(p.bytes.subarray(0x1000,0x2000))});}});
  // 9D88 first clears the physical palette, then fills 7CF7..7D16. AD53
  // publishes that buffer before visible party OBJ. The initial physical
  // palette is black and cannot be used as the resident display palette.
@@ -48,7 +48,7 @@ export function partyEntryOracle(rom,{back=false,partyStatus=[0,0,0,0],cache,nor
  const terrainSource=Buffer.from(c.m.subarray(0x7900,0x7a00));
  check(pal.some(Boolean)&&frames.slice(2).every(f=>f.palette.equals(pal)),'Original visible party palette publication');
  check(frames.every(f=>f.chrSha256===hash(chr)),'Original prefix keeps resident OBJ patterns');
- return {back,partyStatus,seed,initial,chr,pal,initialPpu,bgPalette,terrainSource,frames};
+ return {back,formation,counts,partyStatus,seed,initial,chr,pal,initialPpu,bgPalette,terrainSource,frames};
 }
 export function nativePartyTiles(chr){const out=Buffer.alloc(chr.length);for(let t=0;t<chr.length;t+=16)for(let y=0;y<8;y++){out[t+y*2]=chr[t+y];out[t+y*2+1]=chr[t+y+8];}return out;}
 export function originalPartyRgb(p,f){
