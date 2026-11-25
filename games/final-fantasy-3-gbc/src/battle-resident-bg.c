@@ -36,6 +36,9 @@ void ff3_resident_fix(void) NONBANKED {resident_fixed=1;cached[0]=cached[1]=255;
 #ifdef FF3_STONE
 void ff3_terrain_base_cell(uint8_t x,uint8_t y,uint8_t*out) NONBANKED;
 void ff3_terrain_base_row(uint8_t page,uint8_t row,uint8_t*out) NONBANKED;
+void ff3_resident_base_pattern(uint8_t tile,uint8_t*out) NONBANKED {uint8_t saved=CURRENT_BANK;const ResidentBgAsset*a=resident_bg_assets+active_profile;
+ SWITCH_ROM(a->bank);memcpy(out,a->patterns+(uint16_t)tile*16,16);SWITCH_ROM(saved);
+}
 void ff3_resident_base_cell(uint8_t x,uint8_t y,uint8_t*out) NONBANKED {uint8_t saved=CURRENT_BANK,t;uint16_t at;const ResidentBgAsset*a=resident_bg_assets+active_profile;
  if(y<2){ff3_terrain_base_cell(x,y,out);return;}memset(out,0,17);out[16]=8;if(y>=13)return;
  at=(uint16_t)(y-2)*56+x;SWITCH_ROM(a->bank);t=a->maps[at];out[16]=a->maps[616+at];memcpy(out,a->patterns+(uint16_t)t*16,16);SWITCH_ROM(saved);

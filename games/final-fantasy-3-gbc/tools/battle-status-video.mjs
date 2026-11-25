@@ -11,7 +11,7 @@ import {offset} from './render-budget-source.mjs';
 export function statusVideoOracle(rom,options){
  const p=partyEntryOracle(rom,options),tail=tailReference(rom,options);
  check(tail.frames.every(f=>(options.confusion?[2,3,4,5,6,7]:options.stone?[2,3,4,7]:[2,7]).includes(f.state[67])&&(options.stone||!f.work||f.work[1]===3)),'Native status probe requires cache-hit non-stone tail');
- const {m}=initializedBattle(rom,{formation:3,rows:[0,1,0,1],terrain:0,...options});if(options.normalized)for(let i=0;i<4;i++){m.c.m[0x7d9b+i*2]=options.normalized[i];m.c.m[0x7d9c+i*2]=options.second?.[i]??0;}if(options.cache)m.c.m.set(options.cache,0x7da3);m.call(0xb469);const c=m.c;if(options.clearAfter){if(options.clearAfter===2){for(let i=0;i<4;i++)c.m[0x7d9b+i*2]&=247;}else c.m.fill(0,0x7d9b,0x7da3);m.call(0xb5b8);}
+ const {m}=initializedBattle(rom,{formation:3,rows:[0,1,0,1],terrain:0,...options});if(options.normalized)for(let i=0;i<4;i++){m.c.m[0x7d9b+i*2]=options.normalized[i];m.c.m[0x7d9c+i*2]=options.second?.[i]??0;}if(options.cache)m.c.m.set(options.cache,0x7da3);m.call(0xb469);const c=m.c;if(options.clearAfter){if(options.clearAfter===2||options.clearAfter===3){for(let i=0;i<4;i++)c.m[0x7d9b+i*2]&=options.clearAfter===3?191:247;}else c.m.fill(0,0x7d9b,0x7da3);m.call(0xb5b8);}
  const before=Buffer.from(m.ppu.bytes);m.begin();m.call(0xb304);m.finish();
  const commandPpu=Buffer.from(m.ppu.bytes),commandPalette=cgbPalette(commandPpu.subarray(0x3f10,0x3f20));
  const ranges=m.waits.flatMap(w=>w.ranges).filter(r=>r.kind==='chr');

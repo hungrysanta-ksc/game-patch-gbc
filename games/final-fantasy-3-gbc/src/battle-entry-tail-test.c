@@ -23,7 +23,7 @@ void main(void){uint16_t i,n,event,refresh;uint8_t has,v,refresh_mode;
   if(memcmp(&prefix,&s.motion,sizeof(prefix))){state_failure=3;break;}
   memcpy(&s.motion,&prefix,sizeof(prefix));if(!ff3_entry_tail_start(&s)){state_failure=4;break;}
   for(event=0;event<n;event++){
-   if(event==refresh){if(refresh_mode==2){for(i=0;i<4;i++)s.motion.status[i]&=247;}else {memset(s.motion.status,0,4);memset(s.status2,0,4);}for(i=0;i<5;i++)s.counts[i]=9-i;if(!ff3_entry_tail_refresh(&s)){state_failure=15;break;}}
+   if(event==refresh){if(refresh_mode==2||refresh_mode==3){for(i=0;i<4;i++)s.motion.status[i]&=refresh_mode==3?191:247;}else {memset(s.motion.status,0,4);memset(s.status2,0,4);}for(i=0;i<5;i++)s.counts[i]=9-i;if(!ff3_entry_tail_refresh(&s)){state_failure=15;break;}}
    for(i=0;i<71;i++){v=((uint8_t*)&s)[i<69?i:i+4];if(v!=byte()&&!state_failure){state_failure=1;state_index=i;}}
    if(state_failure)break;
    memcpy(&backup,&s,sizeof(s));
