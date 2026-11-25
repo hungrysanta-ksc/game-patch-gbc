@@ -20,10 +20,14 @@ export async function verifyAction({data,report,actual,cfg,dir,out,output,romSha
  check(actual.pages.length>=8&&!actual.pages[7].audioDone,'Two complete caller cycles under audio');
  const expectedStages=profiles.flatMap((p,profile)=>p.entries.map((e,entry)=>({profile,entry,e})));
  check(stages.length===expectedStages.length*2,'Every action stage in two complete cycles');
+ const log=await fs.readFile(output+'.lua.log','utf8');
+ const publications=report.openingPipeline?[...new Set([...log.matchAll(/action-published:([\d,]+)/g)].map(m=>m[1]))].map(s=>s.split(',').map(Number)).sort((a,b)=>a[0]-b[0]):null;
+ if(publications)check(publications.length===stages.length,'Every source hold has an exact publication observation');
  let maxObjects=0,maxLine=0,waits=0,returned=0;
  for(const [i,p]of stages.entries()){
   const s=p.data,{profile,entry,e}=expectedStages[i%expectedStages.length];
   check(s.profile===profile&&s.entry===entry&&s.live===e.live&&s.geometry===e.frame&&s.serial===i+1,'Original lowered flow order');
+  if(publications){const p=publications[i];check(p[0]===s.serial&&p[1]===profile&&p[2]===entry&&p[4]<=s.master,'Exact publication paired with later screenshot observation');}
   check(p.capturePpuFrame===s.sourcePpuFrame+1,'Action screenshot frame pairing');
   const f=report.frames[e.frame],expected=Buffer.from(f.atlas.oam.data),oam=Buffer.from(s.oam,'hex');
   for(let n=0;n<f.stats.objects;n++)expected[n*4+2]+=((s.lcdc>>3)&1)*64;
@@ -31,7 +35,7 @@ export async function verifyAction({data,report,actual,cfg,dir,out,output,romSha
   const lines=Array(144).fill(0);let count=0;for(let n=0;n<40;n++){const y=oam[n*4]-16;if(y>=144||y+8<=0)continue;count++;for(let yy=Math.max(0,y);yy<Math.min(144,y+8);yy++)lines[yy]++;}
   check(count===f.stats.objects&&count<=40&&Math.max(...lines)<=10,'Action hardware OAM capacity');maxObjects=Math.max(maxObjects,count);maxLine=Math.max(maxLine,...lines);
   const next=stages[i+1]?.data;if(next&&next.profile===profile){
-   const elapsed=((next.timer-s.timer)&65535)/4096,min=e.hold*report.battle.numberTimeline.timing.sourceRateDenominator/report.battle.numberTimeline.timing.sourceRateNumerator;
+   const elapsed=publications?((publications[i+1][3]-publications[i][3])&65535)/4096:((next.timer-s.timer)&65535)/4096,min=e.hold*report.battle.numberTimeline.timing.sourceRateDenominator/report.battle.numberTimeline.timing.sourceRateNumerator;
    check(elapsed>=min-2/4096,'Original hold shortened '+profile+'/'+entry);if(e.command===10)waits++;
   }
   if(entry===profiles[profile].entries.length-1){if(!opening)check(e.phase==='next-selection'&&e.live===0&&e.sourceGate!==0,'Status gate restored at next selection');returned++;}
@@ -48,7 +52,7 @@ export async function verifyAction({data,report,actual,cfg,dir,out,output,romSha
   const expected=await fs.readFile(dir+'/'+path+'.rgb');check(hash(expected)===expectedHash,'Expected source pixels identity');
   check(screenshotRgb(await fs.readFile(cfg.home+'/Screenshots/'+shots[p.ordinal])).equals(expected),'Actual HP/window/status/numeral pixels '+path+' ordinal '+p.ordinal);
  }
- const log=await fs.readFile(output+'.lua.log','utf8'),a=[...log.matchAll(/audit:(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1);check(a,'Bus audit');
+ const a=[...log.matchAll(/audit:(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1);check(a,'Bus audit');
  const [writes,bad,off,apuHash,apuWrites,maxLy,dma,badDma]=a.slice(1).map(Number);let expectedHash=end.gbHash;for(const reg of [2,7,12,17])expectedHash=(((expectedHash<<1)|(expectedHash>>>15))^(reg<<8))&65535;
  check(!bad&&!off&&!badDma&&apuHash===expectedHash&&apuWrites===end.gbWrites+4&&dma>100,'Actual audio/VRAM bus output');
  const memory=checkMemoryAudit(log),resident=[...log.matchAll(/scene-residency:(\d+),(\d+),(\d+),(\d+)/g)].at(-1);check(resident,'Residency audit');
@@ -60,5 +64,11 @@ export async function verifyAction({data,report,actual,cfg,dir,out,output,romSha
  const phaseCosts={};for(const m of log.matchAll(/scene-cost:(\d+),(\d+),(\d+),(\d+),(\d+)/g)){const [phase,cycles,count,max,rate]=m.slice(1).map(Number);phaseCosts[phase]={count,totalMs:cycles*1000/rate,meanMs:cycles*1000/rate/count,maxMs:max*1000/rate};}
  const result={romSha256,coreSha256,home:cfg.home,profiles:profiles.length,requests:actual.pages.length,actionStages:stages.length,returnedSelections:returned,screenshots:shots.length,pixels:shots.length*160*144,maxObjects,maxLine,numberTimeline,openingBoundaries:actual.openingStates?.length,externalSoundRequests:actual.externalAudio?.length,sourceTicks:end.ticks,sourceEvents:end.events,maxLate:0,underruns:0,apuWrites,apuHash,timerDriftSeconds:drift,videoWrites:writes,invalidVideoWrites:bad,invalidDma:badDma,lcdOffWrites:off,cacheWrites,activeWrites,objPaletteWrites,badObjPalette,maxLy,publications:Number(pub[1]),invalidPublications:Number(pub[2]),oamStagingWrites:Number(ownership[1]),activeOamStagingWrites:Number(ownership[2]),dmaCriticalMaxSeconds:Number(critical[2])/Number(critical[3]),memory:{...memory,stackUntouchedBytes:actual.stackUntouchedBytes},callerDuration:{medianMs:times[times.length>>1],maxMs:times.at(-1)},wholeSceneTimingGatePassed:false,normalGameplay:false,scope:report.battle.action.scope};
  if(opening)result.phaseCosts=phaseCosts;
+ if(report.openingPipeline){
+  const p=actual.openingPipeline,expected=profiles.reduce((sum,profile)=>sum+profile.entries.slice(0,-1).filter((e,i)=>e.run===255&&profile.entries[i+1].run===255).length,0)*2;
+  check(p&&p.prefetches===expected&&p.overlapTicks>0&&p.late<=p.prefetches,'Every eligible lookahead and measured overlap');
+  check(p.overlapTicks<report.audio.ticks*4096/60,'Bounded overlap clock');
+  result.openingPipeline={...p,overlapMs:p.overlapTicks*1000/4096,maxLateMs:p.maxLateTicks*1000/4096,readyBeforeDeadline:p.prefetches-p.late,sourceHoldsPreserved:true,scope:'Prepare immutable next ordinary picture before source hold ends; source ack/sound/publication remain ordered. Numeral ownership is unchanged.'};
+ }
  await fs.writeFile(out+'/load-result.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));return result;
 }

@@ -8,6 +8,16 @@ local numberFrames,numberStorageWrites=0,0
 local stagingOamWrites,activeOamWrites=0,0
 local phaseTotals,phaseCounts,phaseMax={}, {}, {}
 local phasePrev,phaseClock,phaseRate=nil,nil,0
+if openingActionSerial then
+ local serial=0
+ emu.addMemoryCallback(function(a,v)
+  serial=serial+1
+  if v~=(serial&255) then error('Opening action serial write order') end
+  local t=emu.getState()
+  local timer=emu.read(__NATIVE_CLOCK__,mem)+256*emu.read(__NATIVE_CLOCK__+1,mem)
+  emu.log(string.format('action-published:%d,%d,%d,%d,%d,%d',serial,emu.read(openingActionProfile,mem),emu.read(openingActionStep,mem),timer,t.masterClock,t.clockRate))
+ end,emu.callbackType.write,openingActionSerial,openingActionSerial,emu.cpuType.gameboy)
+end
 emu.addMemoryCallback(function(address,value)
  local phase=emu.read(__SCENE_PHASE__,mem)
  if phase==3 then

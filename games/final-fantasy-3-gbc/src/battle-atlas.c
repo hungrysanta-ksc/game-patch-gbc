@@ -353,6 +353,29 @@ static void prepare(uint8_t page){uint8_t i,bank,old,*oam=page?scene_oam1:scene_
 #endif
  last_frame[page]=scene_page;
 }
+#ifdef FF3_OPENING_VIDEO
+/* Preparation owns only the inactive page and palette staging. Publication
+ * remains separate, after the preceding source hold and request ack. */
+static uint8_t opening_staged,opening_staged_page,opening_staged_frame;
+static void stage_show(void){uint8_t page=active_page^1;
+ if(opening_staged||window_owned||battle_active||scene_page>=SCENE_FRAME_COUNT){scene_error=17;return;}
+ opening_staged_frame=scene_page;opening_staged_page=page;
+ read_frame(scene_page,&target);
+ if(active_frame!=255){read_frame(active_frame,&previous);if(previous.visual==target.visual&&!action_dirty){opening_staged=1;return;}}
+ scene_phase=1;if(!loaded)preload();if(scene_error)return;
+ prepare(page);if(scene_error)return;
+ ff3_scene_rom_copy(7,scene_frames_data+scene_page,&frame,sizeof(frame));
+ ff3_scene_rom_copy(frame.bank,frame.palette,scene_palette,96);
+ opening_staged=2;
+}
+static void show(void){
+ if(!opening_staged)stage_show();if(scene_error)return;
+ if(opening_staged_frame!=scene_page){scene_error=17;return;}
+ if(opening_staged==2){scene_phase=4;ff3_scene_publish(opening_staged_page,1,0,ACTION_SCROLL_Y);active_page=opening_staged_page;}
+ else scene_hits++;
+ active_frame=scene_page;scene_frames++;action_dirty=0;opening_staged=0;
+}
+#else
 static void show(void){uint8_t page=active_page^1;
  if(window_owned||scene_page>=SCENE_FRAME_COUNT){scene_error=5;return;}
  read_frame(scene_page,&target);
@@ -374,6 +397,7 @@ static void show(void){uint8_t page=active_page^1;
  action_dirty=0;
 #endif
 }
+#endif
 static void open(void){
  if(window_owned||active_frame==255){scene_error=9;return;}
  scene_phase=5;scene_page=active_frame;if(active_page){prepare(0);if(scene_error)return;ff3_scene_publish(0,0,0,0);active_page=0;}
