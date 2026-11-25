@@ -5,6 +5,7 @@
 #include "text-vblank.h"
 #include "memory.h"
 #include "platform.h"
+#include "battle-workspace.h"
 void ff3_native_service(void) NONBANKED;
 void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED;
 volatile uint8_t resident_scroll,resident_page,resident_error;
@@ -16,7 +17,8 @@ static void service(void){uint16_t begin=ff3_clock_now();ff3_native_service();if
 static uint8_t active_profile;
 static uint8_t cached[2];
 uint8_t resident_fixed;
-uint8_t __at(0xd200) resident_map[704];
+Ff3BattleWorkspace __at(0xd200) battle_workspace;
+#define resident_map battle_workspace.map
 static void transfer(uint8_t bank,uint16_t address,const uint8_t*src,uint16_t n){uint16_t offset=0,size;
  while(offset<n){size=n-offset;if(size>256)size=256;memcpy(text_staging,src+offset,size);ff3_text_copy(bank,address+offset,text_staging,size);offset+=size;service();}
 }
