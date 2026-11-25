@@ -7,6 +7,9 @@
 #include "memory.h"
 #include "text-vblank.h"
 #include "party-video-assets.h"
+#ifdef FF3_RESIDENT_BG
+#include "battle-resident-bg.h"
+#endif
 void ff3_native_begin(void) NONBANKED;
 void ff3_native_service(void) NONBANKED;
 extern volatile uint16_t native_clock;
@@ -29,6 +32,9 @@ static void refresh(void) __naked {__asm
 }
 static void publish(void) NONBANKED {uint16_t gap;uint8_t ly=LY_REG;
  if(!party_pending||ly<144||ly>145||(STAT_REG&3)!=1)return;
+#ifdef FF3_RESIDENT_BG
+ SCX_REG=resident_scroll;LCDC_REG=(LCDC_REG&0xf7)|(resident_page?8:0);
+#endif
  _shadow_OAM_base=next_page?0xdd:0xdc;refresh();DISABLE_OAM_DMA;
  /* Only HRAM DMA needs the masked interval. Counters/diagnostics below
   * must allow TIMA service or its 4096 Hz clock loses overflows. */
@@ -46,6 +52,9 @@ static void present(void){uint8_t i;uint16_t begin=ff3_clock_now(),elapsed;uint8
  if(party_motion.ticket<2)memset(party_source,0xf0,96);
  else if(!ff3_party_oam(&party_state,party_source)){party_error=1;return;}
  if(!ff3_party_oam_v6(party_source,party_state.battle_type==0x88,target)){party_error=1;return;}
+#ifdef FF3_RESIDENT_BG
+ ff3_resident_prepare(&party_motion,next_page,target);if(resident_error){party_error=10+resident_error;return;}
+#endif
  elapsed=ff3_clock_now()-begin;if(elapsed>party_max_prepare)party_max_prepare=elapsed;party_prepared++;party_pending=1;
  while(party_pending){ff3_native_service();__asm halt __endasm;}
 }
@@ -58,6 +67,9 @@ static void load(void){const PartyVideoAsset*a;uint16_t off;uint8_t page;
  /* Hide objects at VBlank before replacing their resident patterns. */
  page=party_page^1;memset(page?party_oam1:party_oam0,0,160);next_page=page;party_pending=1;
  while(party_pending){ff3_native_service();__asm halt __endasm;}
+#ifdef FF3_RESIDENT_BG
+ ff3_resident_load(party_profile);if(resident_error){party_error=10+resident_error;return;}
+#endif
  for(off=0;off<4096;off+=256){copy(a->bank,a->tiles+off,text_staging,256);ff3_text_copy(0,0x8000+off,text_staging,256);ff3_native_service();}
  copy(a->bank,a->palette,text_staging,32);wait_vbl_done();set_sprite_palette(0,4,(const palette_color_t*)text_staging);
  loaded=1;party_work=1;reset_motion();party_request=0;

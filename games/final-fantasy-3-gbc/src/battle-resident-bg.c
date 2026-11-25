@@ -1,0 +1,72 @@
+#include <gb/cgb.h>
+#include <string.h>
+#include "battle-resident-bg.h"
+#include "resident-bg-assets.h"
+#include "text-vblank.h"
+#include "memory.h"
+void ff3_native_service(void) NONBANKED;
+volatile uint8_t resident_scroll,resident_page,resident_error;
+volatile uint16_t resident_map_bytes,resident_map_updates;
+volatile uint16_t resident_max_fill,resident_max_transfer,resident_max_service;
+static uint16_t service_ticks;
+static uint8_t measuring;
+static void service(void){uint16_t begin=ff3_clock_now();ff3_native_service();if(measuring)service_ticks+=ff3_clock_now()-begin;}
+static uint8_t active_profile;
+static uint8_t cached[2];
+uint8_t __at(0xd200) resident_map[704];
+static void transfer(uint8_t bank,uint16_t address,const uint8_t*src,uint16_t n){uint16_t offset=0,size;
+ while(offset<n){size=n-offset;if(size>256)size=256;memcpy(text_staging,src+offset,size);ff3_text_copy(bank,address+offset,text_staging,size);offset+=size;service();}
+}
+void ff3_resident_load(uint8_t profile) NONBANKED {uint8_t saved=CURRENT_BANK,bank,i;uint16_t offset,n;const ResidentBgAsset*a;
+ if(profile>=RESIDENT_PROFILES){resident_error=1;return;}active_profile=profile;a=resident_bg_assets+profile;
+ memset((void*)0xd4c0,0xa6,16);
+ if(a->count>16||a->bytes>4096){resident_error=2;return;}
+ memset(text_staging,0,256);wait_vbl_done();set_bkg_palette(0,4,(const palette_color_t*)text_staging);
+ for(bank=0;bank<2;bank++)for(offset=0;offset<2048;offset+=256){memset(text_staging,0,256);ff3_text_copy(bank,0x9800+offset,text_staging,256);ff3_native_service();}
+ for(offset=0;offset<a->bytes;offset+=n){n=a->bytes-offset;if(n>256)n=256;SWITCH_ROM(a->bank);memcpy(text_staging,a->patterns+offset,n);SWITCH_ROM(saved);ff3_text_copy(1,0x8000+offset,text_staging,n);ff3_native_service();}
+ SWITCH_ROM(a->bank);memcpy(text_staging,a->palette,32);SWITCH_ROM(saved);wait_vbl_done();
+ // Four original BG palettes also supply the separate color-residual OBJ.
+ for(i=0;i<4;i++){set_bkg_palette(i,1,(const palette_color_t*)(text_staging+i*8));set_sprite_palette(i+4,1,(const palette_color_t*)(text_staging+i*8));}
+ cached[0]=cached[1]=255;resident_page=0;
+}
+static uint8_t contains(uint8_t origin,uint8_t coarse){uint8_t delta;if(origin>=56)return 0;delta=coarse+56-origin;if(delta>=56)delta-=56;return delta<12;}
+void ff3_resident_prepare(const Ff3EntryDisplay*s,uint8_t page,uint8_t*oam) NONBANKED {
+ uint8_t saved=CURRENT_BANK,y,i,world,n=24,coarse,hidden=s->ticket==0,origin,delta,count;uint16_t scroll,base,from,to,x,begin,elapsed;const ResidentBgAsset*a=resident_bg_assets+active_profile;const uint8_t*r;
+ if((s->enemy_scroll&15)||page>1){resident_error=3;return;}
+ scroll=(uint16_t)(s->enemy_scroll>>4)*14+((s->enemy_table&1)?224:0);if(scroll>=448)scroll-=448;
+ coarse=scroll>>3;
+ memset(oam+96,0,64);
+ if(!hidden){SWITCH_ROM(a->bank);r=a->objects;
+  for(i=0;i<a->count;i++,r+=5){x=(uint16_t)r[0]|((uint16_t)r[1]<<8);x=x+448-scroll;if(x>=448)x-=448;
+   if(x>=160&&x<=440)continue;if(n>=40){resident_error=4;break;}
+   oam[n*4]=r[2]+16;oam[n*4+1]=(uint8_t)(x>440?x-440:x+8);oam[n*4+2]=r[3];oam[n*4+3]=r[4];n++;
+  }SWITCH_ROM(saved);
+ }
+ // Keep a 32-column neighborhood resident. The 21 visible columns may move
+ // through it without any map upload. OAM and BG pages have separate owners.
+ page=resident_page;
+ if(hidden){resident_scroll=0;if(cached[page]==254)return;page^=1;origin=254;}
+ else {
+  if(contains(cached[page],coarse)||contains(cached[page^1],coarse)){
+   if(!contains(cached[page],coarse))page^=1;
+   delta=coarse+56-cached[page];if(delta>=56)delta-=56;
+   resident_scroll=(delta<<3)|(scroll&7);resident_page=page;return;
+  }
+  page^=1;origin=coarse;
+  if(s->battle_type!=0x88){origin=coarse+45;if(origin>=56)origin-=56;}
+ }
+ begin=ff3_clock_now();service_ticks=0;measuring=1;memset(resident_map,0,704);
+ if(!hidden)for(y=0;y<11;y++){
+  world=origin;from=(uint16_t)y*56;to=(uint16_t)y*32;count=56-world;if(count>32)count=32;SWITCH_ROM(a->bank);
+  memcpy(resident_map+to,a->maps+from+world,count);memcpy(resident_map+352+to,a->maps+616+from+world,count);
+  if(count<32){memcpy(resident_map+to+count,a->maps+from,32-count);memcpy(resident_map+352+to+count,a->maps+616+from,32-count);}
+  SWITCH_ROM(saved);service();
+ }
+ elapsed=ff3_clock_now()-begin;if(elapsed>resident_max_fill)resident_max_fill=elapsed;begin=ff3_clock_now();
+ base=page?0x9c40:0x9840;transfer(0,base,resident_map,352);transfer(1,base,resident_map+352,352);
+ elapsed=ff3_clock_now()-begin;if(elapsed>resident_max_transfer)resident_max_transfer=elapsed;
+ measuring=0;if(service_ticks>resident_max_service)resident_max_service=service_ticks;
+ cached[page]=origin;resident_page=page;
+ if(!hidden){delta=coarse+56-origin;if(delta>=56)delta-=56;resident_scroll=(delta<<3)|(scroll&7);}
+ resident_map_bytes+=704;resident_map_updates++;
+}

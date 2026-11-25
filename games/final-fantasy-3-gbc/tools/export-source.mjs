@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/battle-resident-bg.md','src/battle-resident-bg.h','src/battle-resident-bg.c','tools/battle-resident-bg.mjs','tools/resident-video-audit.lua','tests/battle-resident-bg.test.mjs',
  'docs/battle-object-ownership.md','tools/audit-battle-object-ownership.mjs','src/battle-party-oam.h','src/battle-party-oam.c','src/battle-party-oam-test.c','src/battle-party-video.c','tools/battle-party-oam-source.mjs','tools/build-battle-party-oam.mjs','tools/verify-battle-party-video.mjs','tools/party-video-audit.lua','tools/VerifyPartyVideo/VerifyPartyVideo.csproj','tools/VerifyPartyVideo/Program.cs','tests/battle-party-oam.test.mjs',
  'docs/battle-entry-tail.md','src/battle-entry-tail.h','src/battle-entry-tail.c','src/battle-entry-tail-test.c','tools/battle-entry-tail-source.mjs','tools/build-battle-entry-tail.mjs','tools/audit-battle-entry-tail.mjs','tests/battle-entry-tail.test.mjs',
  'docs/battle-entry-resources.md','src/battle-entry.h','src/battle-entry.c','src/battle-entry-test.c','tools/battle-entry-source.mjs','tools/build-battle-entry.mjs','tools/audit-battle-entry.mjs','tests/battle-entry.test.mjs',
