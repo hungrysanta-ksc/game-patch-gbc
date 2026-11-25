@@ -15,7 +15,7 @@ export function entryAssets(rom){const tables=entryTables.map(([name,bank,cpu,si
  const begin=offset(bank,cpu),bytes=rom.subarray(begin,begin+size);check(bytes.length===size,'Entry table bounds');
  return {name,bank,cpu,begin,size,consumer,asmRef,sha256:hash(bytes),bytes};
 });return {tables,header:'#include <stdint.h>\n'+tables.map(t=>'static const uint8_t ff3_entry_'+t.name+'[]={'+[...t.bytes]+'};').join('\n')+'\n'};}
-function state(c){return Buffer.from([
+export function entryState(c){return Buffer.from([
  c.m[0x78c3],...Array.from({length:4},(_,i)=>c.m[0x7d8f+i]),...Array.from({length:4},(_,i)=>c.m[0x7d9b+i*2]),...c.m.subarray(0x7dc1,0x7dc5),
  ...c.m.subarray(0xc0,0xc8),...c.m.subarray(0x7d7f,0x7d83),...c.m.subarray(0x7d83,0x7d87),
  c.m[15],c.m[16],c.m[4],c.m[7],c.m[8],c.m[0x7cf4]
@@ -39,14 +39,14 @@ export function entryReference(rom,options={}){
   check(returnAddress===(phase===1?0xf8b3:phase===2?0xadde:0xf8c8),'Original entry wait owner');
   const mask=terrain?Array.from({length:7},(_,i)=>i).find(i=>rom.subarray(offset(0x2f,0xaea7+i*8),offset(0x2f,0xaea7+i*8)+8).equals(Buffer.from(c.m.subarray(0x7a00,0x7a08)))):frames.length===0?0:7,row=terrain?(c.m[0x7dbb]>>6):0;
   check(mask!==undefined,'Original terrain mask identity');
-  frames.push({state:Buffer.concat([state(c),Buffer.from([phase,mask,row,frames.length])]),returnAddress,ranges,changedOamBytes,oamSha256:hash(oam),ppuTerrain:Buffer.from(ppu.bytes.subarray(0x600,0x700))});
+  frames.push({state:Buffer.concat([entryState(c),Buffer.from([phase,mask,row,frames.length])]),returnAddress,ranges,changedOamBytes,oamSha256:hash(oam),ppuTerrain:Buffer.from(ppu.bytes.subarray(0x600,0x700))});
  };
  const {m,f}=initializedBattle(rom,{formation:3,back:false,rows:[0,1,0,1],terrain:0,...options,capture}),c=m.c;
  if(options.normalized){check(options.normalized.length===4,'Entry status probe');for(let i=0;i<4;i++)c.m[0x7d9b+i*2]=options.normalized[i];}
  if(options.confusedPosition)c.m.set(options.confusedPosition,0x7dc1);
- seed=Buffer.concat([state(c),Buffer.alloc(4)]);previousWritten=m.ppu.written.slice();previousOam=Buffer.from(c.m.subarray(0x200,0x300));
+ seed=Buffer.concat([entryState(c),Buffer.alloc(4)]);previousWritten=m.ppu.written.slice();previousOam=Buffer.from(c.m.subarray(0x200,0x300));
  m.begin();segment(c,0xb469,0xb479);
- const tail=Buffer.concat([state(c),Buffer.from([4,7,0,frames.length])]);
+ const tail=Buffer.concat([entryState(c),Buffer.from([4,7,0,frames.length])]);
  const terrain=Buffer.from(c.m.subarray(0x7900,0x7a00));
  check(frames.length>=30&&frames.length<=33&&frames.filter(f=>f.state[35]===2).length===28,'Entry source wait contract');
  // Each masked row is checked against actual PPU bytes at the NEXT boundary.
