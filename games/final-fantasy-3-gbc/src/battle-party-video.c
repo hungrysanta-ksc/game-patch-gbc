@@ -7,6 +7,11 @@
 #include "memory.h"
 #include "text-vblank.h"
 #include "party-video-assets.h"
+#ifdef FF3_BOSS
+#include "battle-boss.h"
+#include "battle-entry-tail.h"
+extern Ff3EntryTail status_tail;
+#endif
 #ifdef FF3_STATUS_VIDEO
 #include "battle-status-video.h"
 #endif
@@ -23,7 +28,14 @@ void ff3_native_begin(void) NONBANKED;
 void ff3_native_service(void) NONBANKED;
 extern volatile uint16_t native_clock;
 extern volatile uint8_t native_done;
-volatile uint8_t party_ready,party_request,party_profile,party_pause=1,party_step,party_error,party_pending,party_visible,party_page;
+volatile uint8_t party_ready,party_request,party_profile,party_pause=1,party_step,party_error,party_pending,party_page;
+#ifdef FF3_BOSS
+volatile uint16_t party_visible;
+uint16_t party_frame;
+#else
+volatile uint8_t party_visible;
+uint8_t party_frame;
+#endif
 volatile uint8_t party_work;
 volatile uint8_t party_load_stage;
 volatile uint16_t party_serial,party_prepared,party_max_prepare,party_missed,party_max_gap;
@@ -34,7 +46,6 @@ Ff3PartyOam __at(0xd040) party_state;
 uint8_t __at(0xd060) party_source[96];
 static uint16_t last_vblank;
 static uint8_t next_page,loaded;
-uint8_t party_frame;
 void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANKED {uint8_t saved=CURRENT_BANK;SWITCH_ROM(bank);memcpy(dest,source,n);SWITCH_ROM(saved);}
 void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED {
  ff3_text_palette_range(bg,first,count,data);
@@ -69,11 +80,26 @@ static void publish(void) NONBANKED {uint16_t gap;uint8_t ly=LY_REG;
  __asm di __endasm;
 }
 static void present(void){uint8_t i;uint16_t begin=ff3_clock_now(),elapsed;uint8_t *target;
- next_page=party_page^1;target=next_page?party_oam1:party_oam0;
+#ifdef FF3_BOSS
+ /* Original OAM/status stages are longer than one cell. Preserve the
+  * existing three-tick reserve across these stages, yielding between them. */
+ party_work=2;ff3_native_service();
+#endif
+ next_page=party_page^1;
+#ifdef FF3_BOSS
+ /* Prefix BG scrolling may retain a page while OAM alternates. The first
+  * boss update must select the inactive BG map, then publish both together.
+  * OAM RAM is read only by the explicit pending-page DMA, never implicitly. */
+ if(boss_started)next_page=resident_page^1;
+#endif
+ target=next_page?party_oam1:party_oam0;
  for(i=0;i<4;i++){party_state.x[i]=party_motion.x[i];party_state.y[i]=party_motion.y[i];party_state.pose[i]=party_motion.pose[i];}
  party_state.mirror=0; /* B46E keeps $98 clear throughout this prefix. */
 #ifdef FF3_STATUS_VIDEO
  party_state.mirror=status_stage!=0;
+#ifdef FF3_BOSS
+ party_state.mirror=status_stage!=0&&status_tail.phase!=FF3_TAIL_BOSS;
+#endif
  if(ff3_status_video_hold())goto party_ready_oam;
 #endif
  /* AD53's first two waits precede the first AEE8 draw: retain reset-hidden
@@ -84,9 +110,19 @@ static void present(void){uint8_t i;uint16_t begin=ff3_clock_now(),elapsed;uint8
  party_ready_oam:
  ff3_status_video_source();
 #endif
+#ifdef FF3_BOSS
+ ff3_native_service();
+#endif
  if(!ff3_party_oam_v6(party_source,party_state.battle_type==0x88,target)){party_error=1;return;}
+#ifdef FF3_BOSS
+ ff3_native_service();
+#endif
 #ifdef FF3_RESIDENT_BG
  ff3_resident_prepare(&party_motion,next_page,target);if(resident_error){party_error=10+resident_error;return;}
+#ifdef FF3_BOSS
+ party_work=1;ff3_boss_prepare(next_page,target);if(boss_error){party_error=50+boss_error;return;}
+ party_work=2;ff3_native_service();
+#endif
 #endif
  #ifdef FF3_TERRAIN
  ff3_terrain_prepare(resident_page);

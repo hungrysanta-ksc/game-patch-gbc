@@ -229,9 +229,9 @@ native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_pl
 #if defined(FF3_COMPOSITION_CACHE) && !defined(FF3_OPENING_VIDEO)
  /* Same two-tick cooperative yield used by exploration. Do not hold a due
   * display update hostage to repeatedly refilling the third lookahead tick. */
- #ifdef FF3_STONE
- /* Resident stone work reserves value 2 for the existing three-tick refill
-  * target. Two ticks alone do not cover a costly source tick plus allocation. */
+ #if defined(FF3_STONE) || defined(FF3_BOSS)
+ /* Resident stone/boss work reserves value 2 for the existing three-tick
+  * target. Two ticks alone do not cover source OAM/status plus a costly tick. */
  if(cache_request==1&&(int16_t)(prepare_due-ff3_clock_now())>136)break;
  #else
  if(cache_request&&(int16_t)(prepare_due-ff3_clock_now())>136)break;
