@@ -4,7 +4,7 @@
 #include "audio-channel.h"
 #define R(a) FF3_RAM(s)[(a)-0x7f40]
 #define C(a) R((a)+ch)
-#if defined(FF3_OPENING_VIDEO) && defined(FF3_BANKED_RUNTIME)
+#if (defined(FF3_OPENING_VIDEO) || defined(FF3_AUDIO_FAST)) && defined(FF3_BANKED_RUNTIME)
 /* Only literal bank-36 table bases with bounded byte indices use this path.
  * Script/envelope pointers still use the checked mapped reader. */
 extern const uint8_t ff3_audio_bank36[];
@@ -13,7 +13,7 @@ extern const uint8_t ff3_audio_bank36[];
 #define TABLE(a) FF3_READ(ops,a)
 #endif
 
-#if defined(FF3_SINGLE_ENGINE) && defined(FF3_OPENING_VIDEO)
+#if defined(FF3_SINGLE_ENGINE) && (defined(FF3_OPENING_VIDEO) || defined(FF3_AUDIO_FAST))
 /* Static helpers share the product engine instance. Keep its public ABI,
  * but do not pass unused state/callback pointers through every helper. */
 #define CHANNEL_CONTEXT
@@ -28,7 +28,7 @@ extern const uint8_t ff3_audio_bank36[];
 #endif
 
 static uint16_t word(READER_CONTEXT uint16_t address) {
-#if defined(FF3_SINGLE_ENGINE) && defined(FF3_OPENING_VIDEO)
+#if defined(FF3_SINGLE_ENGINE) && (defined(FF3_OPENING_VIDEO) || defined(FF3_AUDIO_FAST))
     return ff3_engine_read_word(address);
 #else
     uint8_t lo=FF3_READ(ops,address);
