@@ -95,7 +95,7 @@ static void present(void){uint8_t i;uint16_t begin=ff3_clock_now(),elapsed;uint8
  if(!ff3_status_video_objects(target)){party_error=35;return;}
 #endif
 #ifdef FF3_STONE
- if(status_stage){ff3_stone_prepare(resident_page,target);if(stone_error){party_error=40+stone_error;return;}}
+ if(status_stage){ff3_stone_prepare(resident_page,target);party_work=1;if(stone_error){party_error=40+stone_error;return;}}
 #endif
  elapsed=ff3_clock_now()-begin;if(elapsed>party_max_prepare)party_max_prepare=elapsed;party_prepared++;party_work=0;party_pending=1;
  while(party_pending){ff3_native_service();__asm halt __endasm;}

@@ -3,6 +3,22 @@ import {input} from '../tools/source.mjs';import {statusVideoOracle} from '../to
 import {stoneAssets,stoneChange,stoneCompose,stoneOam,jobAssets} from '../tools/battle-stone.mjs';
 import {residentEnemy} from '../tools/battle-resident-bg.mjs';import {terrainAssets,terrainFrames} from '../tools/battle-terrain.mjs';
 import {tailReference} from '../tools/battle-entry-tail-source.mjs';
+import {normalizeStone} from '../tools/stone-pattern-map.mjs';
+test('stone slot permutation preserves every byte and rejects alias, attribute and boundary corruption',()=>{
+ const map=Buffer.alloc(896),oam=Buffer.alloc(160),patterns=Buffer.concat([Buffer.alloc(16,17),Buffer.alloc(16,34)]);
+ map.set([150,151]);map.fill(8,448);oam.set([16,8,151,15]);
+ const e={map:map.toString('hex'),patterns:patterns.toString('hex')},layout={base:150,span:4};
+ const physical=Buffer.alloc(64);patterns.subarray(0,16).copy(physical,48);patterns.subarray(16).copy(physical,32);
+ const pm=Buffer.from(map),po=Buffer.from(oam);pm.set([153,152]);po[2]=152;
+ const p={bgPage:0,stonePatterns:physical.toString('hex'),stoneMap:pm.toString('hex'),oam:po.toString('hex')};
+ assert.deepEqual(normalizeStone(p,e,layout,oam.toString('hex')),{map:e.map,oam:oam.toString('hex')});
+ for(const index of [0,16,32,48]){if(index<32)continue;const b=Buffer.from(physical);b[index]^=1;assert.throws(()=>normalizeStone({...p,stonePatterns:b.toString('hex')},e,layout,oam.toString('hex')),/pattern bytes/);}
+ const badMap=Buffer.from(pm);badMap[448]=9;assert.throws(()=>normalizeStone({...p,stoneMap:badMap.toString('hex')},e,layout,oam.toString('hex')),/attributes/);
+ badMap.set(pm);badMap[0]=154;assert.throws(()=>normalizeStone({...p,stoneMap:badMap.toString('hex')},e,layout,oam.toString('hex')),/page boundary/);
+ const same={...e,patterns:Buffer.alloc(32,17).toString('hex')},aliased=Buffer.from(pm);aliased[1]=153;
+ assert.throws(()=>normalizeStone({...p,stoneMap:aliased.toString('hex')},same,layout,oam.toString('hex')),/identity alias/);
+ const badOam=Buffer.from(po);badOam[1]++;assert.throws(()=>normalizeStone({...p,oam:badOam.toString('hex')},e,layout,oam.toString('hex')),/order\/position/);
+});
 test('confused stone accepts its original column and rejects uncleared relocation',()=>{
  for(const back of [false,true]){
   const state=[],w=Buffer.from([3,3,0,0,8,back?168:182,32,0]);
@@ -24,6 +40,7 @@ test('HIDE publishes the prepared canonical shadow while LOAD retains physical O
 test('stone forms retain source glyphs and mixed terrain colors; source clearing restores the map',async()=>{
  const {data}=await input();for(const back of [false,true]){
   const p=statusVideoOracle(data,{back,stone:true,partyStatus:[64,96,72,64],clearAfter:true}),a=stoneAssets(data,p),bg=residentEnemy(p),g=terrainAssets(p),frame=terrainFrames(data,p,g).at(-1),state=[];
+  for(let id=0;id<12;id++){const bits=a.occupied.readUInt16LE(id*2);assert.equal(bits&~1023,0);for(let cell=0;cell<10;cell++)assert.equal(Boolean(bits&(1<<cell)),a.glyphs.subarray(id*160+cell*16,id*160+(cell+1)*16).some(Boolean));}
   let maxCells=0,maxResidual=0,clearCount=0;
   const base=(x,y)=>y<2?{tile:frame.subarray(g.map[y*20+x]*16,g.map[y*20+x]*16+16),attr:g.attributes[y*20+x]}:y<13?{tile:bg.patterns.subarray(bg.maps[(y-2)*56+x]*16,bg.maps[(y-2)*56+x]*16+16),attr:bg.maps[616+(y-2)*56+x]}:{tile:Buffer.alloc(16),attr:8};
   for(const f of p.extra){if(f.work?.[0]!==3)continue;stoneChange(state,f.tail[68],f.work,back);const c=stoneCompose(state,a,base,0);maxCells=Math.max(maxCells,c.cells.length);maxResidual=Math.max(maxResidual,c.residual.length);if(f.work[1]===3)clearCount++;}
