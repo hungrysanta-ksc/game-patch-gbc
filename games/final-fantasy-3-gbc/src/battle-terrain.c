@@ -102,6 +102,14 @@ void ff3_terrain_prepare(uint8_t page) NONBANKED {uint16_t dest;
  terrain_dma_hi1=dest>>8;terrain_dma_lo1=dest;
  terrain_dma_mask=dirty[page];dirty[page]=0;
 }
+#ifdef FF3_STONE
+void ff3_terrain_base_cell(uint8_t x,uint8_t y,uint8_t*out) NONBANKED {uint8_t saved=CURRENT_BANK,t;const TerrainAsset*a=terrain_assets+active_profile;
+ SWITCH_ROM(a->bank);t=a->map[y*20+x];out[16]=a->attributes[y*20+x];SWITCH_ROM(saved);memcpy(out,terrain_pixels+(uint16_t)t*16,16);
+}
+void ff3_terrain_base_row(uint8_t page,uint8_t row,uint8_t*out) NONBANKED {uint8_t saved=CURRENT_BANK,i;const TerrainAsset*a=terrain_assets+active_profile;
+ memset(out,0,64);SWITCH_ROM(a->bank);for(i=0;i<20;i++){out[i]=a->map[row*20+i]+base_tile+page*10;out[32+i]=a->attributes[row*20+i];}SWITCH_ROM(saved);
+}
+#endif
 /* The descriptor is immutable before pending publication. Keep register setup
  * and each 80-byte DMA bounded; permit TIMA between the two chunks. */
 void ff3_terrain_publish(void) NONBANKED __naked {__asm

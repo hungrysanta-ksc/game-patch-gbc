@@ -44,7 +44,8 @@ export function residentRgb(p,f,a,terrainPixel,options={}){const map=residentMap
  for(let y=0;y<144;y++)for(let x=0;x<160;x++){
   let color=0;if(f!==p.frames[0]&&y>=16&&y<104){const px=(x+scroll)&255,at=((y-16)>>3)*32+(px>>3),t=map[at]*16+(y&7)*2,bit=7-(px&7),v=(a.patterns[t]>>bit&1)|((a.patterns[t+1]>>bit&1)<<1);color=a.palette.readUInt16LE(((map[352+at]&7)*4+v)*2);}
   if(terrainPixel&&y<11)color=terrainPixel(x,y);
-  for(let i=0;i<40;i++){const at=i*4,sx=oam[at+1]-8,sy=oam[at]-16,attr=oam[at+3];if(x<sx||x>=sx+8||y<sy||y>=sy+8)continue;const xx=attr&32?7-(x-sx):x-sx,yy=attr&64?7-(y-sy):y-sy,t=oam[at+2]*16+yy*2,bits=attr&8?a.patterns:tiles,v=(bits[t]>>(7-xx)&1)|((bits[t+1]>>(7-xx)&1)<<1);if(v){const palette=attr&8?a.palette:(options.palette??p.pal);color=palette.readUInt16LE((((attr&7)%4)*4+v)*2);break;}}
+  const patch=options.stone?.cells.find(c=>c.key===(y>>3)*32+(x>>3));if(patch){const t=(patch.tile-options.stone.cells[0].tile)*16+(y&7)*2,b=options.stone.patterns,bit=7-(x&7),v=(b[t]>>bit&1)|((b[t+1]>>bit&1)<<1);color=a.palette.readUInt16LE(((patch.attr&3)*4+v)*2);}
+  for(let i=0;i<40;i++){const at=i*4,sx=oam[at+1]-8,sy=oam[at]-16,attr=oam[at+3];if(x<sx||x>=sx+8||y<sy||y>=sy+8)continue;const xx=attr&32?7-(x-sx):x-sx,yy=attr&64?7-(y-sy):y-sy,id=oam[at+2],stoneTile=options.stone&&id>=150&&id<246,t=(stoneTile?id-options.stone.cells[0].tile:id)*16+yy*2,bits=attr&8?(stoneTile?options.stone.patterns:a.patterns):tiles,v=(bits[t]>>(7-xx)&1)|((bits[t+1]>>(7-xx)&1)<<1);if(v){const palette=attr&8?a.palette:(options.palette??p.pal);color=palette.readUInt16LE((((attr&7)%4)*4+v)*2);break;}}
   out.set(rgb(color),(y*160+x)*3);
  }return out;
 }

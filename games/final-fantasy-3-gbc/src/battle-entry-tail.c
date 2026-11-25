@@ -26,6 +26,13 @@ uint8_t ff3_entry_tail_start(Ff3EntryTail*s) FF3_STATE_BANKED {uint8_t i;
  s->ticket=0;s->actor=s->chunk=s->loaded=s->total=0;s->shift=7;
  if(s->layout==9&&(s->flags&64))s->phase=FF3_TAIL_BOSS;else canonical(s);return 1;
 }
+uint8_t ff3_entry_tail_refresh(Ff3EntryTail*s) FF3_STATE_BANKED {uint8_t i;
+ if(s->phase!=FF3_TAIL_DONE||s->motion.phase!=FF3_ENTRY_TAIL)return 0;
+ for(i=0;i<4;i++)if(s->jobs[i]>=22||s->graphics[i]>=4)return 0;
+ /* Boss chunks are 0..35 and finished before DONE. Reuse the private high
+  * bit for the standalone B5B8 return; only the B479 entry calls B909. */
+ s->chunk=128;s->actor=0;slot(s);return 1;
+}
 uint8_t ff3_entry_tail_ack(Ff3EntryTail*s,uint16_t ticket) FF3_STATE_BANKED {uint8_t i,j,n;
  if(s->ticket!=ticket||s->phase<1||s->phase>=FF3_TAIL_DONE)return 0;
  switch(s->phase){
@@ -36,7 +43,7 @@ uint8_t ff3_entry_tail_ack(Ff3EntryTail*s,uint16_t ticket) FF3_STATE_BANKED {uin
  case FF3_TAIL_MOVE:for(i=0;i<4;i++)if(s->motion.x[i]!=s->motion.destination[i])break;
   if(i<4)ff3_entry_motion(&s->motion);else {pose(s);s->phase=FF3_TAIL_INNER;}break;
  case FF3_TAIL_INNER:s->motion.confused_position[s->actor]=0;pose(s);s->phase=FF3_TAIL_STATUS;break;
- case FF3_TAIL_STATUS:if(++s->actor<4)slot(s);else {s->counts[4]=0;for(i=0;i<4;i++){n=0;for(j=0;j<8;j++)n+=s->types[j]==i;s->counts[i]=n;s->counts[4]+=n;}s->phase=FF3_TAIL_DONE;}break;
+ case FF3_TAIL_STATUS:if(++s->actor<4)slot(s);else {if(!(s->chunk&128)){s->counts[4]=0;for(i=0;i<4;i++){n=0;for(j=0;j<8;j++)n+=s->types[j]==i;s->counts[i]=n;s->counts[4]+=n;}}s->phase=FF3_TAIL_DONE;}break;
  default:return 0;
  }s->ticket++;return 1;
 }
