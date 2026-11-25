@@ -80,7 +80,49 @@ volatile uint16_t native_external_serial,native_external_tick;
 volatile uint8_t native_external_op,native_external_arg;
 #endif
 static void put16(uint8_t at,uint16_t value){slot[at]=(uint8_t)value;slot[at+1]=value>>8;}
+#ifndef FF3_OPENING_VIDEO
 static void put32(uint8_t at,uint32_t value){put16(at,(uint16_t)value);put16(at+2,(uint16_t)(value>>16));}
+#else
+/* Keep all twelve metadata bytes, but copy their SM83 little-endian storage
+ * directly. Only the foreground producer writes these counters/hashes; the
+ * timer preserves registers and cannot observe the unpublished tail slot. */
+static void packet_metadata(void) __naked {__asm
+ ld hl,#_slot
+ ld a,(hl+)
+ ld d,(hl)
+ ld e,a
+ inc de
+ inc de
+ inc de
+ inc de
+ ld hl,#_native_ticks
+ .rept 4
+ ld a,(hl+)
+ ld (de),a
+ inc de
+ .endm
+ ld hl,#_native_events
+ .rept 4
+ ld a,(hl+)
+ ld (de),a
+ inc de
+ .endm
+ ld hl,#_native_source_hash
+ .rept 2
+ ld a,(hl+)
+ ld (de),a
+ inc de
+ .endm
+ ld hl,#_native_gb_hash
+ ld a,(hl+)
+ ld (de),a
+ inc de
+ ld a,(hl)
+ ld (de),a
+ ret
+ __endasm;
+}
+#endif
 /* Publish one immutable completed-event record. Banked storage is diagnostic
  * only; it never moves the audio queue, engine or IRQ state out of fixed RAM. */
 static void publish(void){uint8_t index=native_published^1;
@@ -126,7 +168,13 @@ static void prepare(void){uint8_t end=0,advanced=0;
   if(automatic&&native_ticks>=NATIVE_TEST_TICKS){end=1;preparing=0;}
  }
  ff3_backend_flush(pop_active);native_events++;
- slot[2]=emitted;slot[3]=end;put32(4,native_ticks);put32(8,native_events);put16(12,native_source_hash);put16(14,native_gb_hash);slot[16]=slot[17]=0;
+ slot[2]=emitted;slot[3]=end;
+#ifdef FF3_OPENING_VIDEO
+ packet_metadata();
+#else
+ put32(4,native_ticks);put32(8,native_events);put16(12,native_source_hash);put16(14,native_gb_hash);
+#endif
+ slot[16]=slot[17]=0;
  #ifdef FF3_SCENE
  slot[16]=field_event.shake;slot[17]=field_event.revision;
  #endif

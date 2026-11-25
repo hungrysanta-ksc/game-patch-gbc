@@ -6,8 +6,12 @@
 #define C(a) R((a)+ch)
 
 static uint16_t word(const FF3ChannelOps *ops,uint16_t address) {
+#if defined(FF3_SINGLE_ENGINE) && defined(FF3_OPENING_VIDEO)
+    return ff3_engine_read_word(address);
+#else
     uint8_t lo=FF3_READ(ops,address);
     return lo|((uint16_t)FF3_READ(ops,(uint16_t)(address+1))<<8);
+#endif
 }
 static uint8_t next(const FF3ChannelOps *ops,uint16_t base,uint8_t *y) {
     uint8_t value=FF3_READ(ops,(uint16_t)(base+*y));(*y)++;return value;

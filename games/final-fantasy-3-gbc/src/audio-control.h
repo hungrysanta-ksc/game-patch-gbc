@@ -13,6 +13,9 @@ typedef struct { uint8_t ram[192]; uint8_t apu[24]; } FF3AudioState;
 extern FF3AudioState ff3_state;
 uint8_t ff3_engine_read36(uint16_t address);
 uint8_t ff3_engine_read(uint16_t address);
+#ifdef FF3_OPENING_VIDEO
+uint16_t ff3_engine_read_word(uint16_t address);
+#endif
 void ff3_output(uint8_t reg, uint8_t value);
 void ff3_engine_advance(uint8_t routine, uint8_t channel, uint8_t format, uint8_t effect);
 #define FF3_READ36(ops, a) ff3_engine_read36(a)
