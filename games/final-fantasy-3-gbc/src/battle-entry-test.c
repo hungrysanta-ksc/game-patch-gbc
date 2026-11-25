@@ -6,7 +6,7 @@
 volatile uint8_t state_ready,state_status,state_failure,state_start;
 volatile uint32_t state_case;
 volatile uint16_t state_index;
-static Ff3Entry s,backup;
+static Ff3EntryDisplay s,backup;
 static uint8_t terrain[256],out[64],bank=17;
 static const uint8_t *position=(const uint8_t*)0x4000;
 static uint8_t byte(void){uint8_t v;SWITCH_ROM(bank);v=*position++;if(position==(const uint8_t*)0x8000){bank++;position=(const uint8_t*)0x4000;}return v;}
