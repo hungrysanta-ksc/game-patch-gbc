@@ -10,12 +10,16 @@
 #ifdef FF3_RESIDENT_BG
 #include "battle-resident-bg.h"
 #endif
+#ifdef FF3_TERRAIN
+#include "battle-terrain.h"
+#endif
 void ff3_native_begin(void) NONBANKED;
 void ff3_native_service(void) NONBANKED;
 extern volatile uint16_t native_clock;
 extern volatile uint8_t native_done;
 volatile uint8_t party_ready,party_request,party_profile,party_pause=1,party_step,party_error,party_pending,party_visible,party_page;
 volatile uint8_t party_work;
+volatile uint8_t party_load_stage;
 volatile uint16_t party_serial,party_prepared,party_max_prepare,party_missed,party_max_gap;
 uint8_t __at(0xdc00) party_oam0[160];
 uint8_t __at(0xdd00) party_oam1[160];
@@ -31,11 +35,22 @@ static void refresh(void) __naked {__asm
  __endasm;
 }
 static void publish(void) NONBANKED {uint16_t gap;uint8_t ly=LY_REG;
+#ifdef FF3_TERRAIN
+ SCX_REG=0;
+#endif
  if(!party_pending||ly<144||ly>145||(STAT_REG&3)!=1)return;
 #ifdef FF3_RESIDENT_BG
+#ifdef FF3_TERRAIN
+ terrain_scroll=resident_scroll;ff3_terrain_publish();
+ if(terrain_fault){party_error=20+terrain_fault;party_pending=0;return;}
+ LCDC_REG=(LCDC_REG&0xf7)|(resident_page?8:0);
+#else
  SCX_REG=resident_scroll;LCDC_REG=(LCDC_REG&0xf7)|(resident_page?8:0);
 #endif
- _shadow_OAM_base=next_page?0xdd:0xdc;refresh();DISABLE_OAM_DMA;
+#endif
+ _shadow_OAM_base=next_page?0xdd:0xdc;
+ __asm di __endasm;
+ refresh();DISABLE_OAM_DMA;
  /* Only HRAM DMA needs the masked interval. Counters/diagnostics below
   * must allow TIMA service or its 4096 Hz clock loses overflows. */
  __asm ei __endasm;
@@ -55,10 +70,16 @@ static void present(void){uint8_t i;uint16_t begin=ff3_clock_now(),elapsed;uint8
 #ifdef FF3_RESIDENT_BG
  ff3_resident_prepare(&party_motion,next_page,target);if(resident_error){party_error=10+resident_error;return;}
 #endif
+ #ifdef FF3_TERRAIN
+ ff3_terrain_prepare(resident_page);
+#endif
  elapsed=ff3_clock_now()-begin;if(elapsed>party_max_prepare)party_max_prepare=elapsed;party_prepared++;party_pending=1;
  while(party_pending){ff3_native_service();__asm halt __endasm;}
 }
 static void reset_motion(void){const PartyVideoAsset*a=party_assets+party_profile;
+#ifdef FF3_TERRAIN
+ ff3_terrain_reset();
+#endif
  copy(a->bank,a->seed,&party_motion,sizeof(party_motion));copy(a->bank,a->input,&party_state,sizeof(party_state));
  if(!ff3_entry_start(&party_motion)){party_error=2;return;}present();
 }
@@ -68,11 +89,14 @@ static void load(void){const PartyVideoAsset*a;uint16_t off;uint8_t page;
  page=party_page^1;memset(page?party_oam1:party_oam0,0,160);next_page=page;party_pending=1;
  while(party_pending){ff3_native_service();__asm halt __endasm;}
 #ifdef FF3_RESIDENT_BG
- ff3_resident_load(party_profile);if(resident_error){party_error=10+resident_error;return;}
+ party_load_stage=1;ff3_resident_load(party_profile);if(resident_error){party_error=10+resident_error;return;}
+#ifdef FF3_TERRAIN
+ party_load_stage=2;ff3_terrain_load(party_profile);if(terrain_fault){party_error=20+terrain_fault;return;}
 #endif
- for(off=0;off<4096;off+=256){copy(a->bank,a->tiles+off,text_staging,256);ff3_text_copy(0,0x8000+off,text_staging,256);ff3_native_service();}
+#endif
+ party_load_stage=3;for(off=0;off<4096;off+=256){copy(a->bank,a->tiles+off,text_staging,256);ff3_text_copy(0,0x8000+off,text_staging,256);ff3_native_service();}
  copy(a->bank,a->palette,text_staging,32);wait_vbl_done();set_sprite_palette(0,4,(const palette_color_t*)text_staging);
- loaded=1;party_work=1;reset_motion();party_request=0;
+ loaded=1;party_work=1;party_load_stage=4;reset_motion();party_request=0;party_load_stage=0;
 }
 void main(void){uint8_t i;
  ff3_platform_init();ff3_memory_init();cpu_fast();DISPLAY_OFF;
@@ -83,12 +107,20 @@ void main(void){uint8_t i;
  set_bkg_palette(0,1,(const palette_color_t*)text_staging);SCX_REG=SCY_REG=0;WX_REG=167;*(volatile uint8_t*)0xff6c=0;
  /* Explicit HRAM DMA publishes the selected immutable shadow in this
   * VBlank. Disable the default extra copy, preserving timer IRQ budget. */
- add_VBL(publish);ff3_text_video_init();text_idle=ff3_native_service;LCDC_REG=0x93;ff3_native_begin();party_ready=0xa5;
+ add_VBL(publish);ff3_text_video_init();text_idle=ff3_native_service;LCDC_REG=0x93;ff3_native_begin();
+#ifdef FF3_TERRAIN
+ ff3_terrain_init();
+#endif
+ party_ready=0xa5;
  while(1){ff3_native_service();
   if(party_request)load();
   else if(loaded&&!party_error&&(party_step||(!party_pause&&!native_done))){
    if(party_motion.phase==FF3_ENTRY_TAIL)reset_motion();
-   else {if(!ff3_entry_ack(&party_motion,party_motion.ticket)){party_error=4;continue;}if(party_motion.phase!=FF3_ENTRY_TAIL)present();}
+   else {
+#ifdef FF3_TERRAIN
+    ff3_terrain_step(&party_motion);if(terrain_fault){party_error=20+terrain_fault;continue;}
+#endif
+    if(!ff3_entry_ack(&party_motion,party_motion.ticket)){party_error=4;continue;}if(party_motion.phase!=FF3_ENTRY_TAIL)present();}
    party_step=0;
   }else {__asm halt __endasm;}
  }

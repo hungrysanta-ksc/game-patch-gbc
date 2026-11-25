@@ -45,9 +45,10 @@ export function partyEntryOracle(rom,{back=false,partyStatus=[0,0,0,0]}={}){
  const c=m.c;seed=Buffer.concat([entryState(c),Buffer.alloc(4)]);const initial=partyOamInput(c),chr=Buffer.from(m.ppu.bytes.subarray(0x1000,0x2000)),pal=cgbPalette(c.m.subarray(0x7d07,0x7d17));
  const initialPpu=Buffer.from(m.ppu.bytes),bgPalette=cgbPalette(c.m.subarray(0x7cf7,0x7d07));
  m.begin();segment(c,0xb469,0xb479);
+ const terrainSource=Buffer.from(c.m.subarray(0x7900,0x7a00));
  check(pal.some(Boolean)&&frames.slice(2).every(f=>f.palette.equals(pal)),'Original visible party palette publication');
  check(frames.every(f=>f.chrSha256===hash(chr)),'Original prefix keeps resident OBJ patterns');
- return {back,partyStatus,seed,initial,chr,pal,initialPpu,bgPalette,frames};
+ return {back,partyStatus,seed,initial,chr,pal,initialPpu,bgPalette,terrainSource,frames};
 }
 export function nativePartyTiles(chr){const out=Buffer.alloc(chr.length);for(let t=0;t<chr.length;t+=16)for(let y=0;y<8;y++){out[t+y*2]=chr[t+y];out[t+y*2+1]=chr[t+y+8];}return out;}
 export function originalPartyRgb(p,f){
