@@ -24,7 +24,7 @@
     "verify:memory": "node tools/verify-memory.mjs",
     "build:audio": "node tools/build-audio.mjs",
     "build:timed": "node tools/build-timed.mjs",
-    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs tests/render-budget.test.mjs tests/npc-composition.test.mjs tests/composition-kernel.test.mjs tests/composition-cache.test.mjs tests/composition-input.test.mjs tests/composition-window.test.mjs tests/battle-display.test.mjs tests/battle-composition.test.mjs tests/battle-timeline.test.mjs tests/battle-placement.test.mjs tests/battle-scene.test.mjs tests/battle-transitions.test.mjs tests/battle-scene-composition.test.mjs tests/battle-numbers.test.mjs tests/battle-number-timeline.test.mjs tests/battle-action.test.mjs tests/battle-select.test.mjs tests/battle-party.test.mjs tests/battle-items.test.mjs tests/battle-item-use.test.mjs tests/battle-equipment.test.mjs tests/battle-row.test.mjs tests/battle-physical.test.mjs tests/battle-weapon-duration.test.mjs tests/battle-fight.test.mjs tests/battle-context.test.mjs tests/battle-opening.test.mjs tests/battle-opening-video.test.mjs tests/battle-opening-costs.test.mjs tests/audio-producer-profile.test.mjs tests/audio-refill-costs.test.mjs tests/battle-entry.test.mjs tests/battle-entry-tail.test.mjs tests/battle-party-oam.test.mjs",
+    "test": "node --test tests/audio.test.mjs tests/vgm.test.mjs tests/timed-stream.test.mjs tests/registry.test.mjs tests/maps.test.mjs tests/objects.test.mjs tests/text.test.mjs tests/dialogue.test.mjs tests/render-budget.test.mjs tests/npc-composition.test.mjs tests/composition-kernel.test.mjs tests/composition-cache.test.mjs tests/composition-input.test.mjs tests/composition-window.test.mjs tests/battle-display.test.mjs tests/battle-composition.test.mjs tests/battle-timeline.test.mjs tests/battle-placement.test.mjs tests/battle-scene.test.mjs tests/battle-transitions.test.mjs tests/battle-scene-composition.test.mjs tests/battle-numbers.test.mjs tests/battle-number-timeline.test.mjs tests/battle-action.test.mjs tests/battle-select.test.mjs tests/battle-party.test.mjs tests/battle-items.test.mjs tests/battle-item-use.test.mjs tests/battle-equipment.test.mjs tests/battle-row.test.mjs tests/battle-physical.test.mjs tests/battle-weapon-duration.test.mjs tests/battle-fight.test.mjs tests/battle-context.test.mjs tests/battle-opening.test.mjs tests/battle-opening-video.test.mjs tests/battle-opening-costs.test.mjs tests/audio-producer-profile.test.mjs tests/audio-refill-costs.test.mjs tests/battle-entry.test.mjs tests/battle-entry-tail.test.mjs tests/battle-party-oam.test.mjs tests/battle-resident-bg.test.mjs",
     "test:vgm": "node --test tests/vgm.test.mjs tests/timed-stream.test.mjs",
     "verify:timed": "node tools/verify-timed.mjs",
     "build:control": "node tools/build-control.mjs",
@@ -99,7 +99,9 @@
     "audit:battle-object-ownership": "node tools/audit-battle-object-ownership.mjs",
     "build:battle-party-oam": "node tools/build-battle-party-oam.mjs",
     "verify:battle-party-oam": "node tools/verify-battle-select.mjs --party-oam",
-    "verify:battle-party-video": "node tools/verify-battle-party-video.mjs"
+    "verify:battle-party-video": "node tools/verify-battle-party-video.mjs",
+    "build:battle-resident-bg": "node tools/build-battle-party-oam.mjs --resident-bg",
+    "verify:battle-resident-video": "node tools/verify-battle-party-video.mjs --resident-bg"
   },
   "engines": {
     "node": ">=20"

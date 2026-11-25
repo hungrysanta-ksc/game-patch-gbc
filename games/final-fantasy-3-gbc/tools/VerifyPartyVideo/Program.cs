@@ -10,7 +10,8 @@ class Program {
  uint Num(string k,int n=1){uint v=0;for(int i=0;i<n;i++)v|=(uint)Core.GetMemoryValue(7,Addr(k)+(uint)i)<<(8*i);return v;}
  void Put(string k,byte v)=>Core.SetMemoryValue(7,Addr(k),v);
  string Mem(uint a,int n){var b=new byte[n];Core.GetMemoryValues(7,a,a+(uint)n-1,b);return Convert.ToHexString(b).ToLowerInvariant();}
- string Oam(){var b=new byte[96];Core.GetMemoryValues(44,0,95,b);return Convert.ToHexString(b).ToLowerInvariant();}
+ string Bg(int profile){if(!c.TryGetProperty("residentPatternBytes",out var sizes)||sizes.GetArrayLength()==0)return "";int n=sizes[profile].GetInt32();var bytes=new byte[n];Core.GetMemoryValues(43,8192,8192+(uint)n-1,bytes);return Convert.ToHexString(bytes).ToLowerInvariant();}
+ string Oam(){int n=c.TryGetProperty("oamBytes",out var count)?count.GetInt32():96;var b=new byte[n];Core.GetMemoryValues(44,0,(uint)n-1,b);return Convert.ToHexString(b).ToLowerInvariant();}
  void Yield(){for(int i=0;Num("native_irq_busy")!=0||(Core.GetMemoryValue(7,0xff70)&7)!=1;i++){if(i>20000)throw new Exception("IRQ never yields");Step(17,0);}}
  var audio=new List<object>();var pictures=new List<object>();
  void Observe(){Yield();var t=Core.GetTimingInfo(7);audio.Add(new{consumed=Mem(Addr("native_consumed"),12),timer=Num("native_clock",2),master=t.clock,rate=t.rate,done=Num("native_done"),late=Num("native_max_late",2),underruns=Num("native_underruns",2),error=Num("ff3_error"),videoError=Num("party_error"),memoryFault=Num("memory_fault"),transferFault=Num("text_transfer_fault"),platformError=Num("platform_error"),guard=Mem(0xddf0,16),svbk=Core.GetMemoryValue(7,0xff70)});if(Num("ff3_error")+Num("party_error")+Num("memory_fault")+Num("text_transfer_fault")+Num("native_underruns",2)+Num("native_max_late",2)!=0)throw new Exception("Party/audio runtime fault");}
@@ -23,7 +24,7 @@ class Program {
   for(int i=0;Num("party_request")!=0;i++){if(i>500)throw new Exception("Load timeout");Step();Observe();}
   for(int f=0;f<counts[p];f++){
    if(f>0){Put("party_step",1);for(int i=0;Num("party_step")!=0;i++){if(i>100)throw new Exception("Advance timeout");Step();Observe();}}
-   Step(2);Observe();Audit.TakeScreenshot();pictures.Add(new{profile=p,frame=f,visible=Num("party_visible"),source=Mem(Addr("party_source"),96),oam=Oam(),state=Mem(Addr("party_motion"),35)});
+   Step(2);Observe();Audit.TakeScreenshot();pictures.Add(new{profile=p,frame=f,visible=Num("party_visible"),source=Mem(Addr("party_source"),96),oam=Oam(),bgPatterns=Bg(p),bgGuard=Mem(0xd4c0,16),state=Mem(Addr("party_motion"),35)});
   }
  }
  // Same artifact and loaded assets, then uninterrupted repeated live entry
@@ -31,6 +32,6 @@ class Program {
  var script=Audit.LoadScript("party-residency",Text("auditPath"),Text("audit"),-1);if(script<0)throw new Exception("Audit load");Put("party_pause",0);
  for(int i=0;Num("native_done")==0;i++){if(i>8500)throw new Exception("Audio schedule timeout");Step();Observe();if(i%600==0)File.AppendAllText(Text("output")+".progress.log",i+Environment.NewLine);}
  var log=new StringBuilder(3000000);Audit.GetScriptLog(script,log,3000000);File.WriteAllText(Text("output")+".lua.log",log.ToString());
- File.WriteAllText(Text("output"),JsonSerializer.Serialize(new{romSha256=Text("romSha256"),coreSha256=Text("coreSha256"),home=Text("home"),audio,pictures,serial=Num("party_serial",2),prepared=Num("party_prepared",2),maxPrepareTicks=Num("party_max_prepare",2),missed=Num("party_missed",2),maxGapFrames=Num("party_max_gap",2),done=Num("native_done")},new JsonSerializerOptions{WriteIndented=true}));
+ File.WriteAllText(Text("output"),JsonSerializer.Serialize(new{romSha256=Text("romSha256"),coreSha256=Text("coreSha256"),home=Text("home"),audio,pictures,resident=c.TryGetProperty("residentPatternBytes",out var sizes)&&sizes.GetArrayLength()>0?new {maxFillMs=Num("resident_max_fill",2)*1000.0/4096,maxTransferMs=Num("resident_max_transfer",2)*1000.0/4096,maxDirectServiceMs=Num("resident_max_service",2)*1000.0/4096}:null,serial=Num("party_serial",2),prepared=Num("party_prepared",2),maxPrepareTicks=Num("party_max_prepare",2),missed=Num("party_missed",2),maxGapFrames=Num("party_max_gap",2),done=Num("native_done")},new JsonSerializerOptions{WriteIndented=true}));
  }finally{Core.Stop();Core.Release();}}
 }
