@@ -11,8 +11,8 @@ function call(c,address){c.pc=address;c.push(0x4f);c.push(0xff);let n=0;while(c.
 
 export function presentationMachine(rom,{capture}={}){
  const c=battleCpu(rom),ppu=recordTransfers(c),write=c.write.bind(c),step=c.step.bind(c);
- const waits=[],scroll=[],songs=[];let tracing=false,last=ppu.written.slice();
- c.write=(a,v)=>{if(a!==0x2001)write(a,v);}; // PPUMASK side effects are outside this non-raster reference
+ const waits=[],scroll=[],songs=[],physicalOam=Buffer.alloc(256,0xf0);let tracing=false,last=ppu.written.slice();
+ c.write=(a,v)=>{if(a===0x4014)physicalOam.set(c.m.subarray(v*256,v*256+256));if(a!==0x2001)write(a,v);}; // PPUMASK side effects are outside this non-raster reference
  function checkpoint(reason){const ranges=[],totals={chr:0,map:0,palette:0};let run;
   for(let a=0;a<0x4000;a++){const n=ppu.written[a]-last[a];if(!n){run=null;continue;}
    const kind=a<0x2000?'chr':a<0x3f00?'map':'palette';totals[kind]+=n;
@@ -28,7 +28,7 @@ export function presentationMachine(rom,{capture}={}){
   if(tracing&&this.banks[1]===0x2f&&this.pc===0xae5e)scroll.push({enemy:this.m[15],menu:this.m[16],remaining:this.m[4]});
   step();
  };
- return {c,ppu,waits,scroll,songs,call:a=>call(c,a),begin(){tracing=true;last=ppu.written.slice();waits.length=0;scroll.length=0;},finish(){checkpoint('return');tracing=false;}};
+ return {c,ppu,physicalOam,waits,scroll,songs,call:a=>call(c,a),begin(){tracing=true;last=ppu.written.slice();waits.length=0;scroll.length=0;},finish(){checkpoint('return');tracing=false;}};
 }
 function initializedParty(rom,{jobs=[0,1,2,3],back=false,rows=[0,0,0,0]}={}){
  // Keep the same real enemy/terrain/palette state through status and item

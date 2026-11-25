@@ -27,7 +27,7 @@ export function tailReference(rom,options={}){
   if(phase===1){const a=assets.bosses[c.m[0x7d73]&31],off=c.m[0x90]*64;work=Buffer.from([1,a.id,off&255,off>>8,64,c.m[0x80],c.m[0x81],0]);source=rom.subarray(a.begin+off,a.begin+off+64);}
   if(phase===4){const g=c.m[0x7da3+actor],asset=g===2?24:g===3?25:c.m[0x7d8b+actor],base=asset===24?0xbf80:asset===25?0xbf00:0x8000+asset*0x2a0,off=word(c,0x7e)-base,n=ret===0xf9d3?c.m[0x82]:64;work=Buffer.from([2,asset,off&255,off>>8,n,c.m[0x80],c.m[0x81],0]);source=Buffer.from(Array.from({length:n},(_,i)=>c.read(word(c,0x7e)+i)));}
   if(phase===6||phase===7){const at=word(c,0x7dc7),asset=at>=0xb82d?3:Math.floor((at-0xb7cd)/32),off=at-(0xb7cd+asset*32);check(asset>=0&&asset<=3,'Stone table identity');work=Buffer.from([3,asset,off,0,c.m[0x7dc9]*2,c.m[0x7dc5],c.m[0x7dc6],0]);source=Buffer.alloc(work[4]);}
-  frames.push({state:logical(c,phase,frames.length),ret,work,source,ppu:Buffer.from(p.bytes),ranges:b.ranges});
+  frames.push({state:logical(c,phase,frames.length),ret,work,source,ppu:Buffer.from(p.bytes),oam:Buffer.from(c.m.subarray(0x200,0x300)),mirror:c.m[0x98],icons:Buffer.from([c.m[0xac],c.m[0xb7],...c.m.subarray(0x7db7,0x7dbb)]),ranges:b.ranges});
  };
  ({m}=initializedBattle(rom,{formation:3,rows:[0,1,0,1],terrain:0,...options,capture}));const c=m.c;
  if(options.normalized)for(let i=0;i<4;i++){c.m[0x7d9b+i*2]=options.normalized[i];c.m[0x7d9c+i*2]=options.second?.[i]??0;}
@@ -36,7 +36,7 @@ export function tailReference(rom,options={}){
  if(options.boss!==undefined){c.m[0x7d7b]=9;c.m[0x7d68]|=64;c.m[0x7d73]=options.boss;}
  if(options.expectedBoss!==undefined)check(c.m[0x7d7b]===9&&(c.m[0x7d68]&64)&&(c.m[0x7d73]&31)===options.expectedBoss,'Original formation selects boss entry resource');
  const initial=logical(c,0,0),seed=Buffer.concat([initial.subarray(0,69),Buffer.alloc(4),initial.subarray(69)]);
- const step=c.step.bind(c);c.step=function(){if(this.banks[1]===0x2f){if(this.pc===0xbe97)boss=true;if(this.pc===0xb489)boss=false;if(this.pc===0xb5c3)actor=this.x;if(this.pc===0xab0d)loading=true;if(this.pc===0xab3a)loading=false;}step();};
+ const step=c.step.bind(c);c.step=function(){if(active&&this.pc===0xf8cb&&frames.length){frames.at(-1).published={ppu:Buffer.from(m.ppu.bytes),oam:Buffer.from(m.physicalOam)};}if(this.banks[1]===0x2f){if(this.pc===0xbe97)boss=true;if(this.pc===0xb489)boss=false;if(this.pc===0xb5c3)actor=this.x;if(this.pc===0xab0d)loading=true;if(this.pc===0xab3a)loading=false;}step();};
  const write=c.write.bind(c);c.write=(a,v)=>{if(active&&(a===0x7f49||a===0x7f42))sounds.push({at:frames.length,address:a,value:v});write(a,v);};
  // Back-attack F94F regenerates 256*8 bit-reversal steps for EACH block.
  // This larger source routine has its own bound; do not weaken the shared
@@ -44,7 +44,7 @@ export function tailReference(rom,options={}){
  active=true;m.begin();c.pc=0xb479;c.push(0x4f);c.push(0xff);let instructions=0;
  while(c.pc!==0x5000){check(++instructions<=6000000&&frames.length<=600,'Tail source execution bound');c.step();}
  active=false;actor=4;const end=logical(c,8,frames.length);
- const terminal={state:end,ppu:Buffer.from(m.ppu.bytes),work:null};
+ const terminal={state:end,ppu:Buffer.from(m.ppu.bytes),oam:Buffer.from(c.m.subarray(0x200,0x300)),mirror:c.m[0x98],icons:Buffer.from([c.m[0xac],c.m[0xb7],...c.m.subarray(0x7db7,0x7dbb)]),work:null};
  for(let i=0;i<frames.length;i++){const f=frames[i];if(!f.work)continue;const next=frames[i+1]??terminal,w=f.work,at=w.readUInt16LE(5);f.output=Buffer.from(Array.from({length:w[4]},(_,i)=>next.ppu[at+(w[0]===3?(i>>1)*32+(i&1):i)]));}
  check(seed.length===75&&end.length===71,'Tail ABI');return {prefixSeed,seed,frames,terminal,instructions,sounds,scope:'Original B479..B909 including actual graphics loaders, motion and stone writes, NMI waits intercepted; no raster/audio timing'};
 }
