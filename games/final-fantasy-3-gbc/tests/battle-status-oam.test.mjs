@@ -29,5 +29,5 @@ test('native command graphics and icon animation follow B304 enable after canoni
   assert.equal(statusNativeOam(a.icons,back).length,32);
   assert.ok(p.commandBlocks.length>0);assert.ok(p.commandRanges.every(r=>r.begin>=0x1390));
  }
- assert.throws(()=>statusVideoOracle(data,{partyStatus:[64,0,0,0]}),/non-stone/);
+ assert.throws(()=>statusVideoOracle(data,{partyStatus:[64,0,0,0]}),/registered tail consumers/);
 });

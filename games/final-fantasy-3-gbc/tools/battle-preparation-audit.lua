@@ -18,7 +18,9 @@ end
 local function finish()
  local t=charge()
  if #stack~=0 then error('Preparation escaped call boundary') end
- lines[#lines+1]=string.format('preparation:%d,%d,%d,%d,%d,%d,%d,%d,%d',profile,request,byte('frame'),t.masterClock-start,rate,costs[0] or 0,costs[1] or 0,costs[2] or 0,costs[3] or 0)
+ local frame=byte('frame')
+ if preparationFrameBytes==2 then frame=frame+256*emu.read(preparationAddresses.frame+1,mem) end
+ lines[#lines+1]=string.format('preparation:%d,%d,%d,%d,%d,%d,%d,%d,%d',profile,request,frame,t.masterClock-start,rate,costs[0] or 0,costs[1] or 0,costs[2] or 0,costs[3] or 0)
  completed=completed+1
  -- Mesen retains only 500 log entries. Batch complete records, without
  -- dropping the earliest profiles or changing emulated execution.

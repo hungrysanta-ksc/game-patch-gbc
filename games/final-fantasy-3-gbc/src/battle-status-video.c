@@ -11,6 +11,10 @@ void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANK
 void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED;
 #include "memory.h"
 #include "text-vblank.h"
+#ifdef FF3_BOSS
+#include "battle-boss.h"
+void ff3_resident_fix(void) NONBANKED;
+#endif
 #ifdef FF3_STONE
 #include "battle-stone.h"
 #include "job-assets.h"
@@ -36,6 +40,9 @@ void ff3_status_video_reset(uint8_t profile) BANKED {
  ff3_party_copy(a->bank,a->tail,(uint8_t*)&status_tail,75);
  ff3_party_copy(a->bank,a->status,(uint8_t*)&status_state,35);
  memset(status_source,240,64);
+#ifdef FF3_BOSS
+ ff3_boss_reset(profile);
+#endif
 #ifdef FF3_STONE
  ff3_stone_reset(profile);
  refreshed=0;
@@ -44,7 +51,7 @@ void ff3_status_video_reset(uint8_t profile) BANKED {
 uint8_t ff3_status_video_advance(void) BANKED {
  const StatusVideoAsset*a=status_assets+profile_id;uint16_t at=0,dest;uint8_t n;
  if(!status_stage){memcpy(&status_tail.motion,&party_motion,39);if(!ff3_entry_tail_start(&status_tail))return 1;status_stage=1;
-#ifdef FF3_STONE
+#if defined(FF3_STONE) || defined(FF3_BOSS)
  ff3_resident_fix();
 #endif
  }
@@ -58,6 +65,9 @@ uint8_t ff3_status_video_advance(void) BANKED {
  }
 #endif
  memcpy(&party_motion,&status_tail.motion,39);
+#ifdef FF3_BOSS
+ if(status_tail.phase==FF3_TAIL_BOSS)return ff3_boss_queue(status_tail.graphic&31,status_tail.chunk,status_tail.shift)?0:5;
+#endif
  if(status_tail.phase==FF3_TAIL_DONE){
   while(at<a->bytes){status_load++;ff3_party_copy(a->bank,a->blocks+at,work,3);dest=0x8000+work[0]+((uint16_t)work[1]<<8);n=work[2];at+=3;
    if(!n||n>64||at+n>a->bytes||dest<0x8000||dest+n>0x9000)return 3;
@@ -88,7 +98,7 @@ uint8_t ff3_status_video_advance(void) BANKED {
  if(status_tail.phase!=FF3_TAIL_STATUS||!ff3_entry_tail_work(&status_tail,work)||work[0]!=3||work[1]!=3)return 4;
  return 0;
 }
-uint8_t ff3_status_video_hold(void) BANKED {return status_stage==1&&(status_tail.phase==FF3_TAIL_CANONICAL||status_tail.phase==FF3_TAIL_LOAD);}
+uint8_t ff3_status_video_hold(void) BANKED {return status_stage==1&&(status_tail.phase==FF3_TAIL_BOSS||status_tail.phase==FF3_TAIL_CANONICAL||status_tail.phase==FF3_TAIL_LOAD);}
 void ff3_status_video_source(void) BANKED {
  // Canonical entry prepared the new shadow without DMA. HIDE publishes
  // that shadow with only the loading actor's six records replaced by F0.

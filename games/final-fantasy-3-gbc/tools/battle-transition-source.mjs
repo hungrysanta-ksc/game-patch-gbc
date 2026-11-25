@@ -7,7 +7,7 @@ import {offset} from './render-budget-source.mjs';
 import {segment} from './state-source.mjs';
 const select=(c,pair)=>{c.banks=[pair*2,pair*2+1,0x3e,0x3f];c.m[0x7cf6]=pair;};
 function ret(c){c.pc=((c.pop()|(c.pop()<<8))+1)&65535;}
-function call(c,address){c.pc=address;c.push(0x4f);c.push(0xff);let n=0;while(c.pc!==0x5000){check(++n<=3000000,'Battle transition instruction budget at '+c.pc.toString(16));c.step();}return n;}
+function call(c,address,limit=3000000){check(limit===3000000||limit===6000000,'Registered presentation budget');c.pc=address;c.push(0x4f);c.push(0xff);let n=0;while(c.pc!==0x5000){check(++n<=limit,'Battle transition instruction budget at '+c.pc.toString(16));c.step();}return n;}
 
 export function presentationMachine(rom,{capture}={}){
  const c=battleCpu(rom),ppu=recordTransfers(c),write=c.write.bind(c),step=c.step.bind(c);
@@ -28,7 +28,7 @@ export function presentationMachine(rom,{capture}={}){
   if(tracing&&this.banks[1]===0x2f&&this.pc===0xae5e)scroll.push({enemy:this.m[15],menu:this.m[16],remaining:this.m[4]});
   step();
  };
- return {c,ppu,physicalOam,waits,scroll,songs,call:a=>call(c,a),begin(){tracing=true;last=ppu.written.slice();waits.length=0;scroll.length=0;},finish(){checkpoint('return');tracing=false;}};
+ return {c,ppu,physicalOam,waits,scroll,songs,call:(a,limit)=>call(c,a,limit),begin(){tracing=true;last=ppu.written.slice();waits.length=0;scroll.length=0;},finish(){checkpoint('return');tracing=false;}};
 }
 function initializedParty(rom,{jobs=[0,1,2,3],back=false,rows=[0,0,0,0]}={}){
  // Keep the same real enemy/terrain/palette state through status and item
