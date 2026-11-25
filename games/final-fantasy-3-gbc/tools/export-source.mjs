@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/battle-confusion.md',
  'docs/battle-stone.md','src/battle-stone.h','src/battle-stone.c','tools/battle-stone.mjs','tests/battle-stone.test.mjs',
  'docs/battle-status-oam.md','src/battle-status-oam.h','src/battle-status-oam.c','src/battle-status-oam-test.c','src/battle-status-video.h','src/battle-status-video.c','tools/battle-status-oam-source.mjs','tools/build-battle-status-oam.mjs','tools/battle-status-video.mjs','tests/battle-status-oam.test.mjs',
  'docs/battle-terrain.md','src/battle-terrain.h','src/battle-terrain.c','tools/battle-terrain.mjs','tools/terrain-video-audit.lua','tests/battle-terrain.test.mjs',

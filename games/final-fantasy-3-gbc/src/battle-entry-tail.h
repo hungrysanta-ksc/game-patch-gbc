@@ -17,7 +17,8 @@ typedef struct {
 uint8_t ff3_entry_tail_start(Ff3EntryTail*s) FF3_STATE_BANKED;
 /* 2F/B5B8: refresh all four actors after the caller updates normalized
  * status. Keep coordinates/resources/counts; do not repeat canonical entry
- * or its B909 monster recount. Private chunk bit 7 records this return path. */
+ * or its B909 monster recount. Private chunk bit 7 records this return path;
+ * bit 6 records B3F6's backward motion after the boss phase has ended. */
 uint8_t ff3_entry_tail_refresh(Ff3EntryTail*s) FF3_STATE_BANKED;
 uint8_t ff3_entry_tail_ack(Ff3EntryTail*s,uint16_t ticket) FF3_STATE_BANKED;
 uint8_t ff3_entry_tail_work(const Ff3EntryTail*s,uint8_t*out) FF3_STATE_BANKED;

@@ -13,7 +13,7 @@ export function stoneAssets(rom,p){const maps=tailAssets(rom).tables.find(t=>t.n
 }
 export function jobAssets(rom){return Buffer.concat([rom.subarray(offset(0x28,0x8000),offset(0x28,0x8000)+22*672),rom.subarray(offset(0x29,0xbf80),offset(0x29,0xbf80)+128),rom.subarray(offset(0x29,0xbf00),offset(0x29,0xbf00)+128)]);}
 export function stoneChange(state,actor,work,back){check(actor>=0&&actor<4&&work[0]===3&&work[1]<=3&&!work[3]&&!work[7]&&work[4]===(actor&1?6:8)&&work[2]===(work[1]===3?0:actor*8),'Stone map descriptor');
- const col=(work.readUInt16LE(5)&31)-(back?2:10);check((back?[0,2]:[16,18]).includes(col),'Stone canonical columns');check(!state[actor]||state[actor].kind===3||state[actor].x===col,'Stone relocation requires source clear');state[actor]={kind:work[1],x:col};return state;
+ const col=(work.readUInt16LE(5)&31)-(back?2:10);check((back?[0,2,6]:[16,18,12]).includes(col)&&(work[1]===3||col!==(back?6:12)),'Stone canonical columns');check(!state[actor]||state[actor].kind===3||state[actor].x===col,'Stone relocation requires source clear');state[actor]={kind:work[1],x:col};return state;
 }
 export function stoneCompose(state,a,baseCell,page){const keys=[];
  for(let slot=0;slot<4;slot++){const d=state[slot];if(!d||d.kind===3)continue;

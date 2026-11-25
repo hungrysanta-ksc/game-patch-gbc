@@ -24,7 +24,10 @@ static uint8_t any(const uint8_t*p){uint8_t i,v=0;for(i=0;i<16;i++)v|=p[i];retur
 void ff3_stone_reset(uint8_t profile) BANKED {profile_id=profile;memset(kind,3,4);memset(col,0,4);memset(valid,0,2);old_rows[0]=old_rows[1]=0;stone_error=0;memset((void*)0xd900,0xa9,16);}
 uint8_t ff3_stone_change(uint8_t actor,const uint8_t*w,uint8_t back) BANKED {uint8_t x;
  if(actor>=4||w[0]!=3||w[1]>3||w[3]||w[7]||w[4]!=(actor&1?6:8)||w[2]!=(w[1]==3?0:actor*8))return 0;
- x=(w[5]&31)-(back?2:10);if(back?(x!=0&&x!=2):(x!=16&&x!=18))return 0;
+ x=(w[5]&31)-(back?2:10);if(back?(x!=0&&x!=2&&x!=6):(x!=16&&x!=18&&x!=12))return 0;
+ /* Confused non-stone actors still issue source clear descriptors. Stone
+  * in the enemy area requires a separate BG/residual ownership adapter. */
+ if(w[1]!=3&&x==(back?6:12))return 0;
  if(kind[actor]<3&&col[actor]!=x)return 0;
  kind[actor]=w[1];col[actor]=x;return 1;
 }

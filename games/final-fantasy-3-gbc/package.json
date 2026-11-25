@@ -109,7 +109,9 @@
     "build:battle-status-video": "node tools/build-battle-party-oam.mjs --status",
     "verify:battle-status-video": "node tools/verify-battle-party-video.mjs --status",
     "build:battle-stone": "node tools/build-battle-party-oam.mjs --stone",
-    "verify:battle-stone": "node tools/verify-battle-party-video.mjs --stone"
+    "verify:battle-stone": "node tools/verify-battle-party-video.mjs --stone",
+    "build:battle-confusion": "node tools/build-battle-party-oam.mjs --confusion",
+    "verify:battle-confusion": "node tools/verify-battle-party-video.mjs --confusion"
   },
   "engines": {
     "node": ">=20"

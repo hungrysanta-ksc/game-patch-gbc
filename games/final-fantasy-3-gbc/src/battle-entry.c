@@ -13,14 +13,15 @@ static void scroll(Ff3EntryDisplay*s){
 }
 /* 33/BD45,BE89. Do not replace small/confused/dead movement with a lerp.
  * A destination hit retains the current pose and Y, exactly as the source. */
-void ff3_entry_motion(Ff3EntryDisplay*s) FF3_STATE_BANKED {uint8_t i,f=s->frame;
+void ff3_entry_motion_direction(Ff3EntryDisplay*s,uint8_t back) FF3_STATE_BANKED {uint8_t i,f=s->frame,step=back?1:255;
  for(i=0;i<4;i++)if(s->x[i]!=s->destination[i]){
-  if(s->status[i]&4){s->y[i]+=ff3_entry_toad_y[f&7];s->pose[i]=ff3_entry_toad_pose[f&7];s->x[i]-=2;}
+  if(s->status[i]&4){s->y[i]+=ff3_entry_toad_y[f&7];s->pose[i]=ff3_entry_toad_pose[f&7]|(back?128:0);s->x[i]+=step*2;}
   else {s->pose[i]=((f&4)>>2)+((s->status[i]&1)?10:1);
    if(!s->confused_position[i]&&(s->status[i]&8))s->pose[i]^=128;
-   s->x[i]-=(s->status[i]&1)?1:2;}
+   s->x[i]+=step*((s->status[i]&1)?1:2);}
  }s->frame++;
 }
+void ff3_entry_motion(Ff3EntryDisplay*s) FF3_STATE_BANKED {ff3_entry_motion_direction(s,0);}
 uint8_t ff3_entry_start(Ff3EntryDisplay*s) FF3_STATE_BANKED {uint8_t i,back=s->battle_type==0x88;
  if(s->phase)return 0;
  for(i=0;i<4;i++){
