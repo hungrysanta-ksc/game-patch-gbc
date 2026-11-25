@@ -6,6 +6,8 @@ local publications,badpublication=0,0
 local criticalStart,criticalRate,criticalMax,criticalCount=nil,0,0,0
 local numberFrames,numberStorageWrites=0,0
 local stagingOamWrites,activeOamWrites=0,0
+local phaseTotals,phaseCounts,phaseMax={}, {}, {}
+local phasePrev,phaseClock,phaseRate=nil,nil,0
 emu.addMemoryCallback(function(address,value)
  local phase=emu.read(__SCENE_PHASE__,mem)
  if phase==3 then
@@ -28,8 +30,18 @@ emu.addMemoryCallback(function()
 end,emu.callbackType.exec,__SCENE_DMA_END__,__SCENE_DMA_END__,emu.cpuType.gameboy)
 emu.addMemoryCallback(function(address,value)
  local t=emu.getState()
+ if phasePrev then
+  local elapsed=t.masterClock-phaseClock
+  phaseTotals[phasePrev]=(phaseTotals[phasePrev] or 0)+elapsed
+  phaseCounts[phasePrev]=(phaseCounts[phasePrev] or 0)+1
+  phaseMax[phasePrev]=math.max(phaseMax[phasePrev] or 0,elapsed)
+ end
+ phasePrev=value;phaseClock=t.masterClock;phaseRate=t.clockRate
  emu.log(string.format('scene-stage:%d,%d,%d',value,t.masterClock,t.clockRate))
 end,emu.callbackType.write,__SCENE_PHASE__,__SCENE_PHASE__,emu.cpuType.gameboy)
+emu.addEventCallback(function()
+ for p,n in pairs(phaseTotals) do emu.log(string.format('scene-cost:%d,%d,%d,%d,%d',p,n,phaseCounts[p],phaseMax[p],phaseRate)) end
+end,emu.eventType.codeBreak)
 emu.addMemoryCallback(function(address,value)
  writes=writes+1
  local bank=emu.read(0xff4f,mem)&1
