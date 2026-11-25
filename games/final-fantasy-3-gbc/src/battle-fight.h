@@ -12,7 +12,8 @@ typedef struct {
  uint8_t target_number[2],actor_number[2],split_id,status_message;
 } Ff3Fight;
 /* Fails BEFORE mutations/RNG for invalid records, unresolved targets,
- * running defense, split-capable monsters, or insufficient queue capacity.
+ * split-capable monsters, or insufficient queue capacity. Running defense
+ * follows the original temporary penalty and carry-sensitive restoration.
  * Same-side slot identity aliases target to actor. Accessible WRAM only. */
 uint8_t ff3_fight_resolved(FF3BattleRng *rng,Ff3Fight *s) FF3_STATE_BANKED;
 #endif

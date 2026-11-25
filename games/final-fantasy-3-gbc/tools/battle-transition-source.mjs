@@ -35,7 +35,7 @@ function initializedParty(rom,{jobs=[0,1,2,3],back=false,rows=[0,0,0,0]}={}){
  // consumers. Entry settles canonical coordinates; the renderer flips them.
  const {m}=initializedBattle(rom,{formation:3,back,rows,terrain:0,jobs});m.call(0xb469);return m;
 }
-export function initializedBattle(rom,{formation,back,rows,terrain,jobs=[0,1,2,3],counts,capture}){
+export function initializedBattle(rom,{formation,back,rows,terrain,jobs=[0,1,2,3],counts,capture,partyStatus}){
  check(rows.length===4&&rows.every(r=>r===0||r===1),'Entry rows');
  const f=originalFormation(rom,formation,{counts});check(!f.unresolved,'Entry formation unresolved');
  const m=presentationMachine(rom,{capture}),c=m.c;c.m[0x78c3]=back?0x88:0;c.m[0x7ced]=formation&255;c.m[0x7ed8]=formation>>8;c.m[0x7cef]=terrain;
@@ -45,7 +45,16 @@ export function initializedBattle(rom,{formation,back,rows,terrain,jobs=[0,1,2,3
  for(let i=0;i<4;i++){c.m[0x6100+i*64]=jobs[i];c.m[0x620f+i*64]=rows[i];}
  // Reset's tail copies both bank-switching math/animation trampolines.
  // The encounter/RNG gap above must not omit this later initialization.
- c.call(0x9f5e);m.call(0x9d5f);
+ c.call(0x9f5e);
+ if(partyStatus){
+  check(partyStatus.length===4&&partyStatus.every(v=>Number.isInteger(v)&&v>=0&&v<=255),'Initial party status');
+  for(let i=0;i<4;i++)c.m[0x6102+i*64]=partyStatus[i];
+  // Persistent status enters via the original property loader; transient
+  // status 2 is initialized there, not copied from a previous battle.
+  select(c,0x18);c.m.set([0,0x61,0,0x62,0x75,0x75,0x75,0x76],0x57);c.call(0xa400);
+  select(c,0x1a);c.call(0x9d06);select(c,0x17);
+ }
+ m.call(0x9d5f);
  // B32B initializes target anchors independently of drawing the enemies.
  // The diagnostic skips the surrounding command UI, not this consumer.
  c.call(0xbdba);return {m,f};

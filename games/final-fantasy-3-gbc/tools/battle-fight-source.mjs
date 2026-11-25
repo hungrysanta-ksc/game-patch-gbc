@@ -8,7 +8,7 @@ export const fightOffsets={equipment:128,defending:130,running:134,boss:135,crit
 const base=flags=>(flags&128?0x7675:0x7575)+(flags&7)*64;
 export function validFight(s){
  if(s.length!==FIGHT_BYTES)return false;const a=s.subarray(0,64),t=(a[44]&135)===(s[108]&135)?a:s.subarray(64,128);
- return (a[44]&7)<(a[44]&128?8:4)&&(t[44]&7)<(t[44]&128?8:4)&&s[138]<8&&!(a[1]&192)&&!(a[2]&1)&&!(t[1]&192)&&!(t[2]&1)&&a.readUInt16LE(3)>0&&t.readUInt16LE(3)>0&&!s[134]&&!((t[44]&128)&&t[56]===79)&&s[159]<=15;
+ return (a[44]&7)<(a[44]&128?8:4)&&(t[44]&7)<(t[44]&128?8:4)&&s[138]<8&&!(a[1]&192)&&!(a[2]&1)&&!(t[1]&192)&&!(t[2]&1)&&a.readUInt16LE(3)>0&&t.readUInt16LE(3)>0&&!((t[44]&128)&&t[56]===79)&&s[159]<=(s[134]?14:15);
 }
 // No calculation/HP/status/split callees are skipped. Unsupported caller
 // contexts fail before execution instead of intercepting a missing branch.
@@ -44,9 +44,11 @@ export function fightCases(){
  for(const count of [0,1,8,15])for(const bonus of [0,1,127,255])for(const buildup of [0,1,2,255])for(const defense of [0,127,128,255]){
   const s=fightSeed({actor:3,target:1});s[159]=count;s.fill(0x34,139,139+count);s[56]=s[57]=bonus;s[39]=buildup;s[103]=buildup;s[99]=defense;s[131]=1;s[40]=255;s[23]=s[28]=8;add('bonus-critical-buildup',s,255);
  }
+ for(let buildup=0;buildup<256;buildup++)for(const mode of [0,1,2,3]){const s=fightSeed({actor:128,target:0});s[134]=1;s[103]=buildup;s[40]=0;if(mode===1)s[24]=s[29]=0;if(mode===2)s[22]=s[27]=1;if(mode===3){s[22]=s[27]=1;s[82]=128;}add('running-defense',s,buildup);}
+ for(const actor of [0,128])for(const target of [1,129]){const s=fightSeed({actor,target});s[134]=1;add('running-direction',s);}
  let seed=0x46334633;const next=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed>>>24;};
  for(let k=0;k<512;k++){const s=fightSeed({actor:k%4,target:128+k%8});for(const at of [0,64]){s[at+1]=next()&0x3c;s[at+2]=next()&0xfe;for(let n=22;n<=41;n++)s[at+n]=next();s[at+23]&=15;s[at+28]&=15;s[at+33]&=7;s[at+56]=next();s[at+57]=next();s.writeUInt16LE(1+(next()<<4),at+3);}if(s[120]===79)s[120]=0;add('mixed-width',s,next());}
- for(const edit of [s=>s[65]=128,s=>s[65]=64,s=>s[66]=1,s=>s[134]=1,s=>s[120]=79,s=>s[159]=16,s=>s[44]=7,s=>s[138]=8,s=>s.writeUInt16LE(0,67),s=>s[1]=128,s=>s[2]=1,s=>s.writeUInt16LE(0,3),s=>s[108]=7]){const s=fightSeed();edit(s);add('rejected',s);}
+ for(const edit of [s=>s[65]=128,s=>s[65]=64,s=>s[66]=1,s=>s[120]=79,s=>s[159]=16,s=>s[44]=7,s=>s[138]=8,s=>s.writeUInt16LE(0,67),s=>s[1]=128,s=>s[2]=1,s=>s.writeUInt16LE(0,3),s=>s[108]=7]){const s=fightSeed();edit(s);add('rejected',s);}
  return cases;
 }
 // Original initial state, formation 3, A400 property loader and AA16 equipment
