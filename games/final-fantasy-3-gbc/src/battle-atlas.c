@@ -76,7 +76,13 @@ static SceneBattleFrame target,previous;
 typedef struct {uint16_t source,destination;uint8_t bank,vram,bytes;} Transfer;
 typedef char transfer_abi[(sizeof(Transfer)==7)?1:-1];
 static Transfer transfers[32];
-static volatile uint8_t transfer_count,transfer_index,transfer_pending;
+static volatile uint8_t transfer_count,transfer_index;
+#ifdef FF3_OPENING_VIDEO
+/* Read-only producer hint: the VBlank consumer alone clears this flag. */
+volatile uint8_t transfer_pending;
+#else
+static volatile uint8_t transfer_pending;
+#endif
 static uint8_t ready(void) NONBANKED {uint8_t ly=LY_REG;return ly>=144&&ly<=149&&(STAT_REG&3)==1;}
 /* Fixed ROM and fixed WRAM descriptors. Each GDMA is at most 128 bytes;
  * restore the interrupted ROM bank before re-enabling timer interrupts. */
@@ -264,28 +270,31 @@ static void overlay(uint8_t page){uint8_t r,x,tile;uint16_t at;
   * immutable WRAM ranges; the geometry descriptors refer only to ROM. */
  ff3_scene_rom_copy(target.bank,target.maps+416,scene_input,192);
  ff3_scene_rom_copy(target.bank,target.maps+(page?1216u:608u)+416,text_staging,192);
-#endif
+ /* Walk the three planes once. Multiplying row/column offsets for every
+  * glyph made the banked C compositor consume its audio lead. Transparent
+  * cells and the twelve offscreen columns retain their geometry bytes. */
+ {uint8_t *cells=(uint8_t*)scene_keys,*map=scene_input,*attrs=text_staging;
+  uint8_t attr=7|(page?8:0);
+  for(r=0;r<6;r++){
+   for(x=0;x<20;x++){tile=*cells++;if(tile!=255){*map=tile;*attrs=attr;}map++;attrs++;}
+   map+=12;attrs+=12;
+   if(r==2)ff3_native_service();
+  }
+ }
+#else
  for(r=0;r<6;r++){
   at=(uint16_t)action_rows[r]*32;
-#ifndef FF3_OPENING_VIDEO
   ff3_scene_rom_copy(target.bank,target.maps+at,scene_input+r*32,32);
   ff3_scene_rom_copy(target.bank,target.maps+(page?1216u:608u)+at,text_staging+r*32,32);
-#endif
   for(x=0;x<20;x++){
    tile=((uint8_t*)scene_keys)[r*20+x];
    if(tile!=255){scene_input[r*32+x]=tile;text_staging[r*32+x]=7|(page?8:0);}
   }
-#ifdef FF3_OPENING_VIDEO
-  /* The six-row C composition must not consume the remaining audio lead.
-   * Refill halfway without splitting or publishing the pending VRAM batch. */
-  if(r==2)ff3_native_service();
-#endif
-#ifndef FF3_OPENING_VIDEO
   queue(7,scene_input+r*32,0,(page?0x9c00u:0x9800u)+at,32);
   queue(7,text_staging+r*32,1,(page?0x9c00u:0x9800u)+at,32);
   ff3_native_service();
-#endif
  }
+#endif
 #ifdef FF3_OPENING_VIDEO
  queue(7,scene_input,0,(page?0x9c00u:0x9800u)+416,192);
  queue(7,text_staging,1,(page?0x9c00u:0x9800u)+416,192);
