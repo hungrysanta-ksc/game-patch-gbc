@@ -50,6 +50,9 @@ static void party_overlay(uint8_t page);
 #include "battle-action-data.h"
 #define ACTION_SCROLL_Y 6
 static uint8_t action_mask,action_profile_index,action_dirty,action_ui_index,action_tiles[2];
+#ifdef FF3_OPENING_VIDEO
+static uint8_t opening_overlay_ui[2]={255,255},opening_overlay_changed;
+#endif
 volatile uint8_t action_profile,action_step,action_live,action_frame;
 volatile uint8_t action_next_profile,action_next_step,action_next_live,action_next_frame;
 volatile uint16_t action_serial;
@@ -244,21 +247,53 @@ static void preload(void){
 }
 #ifdef FF3_ACTION_FLOW
 static void overlay(uint8_t page){uint8_t r,x,tile;uint16_t at;
- flush();if(action_tiles[page]!=action_profile_index){queue(ACTION_GLYPH_BANK,action_glyphs+(uint16_t)action_profile_index*1280,page,0x9300u,1280);flush();action_tiles[page]=action_profile_index;}
+#ifdef FF3_OPENING_VIDEO
+ /* Geometry deltas can overwrite the covered map rows. Reuse a page only
+  * when both map planes, glyph owner and UI identity remain unchanged. */
+ if(!opening_overlay_changed&&action_tiles[page]==action_profile_index&&opening_overlay_ui[page]==action_ui_index)return;
+ scene_phase=9;
+ ff3_native_service();
+#endif
+#ifndef FF3_OPENING_VIDEO
+ flush();
+#endif
+ if(action_tiles[page]!=action_profile_index){queue(ACTION_GLYPH_BANK,action_glyphs+(uint16_t)action_profile_index*1280,page,0x9300u,1280);flush();action_tiles[page]=action_profile_index;}
  ff3_scene_rom_copy(7,action_cells+(uint16_t)action_ui_index*120,scene_keys,120);
+#ifdef FF3_OPENING_VIDEO
+ /* Rows 13..18 are contiguous. Stage both complete planes before queuing
+  * immutable WRAM ranges; the geometry descriptors refer only to ROM. */
+ ff3_scene_rom_copy(target.bank,target.maps+416,scene_input,192);
+ ff3_scene_rom_copy(target.bank,target.maps+(page?1216u:608u)+416,text_staging,192);
+#endif
  for(r=0;r<6;r++){
   at=(uint16_t)action_rows[r]*32;
+#ifndef FF3_OPENING_VIDEO
   ff3_scene_rom_copy(target.bank,target.maps+at,scene_input+r*32,32);
   ff3_scene_rom_copy(target.bank,target.maps+(page?1216u:608u)+at,text_staging+r*32,32);
+#endif
   for(x=0;x<20;x++){
    tile=((uint8_t*)scene_keys)[r*20+x];
    if(tile!=255){scene_input[r*32+x]=tile;text_staging[r*32+x]=7|(page?8:0);}
   }
+#ifdef FF3_OPENING_VIDEO
+  /* The six-row C composition must not consume the remaining audio lead.
+   * Refill halfway without splitting or publishing the pending VRAM batch. */
+  if(r==2)ff3_native_service();
+#endif
+#ifndef FF3_OPENING_VIDEO
   queue(7,scene_input+r*32,0,(page?0x9c00u:0x9800u)+at,32);
   queue(7,text_staging+r*32,1,(page?0x9c00u:0x9800u)+at,32);
   ff3_native_service();
+#endif
  }
+#ifdef FF3_OPENING_VIDEO
+ queue(7,scene_input,0,(page?0x9c00u:0x9800u)+416,192);
+ queue(7,text_staging,1,(page?0x9c00u:0x9800u)+416,192);
+#endif
  flush();
+#ifdef FF3_OPENING_VIDEO
+ opening_overlay_ui[page]=action_ui_index;
+#endif
 }
 static void action_observe(void){CRITICAL{action_profile=action_profile_index;action_step=action_next_step;action_live=action_mask;action_frame=scene_page;action_serial++;}}
 #endif
@@ -269,6 +304,9 @@ static void prepare(uint8_t page){uint8_t i,bank,old,*oam=page?scene_oam1:scene_
 #ifdef FF3_BATTLE_STREAM
 #ifdef FF3_OPENING_VIDEO
  {uint8_t ref[3];ff3_scene_rom_copy(target.bank,target.spans+(uint16_t)old*3,ref,3);ff3_scene_rom_copy(ref[0],(const void*)((uint16_t)ref[1]|((uint16_t)ref[2]<<8)),scene_input,48);}
+ /* Map rows 13..18 occupy blocks 26..37 in each five-byte mask. Even
+  * partial top-row party pixels must invalidate the overlay, on both pages. */
+ opening_overlay_changed=(scene_input[3]&252)|scene_input[4]|(scene_input[8]&252)|scene_input[9];
 #else
  ff3_scene_rom_copy(target.bank,target.spans+(uint16_t)old*48,scene_input,48);
 #endif
@@ -295,12 +333,17 @@ static void prepare(uint8_t page){uint8_t i,bank,old,*oam=page?scene_oam1:scene_
   queue(target.bank,target.graphics,1,0x8000u+(uint16_t)page*1024,(uint16_t)target.objects*16);
 #endif
  }
+#ifndef FF3_OPENING_VIDEO
  flush();
+#endif
 #ifdef FF3_ACTION_FLOW
  #ifdef FF3_SELECTION_FLOW
  if(!selection_enabled||last_frame[page]!=scene_page)
  #endif
  overlay(page);
+#endif
+#ifdef FF3_OPENING_VIDEO
+ flush();
 #endif
 #ifdef FF3_SELECTION_FLOW
 #ifdef FF3_PARTY_COMMANDS
