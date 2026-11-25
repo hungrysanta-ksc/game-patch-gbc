@@ -13,4 +13,7 @@ void ff3_text_copy(uint8_t bank,uint16_t address,const uint8_t *data,uint16_t co
 void ff3_text_palette(const uint16_t *colors) NONBANKED;
 /* Queue contiguous palettes from the shared WRAM staging area. */
 void ff3_text_palette_range(uint8_t bg,uint8_t first,uint8_t count,const uint8_t *data) NONBANKED;
+/* Double-speed-only initial loads: bounded 256-byte DMA; updates stay 128. */
+void ff3_text_rom_copy(uint8_t bank,uint16_t address,uint8_t rom_bank,const uint8_t *data,uint16_t count) NONBANKED;
+void ff3_text_clear_map(uint8_t bank) NONBANKED;
 #endif

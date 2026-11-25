@@ -3,7 +3,7 @@ export async function preparationAudit(s,rom,expected){
  check(Number.isInteger(expected)&&expected>0,'Preparation request count');
  const addresses={busy:s.native_busy,request:s.party_request,step:s.party_step,profile:s.party_profile,frame:s.party_frame,bank:s._current_bank};
  for(const [k,v]of Object.entries(addresses))check(Number.isInteger(v)&&v>=0xc000&&v<=0xffff,'Preparation symbol '+k);
- const sites=[['ff3_text_copy',2],['ff3_party_palette',2],['ff3_stone_prepare',3]].map(([name,kind])=>{
+ const sites=[['ff3_text_copy',2],['ff3_party_palette',2],['ff3_stone_prepare',3],...['ff3_text_rom_copy','ff3_text_clear_map'].filter(n=>Number.isInteger(s[n])).map(n=>[n,2])].map(([name,kind])=>{
   const n=s[name],bank=n>>>16,pc=n&65535,offset=bank?bank*16384+(pc&16383):pc;
   check(Number.isInteger(n)&&pc<0x8000&&rom[offset]!==255&&rom[offset]!==undefined,'Preparation code '+name);return {name,bank,pc,kind};
  });

@@ -1,7 +1,9 @@
 #ifndef FF3_PLATFORM_H
 #define FF3_PLATFORM_H
 #include <gb/gb.h>
-/* MBC5 low 8-bit banks only. IRQ code may not map ROM or call BANKED code. */
+/* MBC5 low 8-bit banks only. Timer IRQ never maps ROM. VBlank's fixed-ROM
+ * DMA pump may map/restore ROM inside one bounded DMA section; no IRQ may
+ * call BANKED code or expose a changed ROM bank to interrupted code. */
 uint8_t ff3_resource_byte(uint8_t bank,uint16_t offset) NONBANKED;
 uint8_t ff3_resource_copy(void *dest,uint8_t bank,uint16_t offset,uint16_t count) NONBANKED;
 uint16_t ff3_clock_now(void) NONBANKED;
