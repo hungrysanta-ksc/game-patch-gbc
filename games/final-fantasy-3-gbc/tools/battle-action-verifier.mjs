@@ -6,7 +6,8 @@ import {checkMemoryAudit} from './memory-audit.mjs';
 import {checkNumberTimeline} from './battle-number-timeline-verifier.mjs';
 export async function verifyAction({data,report,actual,cfg,dir,out,output,romSha256,coreSha256}){
  const table=await fs.readFile(dir+'/conversion.bin');check(hash(table)===report.audio.conversionSha256,'Conversion identity');
- const ref=nativeReference(data,table,{plan:report.audio.plan,ticks:report.audio.ticks});let end,first,last,clock=0,previous;
+ const opening=report.battle.opening;const audioPlan=[...report.audio.plan,...(opening?actual.externalAudio.map(e=>[e.tick,e.op,e.arg]):[])].sort((a,b)=>a[0]-b[0]);
+ const ref=nativeReference(data,table,{plan:audioPlan,ticks:report.audio.ticks});let end,first,last,clock=0,previous;
  for(const f of actual.frames){
   check(!f.error&&!f.cacheError&&!f.platformError&&!f.memoryFault&&!f.transferFault&&!f.maxLate&&!f.underruns,'Runtime/audio fault '+f.frame);
   check(f.mapIntact&&f.fieldIntact&&f.guard==='a7'.repeat(48)&&(f.svbk&7)===1&&(f.key1&128)&&(f.lcdc&128),'Memory/video contract');
@@ -15,7 +16,7 @@ export async function verifyAction({data,report,actual,cfg,dir,out,output,romSha
  }
  check(end?.done&&end.ticks===report.audio.ticks,'Complete native audio schedule');
  const drift=(last.clock-first.clock)/4096-(last.master-first.master)/last.rate;check(Math.abs(drift)<0.003,'Audio timer drift');
- const profiles=report.battle.action.profiles,stages=actual.pictures.filter(p=>p.kind==='stage'),shots=(await fs.readdir(cfg.home+'/Screenshots')).filter(n=>n.endsWith('.png')).sort();
+ const profiles=report.battle.action.profiles,stages=actual.pictures.filter(p=>p.kind==='stage'),shots=(await fs.readdir(cfg.home+'/Screenshots')).filter(n=>n.endsWith('.png')).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
  check(actual.pages.length>=8&&!actual.pages[7].audioDone,'Two complete caller cycles under audio');
  const expectedStages=profiles.flatMap((p,profile)=>p.entries.map((e,entry)=>({profile,entry,e})));
  check(stages.length===expectedStages.length*2,'Every action stage in two complete cycles');
@@ -33,10 +34,12 @@ export async function verifyAction({data,report,actual,cfg,dir,out,output,romSha
    const elapsed=((next.timer-s.timer)&65535)/4096,min=e.hold*report.battle.numberTimeline.timing.sourceRateDenominator/report.battle.numberTimeline.timing.sourceRateNumerator;
    check(elapsed>=min-2/4096,'Original hold shortened '+profile+'/'+entry);if(e.command===10)waits++;
   }
-  if(entry===profiles[profile].entries.length-1){check(e.phase==='next-selection'&&e.live===0&&e.sourceGate!==0,'Status gate restored at next selection');returned++;}
+  if(entry===profiles[profile].entries.length-1){if(!opening)check(e.phase==='next-selection'&&e.live===0&&e.sourceGate!==0,'Status gate restored at next selection');returned++;}
  }
- for(const [i,p]of actual.pages.entries())check(p.op===7&&p.page===profiles[i%4].entries.at(-1).frame&&!p.audioDone&&p.seconds<1200*report.audio.timing.sourceRateDenominator/report.audio.timing.sourceRateNumerator,'Complete autonomous caller return before audio end');
- check(returned===8&&waits>=8,'Wait/return coverage');
+ for(const [i,p]of actual.pages.entries())check(p.op===7&&p.page===profiles[i%4].entries.at(-1).frame&&!p.audioDone&&p.seconds<(opening?7200:1200)*report.audio.timing.sourceRateDenominator/report.audio.timing.sourceRateNumerator,'Complete autonomous caller return before audio end');
+ check(returned===8&&(opening||waits>=8),'Wait/return coverage');
+ if(opening){const expected=opening.flatMap((p,profile)=>p.requests.map((r,request)=>({profile,request,state:r.state})));check(actual.openingStates.length===expected.length*2,'Every opening boundary twice');for(const [i,s]of actual.openingStates.entries()){const e=expected[i%expected.length];check(s.profile===e.profile&&s.request===e.request&&s.state===e.state,'Live opening caller state '+i);}const sounds=opening.flatMap(p=>p.sounds.map(s=>[s.op,s.arg]));check(JSON.stringify(actual.externalAudio.map(s=>[s.op,s.arg]))===JSON.stringify([...sounds,...sounds]),'Original presentation sound requests exactly once');}
+
  check(shots.length===actual.pictures.length,'All screenshot ordinals accounted');
  for(const p of actual.pictures){let path,expectedHash;
   if(p.kind==='stage'){const s=p.data,e=profiles[s.profile].entries[s.entry];path='action'+s.profile+'-'+s.entry;expectedHash=e.rgbSha256;}
@@ -54,6 +57,6 @@ export async function verifyAction({data,report,actual,cfg,dir,out,output,romSha
  const pub=[...log.matchAll(/scene-publication:(\d+),(\d+)/g)].at(-1);check(pub&&Number(pub[1])>100&&!Number(pub[2]),'Atomic scene publication');
  const ownership=[...log.matchAll(/scene-oam-ownership:(\d+),(\d+)/g)].at(-1);check(ownership&&Number(ownership[1])>100&&!Number(ownership[2]),'Never rebuild the active OAM shadow');
  const numberTimeline=checkNumberTimeline(log,report,actual),times=actual.pages.map(p=>p.seconds*1000).sort((a,b)=>a-b);
- const result={romSha256,coreSha256,home:cfg.home,profiles:profiles.length,requests:actual.pages.length,actionStages:stages.length,returnedSelections:returned,screenshots:shots.length,pixels:shots.length*160*144,maxObjects,maxLine,numberTimeline,sourceTicks:end.ticks,sourceEvents:end.events,maxLate:0,underruns:0,apuWrites,apuHash,timerDriftSeconds:drift,videoWrites:writes,invalidVideoWrites:bad,invalidDma:badDma,lcdOffWrites:off,cacheWrites,activeWrites,objPaletteWrites,badObjPalette,maxLy,publications:Number(pub[1]),invalidPublications:Number(pub[2]),oamStagingWrites:Number(ownership[1]),activeOamStagingWrites:Number(ownership[2]),dmaCriticalMaxSeconds:Number(critical[2])/Number(critical[3]),memory:{...memory,stackUntouchedBytes:actual.stackUntouchedBytes},callerDuration:{medianMs:times[times.length>>1],maxMs:times.at(-1)},wholeSceneTimingGatePassed:false,normalGameplay:false,scope:report.battle.action.scope};
+ const result={romSha256,coreSha256,home:cfg.home,profiles:profiles.length,requests:actual.pages.length,actionStages:stages.length,returnedSelections:returned,screenshots:shots.length,pixels:shots.length*160*144,maxObjects,maxLine,numberTimeline,openingBoundaries:actual.openingStates?.length,externalSoundRequests:actual.externalAudio?.length,sourceTicks:end.ticks,sourceEvents:end.events,maxLate:0,underruns:0,apuWrites,apuHash,timerDriftSeconds:drift,videoWrites:writes,invalidVideoWrites:bad,invalidDma:badDma,lcdOffWrites:off,cacheWrites,activeWrites,objPaletteWrites,badObjPalette,maxLy,publications:Number(pub[1]),invalidPublications:Number(pub[2]),oamStagingWrites:Number(ownership[1]),activeOamStagingWrites:Number(ownership[2]),dmaCriticalMaxSeconds:Number(critical[2])/Number(critical[3]),memory:{...memory,stackUntouchedBytes:actual.stackUntouchedBytes},callerDuration:{medianMs:times[times.length>>1],maxMs:times.at(-1)},wholeSceneTimingGatePassed:false,normalGameplay:false,scope:report.battle.action.scope};
  await fs.writeFile(out+'/load-result.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));return result;
 }

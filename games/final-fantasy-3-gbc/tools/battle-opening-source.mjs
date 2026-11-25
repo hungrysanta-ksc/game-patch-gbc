@@ -11,7 +11,7 @@ export function openingScript(rom){const at=rom.readUInt16LE(offset(0x34,0x950d+
 // Original collector -> A50B -> entire action script -> A458 -> collector.
 // Text/PPU consumers are explicit yield boundaries. The graphics adapter runs
 // original metadata routines; it does not claim to execute raster/OAM/audio.
-export function openingReference(rom,input,{shortWait=false,graphicsMachine}={}){
+export function openingReference(rom,input,{shortWait=false,graphicsMachine,onRequest}={}){
  openingScript(rom);check(input.length===openingSize,'Opening ABI');const c=graphicsMachine?.c??battleCpu(rom,0x1a),initial=Buffer.from(input),view=contextReference(rom);select(c,0x1a);
  c.m.set([0,0x61,0,0x62,0x75,0x75],0x57);c.m[0x7cf6]=0x17;c.m[0x52]=0;
  const fields=[[1,26],[2,30],[35,38],[44,46],[63,50]];
@@ -27,7 +27,7 @@ export function openingReference(rom,input,{shortWait=false,graphicsMachine}={})
   s.set(c.m.subarray(0x7675,0x7875),55);s.set(c.m.subarray(0x7e4f,0x7e6f),567);s.set(c.m.subarray(0xe0,0x100),599);s[631]=c.m[0x7ec2];s[632]=c.m[0x7e9a];
   for(const [at,n,len]of [[665,0x7da7,8],[673,0x7daf,8],[681,0x7ec4,8],[689,0x7dd3,4],[693,0x7dce,4]])s.set(c.m.subarray(n,n+len),at);
   s.set([c.m[0x7ed8],c.m[0x78ba],c.m[0x7cf3],c.m[0x78d3],c.m[0x6010],c.m[0x78da],c.m[0x78ee],c.m[0x7e6f]],697);
-  const buttons=kind===5?1:kind===6&&shortWait?1:0;rows.push({kind,value,buttons,state:s});c.m[0x12]=buttons;
+  const buttons=kind===5?1:kind===6&&shortWait?1:0;rows.push({kind,value,buttons,state:s});onRequest?.(rows.at(-1),c);c.m[0x12]=buttons;
  }
  function graphicsMetadata(id){const banks=c.banks.slice();select(c,0x17);
   if(id===0){segment(c,0xad78,0xad7b);c.call(0xb909);}
@@ -54,13 +54,14 @@ export function openingReference(rom,input,{shortWait=false,graphicsMachine}={})
  };
  c.pc=0x81a0;c.push(0x98);c.push(0x6b);while(!terminal){check(++steps<200000,'Opening instruction budget '+c.pc.toString(16));c.step();}return rows;
 }
-export function fullOpeningReference(rom,{hp=500,status=[128,64,32,0],back=false}={}){
- const {m}=initializedBattle(rom,{formation:3,back,rows:[0,1,0,1],terrain:0,partyStatus:status});
+export function fullOpeningReference(rom,{hp=500,status=[128,64,32,0],back=false,capture,onRequest,onSetup,health,speed=8}={}){
+ const {m}=initializedBattle(rom,{formation:3,back,rows:[0,1,0,1],terrain:0,partyStatus:status,capture});
  const sounds=[],write=m.c.write.bind(m.c);m.c.write=(a,v)=>{if(a===0x7f49)sounds.push({request:v,boundary:m.waits.length});write(a,v);};
- const state=openingSeed(rom,{status,hp,speed:8,cannon:false}),types=Buffer.from(m.c.m.subarray(0x7da7,0x7daf));
+ const state=openingSeed(rom,{status,hp,speed,cannon:false}),types=Buffer.from(m.c.m.subarray(0x7da7,0x7daf));
  state.set(types,665);state.set(types,673);state.fill(0,693,697);for(let i=0;i<8;i++){state[56+i*64]=types[i]===255?128:0;state[681+i]=types[i]===255?128:0;if(types[i]<4)state[693+types[i]]++;}
  state[697]=32;state.set(contextReference(rom)(3,state.subarray(55,633)).state,55);
- m.begin();const trace=openingReference(rom,state,{graphicsMachine:m});m.finish();
+ if(health)for(let i=0;i<4;i++)for(let j=0;j<2;j++){const at=0x7578+i*64+j*2;m.c.m[at]=health[i][j]&255;m.c.m[at+1]=health[i][j]>>8;}
+ onSetup?.(m);m.begin();const trace=openingReference(rom,state,{graphicsMachine:m,onRequest});m.finish();
  return {state,trace,boundaries:m.waits,sounds,scope:'Full original graphics consumers with virtual PPU transfers; text/input intercepted, no actual raster/audio'};
 }
 export function openingSeed(rom,{cannon=true,status=[0,0,0,0],hp=500,mask=255,speed=4,first=0,turn=0}={}){

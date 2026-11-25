@@ -16,7 +16,7 @@ function bgPixel(b,x,y,table=0){
  const base=0x2000+(table&1)*1024,tx=x>>3,ty=y>>3,tile=b[base+ty*32+tx],a=b[base+960+(ty>>2)*8+(tx>>2)],p=(a>>(((ty&2)<<1)+(tx&2)))&3,bit=7-(x&7),at=tile*16+(y&7),v=(b[at]>>bit&1)|((b[at+8]>>bit&1)<<1);
  return {index:v?p*4+v:0,opaque:v!==0};
 }
-export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0},numberOwners=[],formation,partyShift=0,statusOwners=false,partyY=targetY,enemyY=16,terrainHeight=16,numberEnemyOffset=0}={}){
+export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0},numberOwners=[],formation,partyShift=0,statusOwners=false,partyY=targetY,enemyY=16,terrainHeight=16,numberEnemyOffset=0,effectOrigin}={}){
  const b=ppu.bytes,colors=cgbPalette(b.subarray(0x3f00,0x3f20)),pixels=new Uint16Array(W*H).fill(colors.readUInt16LE(0)),used=new Uint8Array(W*H),enemy=new Uint8Array(W*H),party=new Uint8Array(W*H),numberCoverage={sourcePixels:0,viewportPixels:0},partyCoverage={sourcePixels:0,viewportPixels:0},statusCoverage={sourcePixels:0,viewportPixels:0};
  const put=(x,y,index)=>{if(x>=0&&x<160&&y>=0&&y<144)pixels[y*W+x]=colors.readUInt16LE(index*2);};
  // Keep the previous field/party anchors. The terrain is a cropped strip,
@@ -42,6 +42,7 @@ export function scenePixels(c,ppu,{back=false,target=2,layout={shift:0},numberOw
   for(let y=0;y<8;y++)for(let x=0;x<8;x++){
    const px=attr&64?7-x:x,py=attr&128?7-y:y,k=0x1000+tile*16+py,bit=7-px,v=(b[k]>>bit&1)|((b[k+8]>>bit&1)<<1);if(!v)continue;
    const canonical=back?255-(sx+x):sx+x;let dx=back?159-(canonical-80):canonical-80,dy=sy+y-sourceY[slot]+partyY[slot]+partyShift;
+   if(effectOrigin&&i<40&&!owner){dx=(back?159-(canonical+effectOrigin.x):canonical+effectOrigin.x);dy=sy+y+effectOrigin.y;}
    if(owner){
     numberCoverage.sourcePixels++;
     if(owner.enemy){check(formation,'Enemy numeral formation');const cx=c.m[0x7dd7+owner.target*2],bottom=c.m[0x7e07+owner.target]+1,[ax,ay]=adaptPoint(formation,cx,bottom),anchor=rearX(back?159-ax:ax,layout,back),sourceCenter=back?254-cx:cx;
