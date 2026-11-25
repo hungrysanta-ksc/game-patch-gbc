@@ -3,6 +3,7 @@
 #include "battle-stone.h"
 #include "stone-assets.h"
 #include "text-vblank.h"
+#include "battle-workspace.h"
 void ff3_party_copy(uint8_t bank,const void*src,void*dst,uint16_t n) NONBANKED;
 void ff3_native_service(void) NONBANKED;
 extern volatile uint8_t party_work;
@@ -19,9 +20,16 @@ static uint8_t profile_id,kind[4],col[4],cached[2][8],valid[2],count,extra_count
  * bit 11, BG palette bits 12..13, active map owner bit 14.
  * 0xffff invalidates a masked-enemy slot.
  * Each page describes its actual retained VRAM, independent of scratch. */
-static uint16_t keys[40],tags[2][48],occupied[12];
-static uint8_t signatures[2][48],touched[48],used[48],slots[40],extras[40];
-static uint8_t cell_sig[40],base[17],glyph[16],colors[16];
+static uint16_t tags[2][48],occupied[12];
+static uint8_t signatures[2][48],free_slot;
+#define keys battle_workspace.stone.keys
+#define flags battle_workspace.stone.flags
+#define slots battle_workspace.stone.slots
+#define extras battle_workspace.stone.extras
+#define cell_sig battle_workspace.stone.cell_sig
+#define cell_base battle_workspace.stone.base
+#define glyph battle_workspace.stone.glyph
+#define cell_colors battle_workspace.stone.colors
 static uint8_t objects[2][96],object_count[2],masked[2][16][3],masked_count[2];
 static void append(uint8_t page,uint8_t*oam){uint8_t i,j,n=0;uint8_t*r;
  for(i=0;i<40;i++){r=oam+i*4;
@@ -47,7 +55,9 @@ static void read_glyph(uint8_t slot,uint8_t x,uint8_t y){const StoneAsset*a=ston
  ff3_party_copy(a->bank,a->glyphs+(uint16_t)(slot*3+kind[slot])*160+(uint16_t)((y-top[slot])*2+x-col[slot])*16,glyph,16);
 }
 static uint8_t find(uint8_t page,uint16_t key,uint8_t sig,uint8_t span){uint8_t i;for(i=0;i<span;i++)if((tags[page][i]&2047)==key&&signatures[page][i]==sig)return i;return 255;}
-static uint8_t allocate(uint8_t span){uint8_t i;for(i=0;i<span;i++)if(!used[i]){used[i]=1;return i;}stone_error=4;return 255;}
+/* Reservation is complete before the first allocation. No slot is freed
+ * during this prepare, so advance once instead of rescanning its prefix. */
+static uint8_t allocate(uint8_t span){while(free_slot<span){uint8_t i=free_slot++;if(!flags[i]){flags[i]=1;return i;}}stone_error=4;return 255;}
 void ff3_stone_prepare(uint8_t page,uint8_t*oam) BANKED {
  uint8_t slot,x,y,i,pal,row,v,mapped,mask,changed,n,lo,hi,total,j,half,sig,hit,has_extra;uint16_t key,dirty[2]={0,0},at;uint8_t*out;
  const StoneAsset*a=stone_assets+profile_id;if(page>1){stone_error=1;return;}
@@ -58,7 +68,7 @@ void ff3_stone_prepare(uint8_t page,uint8_t*oam) BANKED {
  party_work=2;ff3_native_service();
  // Occupancy comes only from immutable original glyph bits. Tags describe
  // retained VRAM slots, not precomposed pictures or a hash approximation.
- count=extra_count=0;memset(touched,0,48);memset(used,0,48);memset(slots,255,40);memset(extras,255,40);ff3_party_copy(a->bank,a->colors,colors,16);
+ count=extra_count=free_slot=0;memset(flags,0,48);memset(slots,255,40);memset(extras,255,40);ff3_party_copy(a->bank,a->colors,cell_colors,16);
  for(slot=0;slot<4;slot++)if(kind[slot]<3)for(y=top[slot];y<top[slot]+rows[slot];y++)for(x=col[slot];x<col[slot]+2;x++){
   if(!(occupied[slot*3+kind[slot]]&((uint16_t)1<<((y-top[slot])*2+x-col[slot]))))continue;key=(uint16_t)y*32+x;for(i=0;i<count&&keys[i]!=key;i++);if(i==count){if(count==40){stone_error=2;return;}keys[count++]=key;}ff3_native_service();
  }
@@ -71,38 +81,38 @@ void ff3_stone_prepare(uint8_t page,uint8_t*oam) BANKED {
   for(slot=0;slot<4;slot++)if(kind[slot]<3&&x>=col[slot]&&x<col[slot]+2&&y>=top[slot]&&y<top[slot]+rows[slot])sig=(sig&~(3<<(slot*2)))|(kind[slot]<<(slot*2));
   cell_sig[i]=sig;j=find(page,key,sig,a->span);slots[i]=j;
   if(j==255||!(tags[page][j]&16384))dirty[x>>4]|=(uint16_t)1<<y;
-  if(j!=255){used[j]=1;if(tags[page][j]&2048){extras[i]=find(page,key|512,sig,a->span);if(extras[i]!=255)used[extras[i]]=1;}}
+  if(j!=255){flags[j]=1;if(tags[page][j]&2048){extras[i]=find(page,key|512,sig,a->span);if(extras[i]!=255)flags[extras[i]]=1;}}
   ff3_native_service();
  }
- for(j=0;j<a->span;j++)if(tags[page][j]!=65535&&(tags[page][j]&16384)){key=tags[page][j]&511;if(!used[j])dirty[(key&31)>>4]|=(uint16_t)1<<(key>>5);tags[page][j]&=~16384;}
+ for(j=0;j<a->span;j++)if(tags[page][j]!=65535&&(tags[page][j]&16384)){key=tags[page][j]&511;if(!flags[j])dirty[(key&31)>>4]|=(uint16_t)1<<(key>>5);tags[page][j]&=~16384;}
  for(i=0;i<count;i++){
   key=keys[i];x=key&31;y=key>>5;sig=cell_sig[i];j=slots[i];hit=j!=255;has_extra=hit&&(tags[page][j]&2048)!=0;
   if(has_extra&&extras[i]==255)hit=0;
   if(hit){pal=(tags[page][j]>>12)&3;stone_cells_reused++;}
   else {
   if(j==255){j=allocate(a->span);if(stone_error)return;slots[i]=j;}
-  stone_cells_built++;ff3_resident_base_cell(x,y,base);pal=base[16]&3;if(!any(base))pal=3;
-  out=stone_patterns+(uint16_t)j*16;memcpy(out,base,16);memset(text_staging,0,16);
+  stone_cells_built++;ff3_resident_base_cell(x,y,cell_base);pal=cell_base[16]&3;if(!any(cell_base))pal=3;
+  out=stone_patterns+(uint16_t)j*16;memcpy(out,cell_base,16);memset(text_staging,0,16);
   for(slot=0;slot<4;slot++)if(kind[slot]<3&&x>=col[slot]&&x<col[slot]+2&&y>=top[slot]&&y<top[slot]+rows[slot]){
    read_glyph(slot,x,y);for(row=0;row<16;row+=2){
     lo=glyph[row];hi=glyph[row+1];mask=~(lo|hi);text_staging[row]&=mask;text_staging[row+1]&=mask;
     if(pal==3){out[row]=(out[row]&mask)|lo;out[row+1]=(out[row+1]&mask)|hi;continue;}
     // Three bit masks represent all eight pixels. Only a color-boundary
     // cell needs remapping; ordinary stone cells keep their bitplanes.
-    for(v=1;v<4;v++){mask=v==1?(lo&~hi):v==2?(hi&~lo):(lo&hi);mapped=colors[pal*4+v];
+    for(v=1;v<4;v++){mask=v==1?(lo&~hi):v==2?(hi&~lo):(lo&hi);mapped=cell_colors[pal*4+v];
      if(mapped==255){if(v&1)text_staging[row]|=mask;if(v&2)text_staging[row+1]|=mask;}
      else {out[row]&=~mask;out[row+1]&=~mask;if(mapped&1)out[row]|=mask;if(mapped&2)out[row+1]|=mask;}
     }
    }ff3_native_service();
   }
-  has_extra=any(text_staging);j=slots[i];touched[j]=1;tags[page][j]=key|((uint16_t)pal<<12)|(has_extra?2048:0);signatures[page][j]=sig;
+  has_extra=any(text_staging);j=slots[i];flags[j]=2;tags[page][j]=key|((uint16_t)pal<<12)|(has_extra?2048:0);signatures[page][j]=sig;
   }
   tags[page][slots[i]]|=16384;
   if(has_extra){
    if(extra_count==24){stone_error=3;return;}if(count+extra_count>=a->span){stone_error=4;return;}
    // Cell count is already known. Write residual patterns and the inactive
    // OAM page directly; a second 384-byte tile scratch buffer is redundant.
-   if(!hit){j=extras[i];if(j==255){j=allocate(a->span);if(stone_error)return;extras[i]=j;}memcpy(stone_patterns+(uint16_t)j*16,text_staging,16);touched[j]=1;tags[page][j]=key|512;signatures[page][j]=sig;}
+   if(!hit){j=extras[i];if(j==255){j=allocate(a->span);if(stone_error)return;extras[i]=j;}memcpy(stone_patterns+(uint16_t)j*16,text_staging,16);flags[j]=2;tags[page][j]=key|512;signatures[page][j]=sig;}
    objects[page][extra_count*4]=y*8+16;objects[page][extra_count*4+1]=x*8+8;
    objects[page][extra_count*4+2]=a->base+page*a->span+extras[i];objects[page][extra_count*4+3]=15;extra_count++;
   }
@@ -119,20 +129,20 @@ void ff3_stone_prepare(uint8_t page,uint8_t*oam) BANKED {
   // avoid redundant bank copies/audio refill checkpoints on every clear.
   for(slot=0;slot<4;slot++)if(kind[slot]<3&&x>=col[slot]&&x<col[slot]+2&&y>=top[slot]&&y<top[slot]+rows[slot])break;
   if(slot==4)continue;
-  ff3_resident_base_pattern(out[2],base);memcpy(text_staging,base,16);
+  ff3_resident_base_pattern(out[2],cell_base);memcpy(text_staging,cell_base,16);
   for(slot=0;slot<4;slot++)if(kind[slot]<3&&x>=col[slot]&&x<col[slot]+2&&y>=top[slot]&&y<top[slot]+rows[slot]){
    read_glyph(slot,x,y);for(row=0;row<16;row+=2){mask=~(glyph[row]|glyph[row+1]);text_staging[row]&=mask;text_staging[row+1]&=mask;}
   }
-  if(memcmp(base,text_staging,16)){
+  if(memcmp(cell_base,text_staging,16)){
    if(total==a->span||masked_count[page]==16){stone_error=4;return;}
    v=allocate(a->span);if(stone_error)return;
    n=masked_count[page]++;masked[page][n][0]=out[0];masked[page][n][1]=out[1];masked[page][n][2]=a->base+page*a->span+v;
-   memcpy(stone_patterns+(uint16_t)v*16,text_staging,16);touched[v]=1;tags[page][v]=65535;total++;
+   memcpy(stone_patterns+(uint16_t)v*16,text_staging,16);flags[v]=2;tags[page][v]=65535;total++;
   }ff3_native_service();
  }
 
  if(changed){
-  for(i=0;i<a->span;){if(!touched[i]){i++;continue;}j=i;while(i<a->span&&touched[i]&&i-j<8)i++;n=(i-j)*16;at=(uint16_t)j*16;memcpy(text_staging,stone_patterns+at,n);ff3_text_copy(1,0x8000+(uint16_t)(a->base+page*a->span)*16+at,text_staging,n);stone_pattern_bytes+=n;ff3_native_service();}
+  for(i=0;i<a->span;){if(flags[i]!=2){i++;continue;}j=i;while(i<a->span&&flags[i]==2&&i-j<8)i++;n=(i-j)*16;at=(uint16_t)j*16;memcpy(text_staging,stone_patterns+at,n);ff3_text_copy(1,0x8000+(uint16_t)(a->base+page*a->span)*16+at,text_staging,n);stone_pattern_bytes+=n;ff3_native_service();}
   for(y=0;y<14;y++)if((dirty[0]|dirty[1])&((uint16_t)1<<y)){
    ff3_resident_base_row(page,y,text_staging);
    for(i=0;i<count;i++)if((keys[i]>>5)==y){x=keys[i]&31;text_staging[x]=a->base+page*a->span+slots[i];text_staging[32+x]=8+((tags[page][slots[i]]>>12)&3);}
