@@ -15,6 +15,7 @@ static uint8_t measuring;
 static void service(void){uint16_t begin=ff3_clock_now();ff3_native_service();if(measuring)service_ticks+=ff3_clock_now()-begin;}
 static uint8_t active_profile;
 static uint8_t cached[2];
+uint8_t resident_fixed;
 uint8_t __at(0xd200) resident_map[704];
 static void transfer(uint8_t bank,uint16_t address,const uint8_t*src,uint16_t n){uint16_t offset=0,size;
  while(offset<n){size=n-offset;if(size>256)size=256;memcpy(text_staging,src+offset,size);ff3_text_copy(bank,address+offset,text_staging,size);offset+=size;service();}
@@ -29,8 +30,21 @@ void ff3_resident_load(uint8_t profile) NONBANKED {uint8_t saved=CURRENT_BANK,ba
  SWITCH_ROM(a->bank);memcpy(text_staging,a->palette,32);SWITCH_ROM(saved);
  // Four original BG palettes also supply the separate color-residual OBJ.
  for(i=0;i<4;i++){ff3_party_palette(1,i,1,text_staging+i*8);ff3_party_palette(0,i+4,1,text_staging+i*8);}
- cached[0]=cached[1]=255;resident_page=0;
+ cached[0]=cached[1]=255;resident_page=0;resident_fixed=0;
 }
+void ff3_resident_fix(void) NONBANKED {resident_fixed=1;cached[0]=cached[1]=255;}
+#ifdef FF3_STONE
+void ff3_terrain_base_cell(uint8_t x,uint8_t y,uint8_t*out) NONBANKED;
+void ff3_terrain_base_row(uint8_t page,uint8_t row,uint8_t*out) NONBANKED;
+void ff3_resident_base_cell(uint8_t x,uint8_t y,uint8_t*out) NONBANKED {uint8_t saved=CURRENT_BANK,t;uint16_t at;const ResidentBgAsset*a=resident_bg_assets+active_profile;
+ if(y<2){ff3_terrain_base_cell(x,y,out);return;}memset(out,0,17);out[16]=8;if(y>=13)return;
+ at=(uint16_t)(y-2)*56+x;SWITCH_ROM(a->bank);t=a->maps[at];out[16]=a->maps[616+at];memcpy(out,a->patterns+(uint16_t)t*16,16);SWITCH_ROM(saved);
+}
+void ff3_resident_base_row(uint8_t page,uint8_t row,uint8_t*out) NONBANKED {uint8_t saved=CURRENT_BANK;uint16_t at;const ResidentBgAsset*a=resident_bg_assets+active_profile;
+ if(row<2){ff3_terrain_base_row(page,row,out);return;}memset(out,0,64);if(row>=13)return;
+ at=(uint16_t)(row-2)*56;SWITCH_ROM(a->bank);memcpy(out,a->maps+at,32);memcpy(out+32,a->maps+616+at,32);SWITCH_ROM(saved);
+}
+#endif
 static uint8_t contains(uint8_t origin,uint8_t coarse){uint8_t delta;if(origin>=56)return 0;delta=coarse+56-origin;if(delta>=56)delta-=56;return delta<12;}
 void ff3_resident_prepare(const Ff3EntryDisplay*s,uint8_t page,uint8_t*oam) NONBANKED {
  uint8_t saved=CURRENT_BANK,y,i,world,n=24,coarse,hidden=s->ticket==0,origin,delta,count;uint16_t scroll,base,from,to,x,begin,elapsed;const ResidentBgAsset*a=resident_bg_assets+active_profile;const uint8_t*r;
@@ -46,7 +60,8 @@ void ff3_resident_prepare(const Ff3EntryDisplay*s,uint8_t page,uint8_t*oam) NONB
  }
  // Keep a 32-column neighborhood resident. The 21 visible columns may move
  // through it without any map upload. OAM and BG pages have separate owners.
- page=resident_page;
+ if(resident_fixed){if(scroll){resident_error=5;return;}if(cached[page]==0){resident_page=page;resident_scroll=0;return;}origin=0;}
+ else {page=resident_page;
  if(hidden){resident_scroll=0;if(cached[page]==254)return;page^=1;origin=254;}
  else {
   if(contains(cached[page],coarse)||contains(cached[page^1],coarse)){
@@ -56,7 +71,7 @@ void ff3_resident_prepare(const Ff3EntryDisplay*s,uint8_t page,uint8_t*oam) NONB
   }
   page^=1;origin=coarse;
   if(s->battle_type!=0x88){origin=coarse+45;if(origin>=56)origin-=56;}
- }
+ }}
  begin=ff3_clock_now();service_ticks=0;measuring=1;memset(resident_map,0,704);
  if(!hidden)for(y=0;y<11;y++){
   world=origin;from=(uint16_t)y*56;to=(uint16_t)y*32;count=56-world;if(count>32)count=32;SWITCH_ROM(a->bank);

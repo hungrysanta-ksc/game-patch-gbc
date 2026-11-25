@@ -43,10 +43,12 @@ export function tailReference(rom,options={}){
  // transition oracle's 3M-instruction guard or skip original work.
  active=true;m.begin();c.pc=0xb479;c.push(0x4f);c.push(0xff);let instructions=0;
  while(c.pc!==0x5000){check(++instructions<=6000000&&frames.length<=600,'Tail source execution bound');c.step();}
+ const refreshIndex=options.clearAfter?frames.length:null;
+ if(options.clearAfter){c.m.fill(0,0x7d9b,0x7da3);if(options.countSentinel)c.m.set([9,8,7,6,5],0x7dce);m.call(0xb5b8);}
  active=false;actor=4;const end=logical(c,8,frames.length);
  const terminal={state:end,ppu:Buffer.from(m.ppu.bytes),oam:Buffer.from(c.m.subarray(0x200,0x300)),mirror:c.m[0x98],icons:Buffer.from([c.m[0xac],c.m[0xb7],...c.m.subarray(0x7db7,0x7dbb)]),work:null};
  for(let i=0;i<frames.length;i++){const f=frames[i];if(!f.work)continue;const next=frames[i+1]??terminal,w=f.work,at=w.readUInt16LE(5);f.output=Buffer.from(Array.from({length:w[4]},(_,i)=>next.ppu[at+(w[0]===3?(i>>1)*32+(i&1):i)]));}
- check(seed.length===75&&end.length===71,'Tail ABI');return {prefixSeed,seed,frames,terminal,instructions,sounds,scope:'Original B479..B909 including actual graphics loaders, motion and stone writes, NMI waits intercepted; no raster/audio timing'};
+ check(seed.length===75&&end.length===71,'Tail ABI');return {prefixSeed,seed,frames,terminal,instructions,sounds,refreshIndex,scope:'Original B479..B909 including actual graphics loaders, motion and stone writes, NMI waits intercepted; no raster/audio timing'};
 }
 export function bossFormations(rom){const result=new Map();
  for(let formation=0;formation<512;formation++){const f=originalFormation(rom,formation);if(f.unresolved||f.layout!==9)continue;
@@ -58,9 +60,9 @@ export function bossFormations(rom){const result=new Map();
 export function tailCases(rom){const registry=bossFormations(rom),out=[];for(const back of [false,true]){
  for(let i=0;i<64;i++)out.push({back,normalized:[0,1,2,3].map(j=>i*4+j),second:[0,1,2,3].map(j=>(i*37+j*19)&255),rows:[0,1,2,3].map(j=>(i>>j)&1),jobs:[0,1,2,3].map(j=>(i*4+j)%22),cache:[0,1,2,3].map(j=>(i+j)&3)});
  for(let boss=0;boss<24;boss++){const known=registry.find(r=>r.graphic===boss);out.push({back,...(known?{formation:known.formation}:{boss}),expectedBoss:boss,normalized:[0,1,64,128]});}
- }return out;}
+ }for(const back of [false,true])for(const partyStatus of [[64,96,72,64],[128,64,32,8]])out.push({back,partyStatus,clearAfter:true,countSentinel:true});return out;}
 export function tailFixtures(rom){const chunks=[];let events=0,transferBytes=0,negativeOffset;
- for(const options of tailCases(rom)){const r=tailReference(rom,options),n=r.frames.length+1,header=Buffer.alloc(2);header.writeUInt16LE(n);const row=[r.prefixSeed,r.seed,header];negativeOffset??=39+75+2;
+ for(const options of tailCases(rom)){const r=tailReference(rom,options),n=r.frames.length+1,header=Buffer.alloc(4);header.writeUInt16LE(n);header.writeUInt16LE(r.refreshIndex??65535,2);const row=[r.prefixSeed,r.seed,header];negativeOffset??=39+75+4;
   for(const f of [...r.frames,r.terminal]){row.push(f.state,Buffer.from([f.work?1:0]));if(f.work){row.push(f.work,f.source,f.output);transferBytes+=f.work[4];}}
   chunks.push(Buffer.concat(row));events+=n;
  }return {bytes:Buffer.concat(chunks),cases:chunks.length,events,transferBytes,negativeOffset,bossFormations:bossFormations(rom)};

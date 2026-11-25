@@ -10,6 +10,9 @@
 #ifdef FF3_STATUS_VIDEO
 #include "battle-status-video.h"
 #endif
+#ifdef FF3_STONE
+#include "battle-stone.h"
+#endif
 #ifdef FF3_RESIDENT_BG
 #include "battle-resident-bg.h"
 #endif
@@ -83,6 +86,7 @@ static void present(void){uint8_t i;uint16_t begin=ff3_clock_now(),elapsed;uint8
  else if(!ff3_party_oam(&party_state,party_source)){party_error=1;return;}
 #ifdef FF3_STATUS_VIDEO
  party_ready_oam:
+ ff3_status_video_source();
 #endif
  if(!ff3_party_oam_v6(party_source,party_state.battle_type==0x88,target)){party_error=1;return;}
 #ifdef FF3_RESIDENT_BG
@@ -94,7 +98,10 @@ static void present(void){uint8_t i;uint16_t begin=ff3_clock_now(),elapsed;uint8
 #ifdef FF3_STATUS_VIDEO
  if(!ff3_status_video_objects(target)){party_error=35;return;}
 #endif
- elapsed=ff3_clock_now()-begin;if(elapsed>party_max_prepare)party_max_prepare=elapsed;party_prepared++;party_pending=1;
+#ifdef FF3_STONE
+ if(status_stage){ff3_stone_prepare(resident_page,target);if(stone_error){party_error=40+stone_error;return;}}
+#endif
+ elapsed=ff3_clock_now()-begin;if(elapsed>party_max_prepare)party_max_prepare=elapsed;party_prepared++;party_work=0;party_pending=1;
  while(party_pending){ff3_native_service();__asm halt __endasm;}
 }
 static void reset_motion(void){const PartyVideoAsset*a=party_assets+party_profile;
@@ -137,7 +144,10 @@ void main(void){uint8_t i;
  ff3_terrain_init();
 #endif
  party_ready=0xa5;
- while(1){ff3_native_service();
+ while(1){
+  /* Two-tick yield is for active picture work. Idle/finished publication
+   * must refill the original three-tick queue before a costly audio tick. */
+  party_work=party_request||party_step||(!party_pause&&!native_done);ff3_native_service();
   if(party_request)load();
   else if(loaded&&!party_error&&(party_step||(!party_pause&&!native_done))){
    if(party_motion.phase==FF3_ENTRY_TAIL){

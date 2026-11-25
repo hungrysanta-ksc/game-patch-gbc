@@ -10,8 +10,8 @@ import {scenePixels} from './battle-scene-pixels.mjs';
 import {offset} from './render-budget-source.mjs';
 export function statusVideoOracle(rom,options){
  const p=partyEntryOracle(rom,options),tail=tailReference(rom,options);
- check(tail.frames.every(f=>[2,7].includes(f.state[67])&&(!f.work||f.work[1]===3)),'Native status probe requires cache-hit non-stone tail');
- const {m}=initializedBattle(rom,{formation:3,rows:[0,1,0,1],terrain:0,...options});m.call(0xb469);const c=m.c;
+ check(tail.frames.every(f=>(options.stone?[2,3,4,7]:[2,7]).includes(f.state[67])&&(options.stone||!f.work||f.work[1]===3)),'Native status probe requires cache-hit non-stone tail');
+ const {m}=initializedBattle(rom,{formation:3,rows:[0,1,0,1],terrain:0,...options});if(options.cache)m.c.m.set(options.cache,0x7da3);m.call(0xb469);const c=m.c;if(options.clearAfter){c.m.fill(0,0x7d9b,0x7da3);m.call(0xb5b8);}
  const before=Buffer.from(m.ppu.bytes);m.begin();m.call(0xb304);m.finish();
  const commandPpu=Buffer.from(m.ppu.bytes),commandPalette=cgbPalette(commandPpu.subarray(0x3f10,0x3f20));
  const ranges=m.waits.flatMap(w=>w.ranges).filter(r=>r.kind==='chr');
@@ -28,13 +28,13 @@ export function statusVideoOracle(rom,options){
  for(let slot=0;slot<4;slot++){const id=input[8+slot];if(id===255)continue;
   const begin=offset(0x0d,0xb240+id*64);check(commandPpu.subarray(0x1490+slot*64,0x14d0+slot*64).equals(rom.subarray(begin,begin+64)),'Original status CHR source and destination');
  }
- const extra=tail.frames.map(f=>{check(f.published,'Completed source wait required');return {state:f.state.subarray(0,35),original:f.published.oam.subarray(160),ppu:f.published.ppu,rawPalette:f.published.ppu.subarray(0x3f10,0x3f20),palette:cgbPalette(f.published.ppu.subarray(0x3f10,0x3f20)),icons:Buffer.alloc(32,240),tail:f.state,stage:1};});
+ const extra=tail.frames.map(f=>{check(f.published,'Completed source wait required');return {state:f.state.subarray(0,35),original:f.published.oam.subarray(160),ppu:f.published.ppu,rawPalette:f.published.ppu.subarray(0x3f10,0x3f20),palette:cgbPalette(f.published.ppu.subarray(0x3f10,0x3f20)),icons:Buffer.alloc(32,240),tail:f.state,work:f.work,source:f.source,stage:1};});
  let previous=Buffer.alloc(64,240);const commandParty=partyOamInput(c);
  for(let i=0;i<32;i++){input[34]=(c.m[0xb7]+i)&255;const r=statusOamReference(rom,input,previous);previous=r.oam;
   extra.push({state:tail.terminal.state.subarray(0,35),original:Buffer.from(m.physicalOam.subarray(160)),ppu:commandPpu,rawPalette:commandPpu.subarray(0x3f10,0x3f20),palette:commandPalette,icons:r.oam.subarray(0,32),status:Buffer.concat([input.subarray(0,34),Buffer.from([r.counter])]),stage:2});
  }
  input[34]=c.m[0xb7];
- return {...p,extra,tailSeed:tail.seed,statusSeed:input,commandParty,commandPalette,commandTiles:tiles,commandBlocks:Buffer.concat(blocks),commandRanges:ranges};
+ return {...p,extra,clearAfter:!!options.clearAfter,refreshIndex:tail.refreshIndex,tailSeed:tail.seed,statusSeed:input,commandParty,commandPalette,commandTiles:tiles,commandBlocks:Buffer.concat(blocks),commandRanges:ranges};
 }
 export function statusNativeOam(source,back){const out=Buffer.alloc(32);
  for(let i=0;i<8;i++){const [sy,t,a,sx]=source.subarray(i*4,i*4+4),slot=i>>1,x=sx-(back?16:80),y=sy+1-[44,72,100,128][slot]+[10,34,58,82][slot];
