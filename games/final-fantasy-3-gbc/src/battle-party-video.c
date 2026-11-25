@@ -111,7 +111,7 @@ static void reset_motion(void){const PartyVideoAsset*a=party_assets+party_profil
 #endif
  if(!ff3_entry_start(&party_motion)){party_error=2;return;}present();
 }
-static void load(void){const PartyVideoAsset*a;uint16_t off;uint8_t page;
+static void load(void){const PartyVideoAsset*a;uint8_t page;
  if(party_profile>=PARTY_PROFILES){party_error=3;return;}a=party_assets+party_profile;
  /* A request may arrive after the main-loop work flag was sampled. Loading
   * owns the same cooperative two-tick refill contract as picture work. */
@@ -125,7 +125,7 @@ static void load(void){const PartyVideoAsset*a;uint16_t off;uint8_t page;
  party_load_stage=2;ff3_terrain_load(party_profile);if(terrain_fault){party_error=20+terrain_fault;return;}
 #endif
 #endif
- party_load_stage=3;for(off=0;off<4096;off+=256){ff3_party_copy(a->bank,a->tiles+off,text_staging,256);ff3_text_copy(0,0x8000+off,text_staging,256);ff3_native_service();}
+ party_load_stage=3;ff3_text_rom_copy(0,0x8000,a->bank,a->tiles,4096);
  ff3_party_copy(a->bank,a->palette,text_staging,32);ff3_party_palette(0,0,4,text_staging);
  loaded=1;party_work=1;party_load_stage=4;reset_motion();party_request=0;party_load_stage=0;
 }

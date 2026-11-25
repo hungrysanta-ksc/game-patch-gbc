@@ -115,7 +115,8 @@
     "build:battle-confusion": "node tools/build-battle-party-oam.mjs --confusion",
     "verify:battle-confusion": "node tools/verify-battle-party-video.mjs --confusion",
     "verify:battle-preparation": "node tools/verify-battle-party-video.mjs --stone-overlap --costs",
-    "verify:battle-load": "node tools/verify-battle-load.mjs"
+    "verify:battle-load": "node tools/verify-battle-load.mjs",
+    "verify:text-transfer": "node tools/verify-text-transfer.mjs"
   },
   "engines": {
     "node": ">=20"

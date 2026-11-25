@@ -3,6 +3,14 @@ import {ROOT,input,check,hash} from './source.mjs';import {nativeReference} from
 const {data,local}=await input(),arg=process.argv.indexOf('--artifact-root'),base=arg<0?ROOT:path.resolve(process.argv[arg+1]),dir=base+'/build/battle-stone-overlap',out=base+'/evidence/battle-load';await fs.mkdir(out,{recursive:true});
 const report=JSON.parse(await fs.readFile(dir+'/report.json')),rom=dir+'/ff3-battle-stone-overlap-video.gbc',bytes=await fs.readFile(rom),romSha256=hash(bytes);check(romSha256===report.videoRomSha256&&hash(await fs.readFile(local.mesenCore))==='1ba99d2c848e007c60cbd7fceca058440758eb44837a93a6724d29d72723c994','Pinned load artifacts');
 const symbols={};for(const m of(await fs.readFile(rom.replace('.gbc','.noi'),'utf8')).matchAll(/DEF _(\w+) (0x[0-9a-f]+)/gi))symbols[m[1]]=Number(m[2]);
+if(symbols.ff3_text_dma_begin!==undefined){
+ // Bound the unobserved DI/ready/restore/EI-delay instructions in the pinned
+ // binary, not merely in C source. Successful ready path: 212 CPU clocks;
+ // Lua conservatively adds 256 clocks to the measured body.
+ const b=symbols.ff3_text_dma_begin,e=symbols.ff3_text_dma_end,p=bytes.subarray(b-9,b),ready=bytes.readUInt16LE(b-6);
+ check(p.subarray(0,3).toString('hex')==='f3c5cd'&&p.subarray(5,8).toString('hex')==='c1b728'&&b+p[8]===e+4,'DMA critical prologue');
+ check(bytes.subarray(e,e+7).toString('hex')==='f8003601fbf800'&&bytes.subarray(ready,ready+22).toString('hex')==='f044fe90380bfe963007f041e6033d2802afc93e01c9','DMA critical timing anchor');
+}
 const run=promisify(execFile),env={...process.env,APPDATA:ROOT+'/.local/config',DOTNET_CLI_HOME:ROOT+'/.local/dotnet',DOTNET_CLI_TELEMETRY_OPTOUT:'1'};
 async function logged(args,file){try{const r=await run(local.dotnet,args,{env,cwd:ROOT,timeout:900000,maxBuffer:8e6});await fs.writeFile(file,r.stdout+r.stderr);}catch(e){await fs.writeFile(file,(e.stdout||'')+(e.stderr||''));throw e;}}
 if(!process.argv.includes('--reuse')&&!process.argv.includes('--no-build'))await logged(['build',ROOT+'/tools/VerifyBattleLoad/VerifyBattleLoad.csproj','-c','Release','--configfile',ROOT+'/tools/Capture/NuGet.Config'],out+'/build.log');
@@ -10,8 +18,11 @@ const results=[];
 for(const phase of [96,224])for(let profile=0;profile<4;profile++){
  const folder=out+'/'+profile+'-'+phase;await fs.mkdir(folder,{recursive:true});const output=folder+'/load.json',config=folder+'/config.json';
  if(!process.argv.includes('--reuse')){
-  const home=await fs.mkdtemp(ROOT+'/.local/mesen-load-'),addresses={consumed:symbols.native_consumed,profile:symbols.party_profile,request:symbols.party_request};for(const v of Object.values(addresses))check(Number.isInteger(v)&&v>=0xc000&&v<0xd000,'Load symbol');
-  const script=await preparationAudit(symbols,bytes,1)+'\nlocal loadPhase='+phase+'\nlocal loadProfile='+profile+'\nlocal loadAddresses={'+Object.entries(addresses).map(([k,v])=>k+'='+v).join(',')+'}\n'+await fs.readFile(ROOT+'/tools/battle-load-audit.lua','utf8');
+  const home=await fs.mkdtemp(ROOT+'/.local/mesen-load-'),addresses={consumed:symbols.native_consumed,profile:symbols.party_profile,request:symbols.party_request,bank:symbols._current_bank};for(const [k,v] of Object.entries(addresses))check(Number.isInteger(v)&&v>=0xc000&&v<(k==='bank'?0x10000:0xd000),'Load symbol');
+  const ranges=[['party_tiles'+profile,4096,0],['resident_patterns'+profile,report.resident[profile].tiles*16,1]].map(([name,count,vram])=>({bank:symbols[name]>>>16,start:symbols[name]&65535,count,vram}));
+  const begin=symbols.ff3_text_rom_dma_begin,end=symbols.ff3_text_rom_dma_end;if(begin!==undefined)check(begin>0&&begin<end&&end<0x4000,'Fixed ROM DMA markers');
+  const romAudit='local loadDmaBegin='+(symbols.ff3_text_dma_begin??'nil')+'\nlocal loadDmaEnd='+(symbols.ff3_text_dma_end??'nil')+'\nlocal loadRomBegin='+(begin??'nil')+'\nlocal loadRomEnd='+(end??'nil')+'\nlocal loadRomRanges={'+ranges.map(r=>'{bank='+r.bank+',start='+r.start+',count='+r.count+',vram='+r.vram+'}').join(',')+'}\n';
+  const script=await preparationAudit(symbols,bytes,1)+'\nlocal loadPhase='+phase+'\nlocal loadProfile='+profile+'\nlocal loadAddresses={'+Object.entries(addresses).map(([k,v])=>k+'='+v).join(',')+'}\n'+romAudit+await fs.readFile(ROOT+'/tools/battle-load-audit.lua','utf8');
   await fs.writeFile(config,JSON.stringify({dll:local.mesenCore,home,rom,romSha256,output,symbols,phase,scriptPath:ROOT+'/tools/battle-load-audit.lua',script}));
   await logged([ROOT+'/tools/VerifyBattleLoad/bin/Release/net8.0/VerifyBattleLoad.dll',config],folder+'/runtime.log');
  }
@@ -23,9 +34,11 @@ for(const phase of [96,224])for(let profile=0;profile<4;profile++){
  const shots=(await fs.readdir(r.home+'/Screenshots')).filter(p=>p.endsWith('.png'));check(shots.length===1,'Load screenshot count');check(screenshotRgb(await fs.readFile(r.home+'/Screenshots/'+shots[0])).equals(await fs.readFile(dir+'/party'+profile+'-0.rgb')),'Loaded native pixels');
  const costs=preparationCosts(log);check(costs.length===1&&costs[0].profile===profile&&costs[0].request===1&&costs[0].frame===0,'Complete cold-load request');
  const audit=[...log.matchAll(/load-audit:(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1);check(audit,'Load write audit');const [paletteBytes,badPalettes,transferBytes,badTransfers,maxPaletteLy]=audit.slice(1).map(Number);check(paletteBytes===128&&!badPalettes&&!badTransfers&&transferBytes>8192,'Complete safe palette/map/pattern load');
+ const rm=[...log.matchAll(/load-rom:(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),([\d.]+)/g)].at(-1);check(rm,'ROM DMA bank audit');const [romDmas,bankPairs,bankFaults,irqFaults,sourceFaults,maxDmaBytes,maxMappedSeconds]=rm.slice(1).map(Number);const bulk=Number.isInteger(symbols.ff3_text_rom_dma_begin);check(!bankFaults&&!irqFaults&&!sourceFaults&&maxDmaBytes<=(bulk?256:128)&&(bulk?romDmas===bankPairs&&bankPairs>16&&maxMappedSeconds>0&&maxMappedSeconds<1/4096:!romDmas&&!bankPairs),'Bounded ROM DMA bank restoration');
+ const dm=[...log.matchAll(/load-dma:(\d+),(\d+),([\d.]+)/g)].at(-1);check(dm,'DMA interval evidence');const [dmaPairs,dmaFaults,maxDmaSeconds]=dm.slice(1).map(Number);check(!dmaFaults&&(bulk?dmaPairs>32&&maxDmaSeconds>0&&maxDmaSeconds<1/4096:!dmaPairs),'Complete DMA VBlank/timer bound');
  const ref=nativeReference(data,await fs.readFile(dir+'/conversion.bin'),{plan:report.audio.plan,ticks:report.audio.ticks});let end,elapsed=0,previous,first,last;
  for(const f of r.audio){check(!f.fault,'Load runtime fault');const b=Buffer.from(f.consumed,'hex'),events=b.readUInt32LE(4);if(events){end=ref.advanceToEvent(events);check(end.ticks===b.readUInt32LE(0)&&end.sourceHash===b.readUInt16LE(8)&&end.gbHash===b.readUInt16LE(10),'Load original consumed audio');}if(previous!==undefined)elapsed+=(f.timer-previous+65536)&65535;previous=f.timer;first??={...f,elapsed};last={...f,elapsed};}
- check(end&&end.ticks>=phase+120,'Audio continuation');const drift=(last.elapsed-first.elapsed)/4096-(last.master-first.master)/last.rate;check(Math.abs(drift)<0.003,'Load audio timer drift');
- const row={phase,profile,...costs[0],paletteBytes,transferBytes,maxPaletteLy,audioTicks:end.ticks,timerDriftMs:drift*1000};results.push(row);console.log(JSON.stringify(row));
+ check(end&&end.ticks>=phase+120,'Audio continuation');const drift=(last.elapsed-first.elapsed)/4096-(last.master-first.master)/last.rate;check(Math.abs(drift)<1/4096,'Load audio timer drift');
+ const row={phase,profile,...costs[0],paletteBytes,transferBytes,maxPaletteLy,romDmas,bankPairs,maxDmaBytes,maxMappedSeconds,maxDmaSeconds,audioTicks:end.ticks,timerDriftMs:drift*1000};results.push(row);console.log(JSON.stringify(row));
 }
 await fs.writeFile(out+'/summary.json',JSON.stringify({romSha256,rows:results,scope:'Eight fresh-boot controlled requests at original consumed ticks 96/224; first picture and 120 subsequent audio ticks. Full battle/audio completion is a separate gate.'},null,2));
