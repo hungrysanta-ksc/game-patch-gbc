@@ -30,6 +30,20 @@ static void pump(void){uint8_t taken=0,n,i;
    transfer_source+=n;transfer_address+=n;transfer_count-=n;text_transfer_chunks++;text_transfer_bytes+=n;
   }
   if(!transfer_count)pending=0;
+ }else if(pending==5){
+  /* One palette per bounded critical section; the timer can run between
+   * palettes. Reuse the transfer descriptor and keep the source in WRAM. */
+  while(transfer_count&&ready()){
+   taken=0;
+   CRITICAL{if(ready()){
+    if(transfer_bank){BCPS_REG=0x80|(uint8_t)transfer_address;for(i=0;i<8;i++)BCPD_REG=((const uint8_t*)transfer_source)[i];}
+    else {OCPS_REG=0x80|(uint8_t)transfer_address;for(i=0;i<8;i++)OCPD_REG=((const uint8_t*)transfer_source)[i];}
+    measured();taken=1;
+   }}
+   if(!taken)break;
+   transfer_source+=8;transfer_address+=8;transfer_count--;
+  }
+  if(!transfer_count)pending=0;
  }else{
   CRITICAL{if(ready()){
    if(pending==2){BCPS_REG=0xb8;for(i=0;i<8;i++)BCPD_REG=text_staging[i];}
@@ -59,3 +73,8 @@ void ff3_text_video(uint8_t visible) NONBANKED {
  pending=visible?3:4;finish();
 }
 void ff3_text_palette(const uint16_t *colors) NONBANKED {memcpy(text_staging,colors,8);pending=2;finish();}
+void ff3_text_palette_range(uint8_t bg,uint8_t first,uint8_t count,const uint8_t *data) NONBANKED {
+ if(!count)return;
+ if(pending||bg>1||first>=8||count>8-first||(uint16_t)data<0xd950||(uint16_t)data>0xda50-(uint16_t)count*8){text_transfer_fault=1;return;}
+ transfer_source=(uint16_t)data;transfer_address=(uint16_t)first*8;transfer_count=count;transfer_bank=bg;pending=5;finish();
+}

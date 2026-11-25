@@ -11,4 +11,6 @@ void ff3_text_video(uint8_t visible) NONBANKED;
 extern uint8_t __at(0xd950) text_staging[256];
 void ff3_text_copy(uint8_t bank,uint16_t address,const uint8_t *data,uint16_t count) NONBANKED;
 void ff3_text_palette(const uint16_t *colors) NONBANKED;
+/* Queue contiguous palettes from the shared WRAM staging area. */
+void ff3_text_palette_range(uint8_t bg,uint8_t first,uint8_t count,const uint8_t *data) NONBANKED;
 #endif

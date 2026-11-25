@@ -114,7 +114,8 @@
     "verify:battle-stone-overlap": "node tools/verify-battle-party-video.mjs --stone-overlap",
     "build:battle-confusion": "node tools/build-battle-party-oam.mjs --confusion",
     "verify:battle-confusion": "node tools/verify-battle-party-video.mjs --confusion",
-    "verify:battle-preparation": "node tools/verify-battle-party-video.mjs --stone-overlap --costs"
+    "verify:battle-preparation": "node tools/verify-battle-party-video.mjs --stone-overlap --costs",
+    "verify:battle-load": "node tools/verify-battle-load.mjs"
   },
   "engines": {
     "node": ">=20"

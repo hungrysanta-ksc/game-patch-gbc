@@ -36,12 +36,8 @@ static uint16_t last_vblank;
 static uint8_t next_page,loaded;
 uint8_t party_frame;
 void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANKED {uint8_t saved=CURRENT_BANK;SWITCH_ROM(bank);memcpy(dest,source,n);SWITCH_ROM(saved);}
-void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED {uint8_t ly;
- while(count--){
-  for(;;){ly=LY_REG;if(ly>=144&&ly<=146&&(STAT_REG&3)==1)break;ff3_native_service();__asm halt __endasm;}
-  if(bg)set_bkg_palette(first,1,(const palette_color_t*)data);else set_sprite_palette(first,1,(const palette_color_t*)data);
-  first++;data+=8;ff3_native_service();
- }
+void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED {
+ ff3_text_palette_range(bg,first,count,data);
 }
 static void refresh(void) __naked {__asm
  .globl .refresh_OAM
@@ -117,6 +113,9 @@ static void reset_motion(void){const PartyVideoAsset*a=party_assets+party_profil
 }
 static void load(void){const PartyVideoAsset*a;uint16_t off;uint8_t page;
  if(party_profile>=PARTY_PROFILES){party_error=3;return;}a=party_assets+party_profile;
+ /* A request may arrive after the main-loop work flag was sampled. Loading
+  * owns the same cooperative two-tick refill contract as picture work. */
+ party_work=1;
  /* Hide objects at VBlank before replacing their resident patterns. */
  page=party_page^1;memset(page?party_oam1:party_oam0,0,160);next_page=page;party_pending=1;
  while(party_pending){ff3_native_service();__asm halt __endasm;}
