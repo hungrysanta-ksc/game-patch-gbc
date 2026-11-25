@@ -3,6 +3,15 @@ import {input} from '../tools/source.mjs';import {statusVideoOracle} from '../to
 import {stoneAssets,stoneChange,stoneCompose,jobAssets} from '../tools/battle-stone.mjs';
 import {residentEnemy} from '../tools/battle-resident-bg.mjs';import {terrainAssets,terrainFrames} from '../tools/battle-terrain.mjs';
 import {tailReference} from '../tools/battle-entry-tail-source.mjs';
+test('confused-position clear is accepted but stone relocation remains explicit unsupported work',()=>{
+ for(const back of [false,true]){
+  const state=[],w=Buffer.from([3,3,0,0,8,back?168:182,32,0]);
+  stoneChange(state,0,w,back);assert.equal(state[0].x,back?6:12);
+  const before=structuredClone(state);w[1]=0;
+  assert.throws(()=>stoneChange(state,0,w,back),/Stone canonical columns/);
+  assert.deepEqual(state,before);
+ }
+});
 test('HIDE publishes the prepared canonical shadow while LOAD retains physical OAM',async()=>{
  const {data}=await input(),r=tailReference(data,{back:true,partyStatus:[128,64,32,8],cache:[0,0,0,0]}),canonical=r.frames[0],hide=r.frames[1],load=r.frames[2];
  assert.deepEqual(r.frames.slice(0,3).map(f=>f.state[67]),[2,3,4]);

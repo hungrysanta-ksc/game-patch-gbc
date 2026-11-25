@@ -16,6 +16,8 @@ uint8_t ff3_entry_start(Ff3EntryDisplay *s) FF3_STATE_BANKED;
 uint8_t ff3_entry_ack(Ff3EntryDisplay *s,uint8_t ticket) FF3_STATE_BANKED;
 /* Original 33/BE89 forward movement, also used by the confused entry tail. */
 void ff3_entry_motion(Ff3EntryDisplay *s) FF3_STATE_BANKED;
+/* 33/BD45: shared forward/backward movement; only toad pose ORs direction. */
+void ff3_entry_motion_direction(Ff3EntryDisplay *s,uint8_t back) FF3_STATE_BANKED;
 /* 2F/ADC0: produce only the four terrain tiles for the pending row.
  * Both buffers must be WRAM (the banked call selects code bank 16).
  * Input is the original terrain's 256-byte NES 2bpp pattern; output is 64

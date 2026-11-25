@@ -11,7 +11,9 @@ static void pose(Ff3EntryTail*s){uint8_t i=s->actor,a=s->motion.status[i],b=s->s
 }
 static void canonical(Ff3EntryTail*s){uint8_t i;for(i=0;i<4;i++)s->motion.x[i]=s->motion.destination[i]=ff3_tail_rows[s->motion.rows[i]&1];s->phase=FF3_TAIL_CANONICAL;}
 static void after_load(Ff3EntryTail*s){uint8_t i=s->actor;
+ s->chunk&=191; /* private bit 6: B3F6 backward movement, not boss work */
  if((s->motion.status[i]&8)&&s->motion.x[i]!=0xb0){s->motion.confused_position[i]++;s->motion.destination[i]=0xb0;s->motion.frame=0;ff3_entry_motion(&s->motion);s->phase=FF3_TAIL_MOVE;}
+ else if(!(s->motion.status[i]&8)&&s->motion.x[i]==0xb0){s->chunk|=64;s->motion.status[i]|=8;s->motion.destination[i]=ff3_tail_rows[s->motion.rows[i]&1];s->motion.frame=0;ff3_entry_motion_direction(&s->motion,1);s->phase=FF3_TAIL_MOVE;}
  else {pose(s);s->phase=FF3_TAIL_STATUS;}
 }
 static void slot(Ff3EntryTail*s){uint8_t i=s->actor,g=kind(s->motion.status[i]);
@@ -41,7 +43,7 @@ uint8_t ff3_entry_tail_ack(Ff3EntryTail*s,uint16_t ticket) FF3_STATE_BANKED {uin
  case FF3_TAIL_HIDE:s->phase=FF3_TAIL_LOAD;break;
  case FF3_TAIL_LOAD:n=s->total-s->loaded;s->loaded+=n>4?4:n;if(s->loaded==s->total)after_load(s);break;
  case FF3_TAIL_MOVE:for(i=0;i<4;i++)if(s->motion.x[i]!=s->motion.destination[i])break;
-  if(i<4)ff3_entry_motion(&s->motion);else {pose(s);s->phase=FF3_TAIL_INNER;}break;
+  if(i<4)ff3_entry_motion_direction(&s->motion,(s->chunk&64)!=0);else {if(s->chunk&64){s->motion.status[s->actor]&=247;s->motion.confused_position[s->actor]=0;}pose(s);s->phase=FF3_TAIL_INNER;}break;
  case FF3_TAIL_INNER:s->motion.confused_position[s->actor]=0;pose(s);s->phase=FF3_TAIL_STATUS;break;
  case FF3_TAIL_STATUS:if(++s->actor<4)slot(s);else {if(!(s->chunk&128)){s->counts[4]=0;for(i=0;i<4;i++){n=0;for(j=0;j<8;j++)n+=s->types[j]==i;s->counts[i]=n;s->counts[4]+=n;}}s->phase=FF3_TAIL_DONE;}break;
  default:return 0;

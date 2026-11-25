@@ -52,7 +52,8 @@ uint8_t ff3_status_video_advance(void) BANKED {
  else return 0; /* same command wait: original counter advances in objects() */
 #ifdef FF3_STONE
  if(status_tail.phase==FF3_TAIL_DONE&&a->clear_after&&!refreshed){
-  memset(status_tail.motion.status,0,4);memset(status_tail.status2,0,4);
+  if(a->clear_after==2){for(n=0;n<4;n++)status_tail.motion.status[n]&=247;}
+  else {memset(status_tail.motion.status,0,4);memset(status_tail.status2,0,4);}
   if(!ff3_entry_tail_refresh(&status_tail))return 4;refreshed=1;
  }
 #endif
@@ -68,6 +69,7 @@ uint8_t ff3_status_video_advance(void) BANKED {
  if(status_tail.phase==FF3_TAIL_CANONICAL)return 0;
 #ifdef FF3_STONE
  if(status_tail.phase==FF3_TAIL_HIDE)return 0;
+ if(status_tail.phase==FF3_TAIL_MOVE)return 0;
  if(status_tail.phase==FF3_TAIL_LOAD){uint8_t t,y;
   if(!ff3_entry_tail_work(&status_tail,work)||work[0]!=2)return 4;
   at=work[2]+((uint16_t)work[3]<<8);n=work[4];
@@ -77,7 +79,7 @@ uint8_t ff3_status_video_advance(void) BANKED {
   for(t=0;t<n;t+=16)for(y=0;y<8;y++){text_staging[t+y*2]=job_bytes[t+y];text_staging[t+y*2+1]=job_bytes[t+y+8];}
   dest=0x8000+(work[5]+((uint16_t)work[6]<<8))-0x1000;ff3_text_copy(0,dest,text_staging,n);ff3_native_service();return 0;
  }
- if(status_tail.phase==FF3_TAIL_STATUS){party_state.hidden[status_tail.actor]=0;
+ if(status_tail.phase==FF3_TAIL_STATUS||status_tail.phase==FF3_TAIL_INNER){party_state.hidden[status_tail.actor]=0;
   if(!ff3_entry_tail_work(&status_tail,work)||!ff3_stone_change(status_tail.actor,work,party_motion.battle_type==0x88))return 4;return 0;
  }
 #endif
