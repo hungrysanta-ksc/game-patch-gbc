@@ -9,7 +9,7 @@ export function stoneAssets(rom,p){const maps=tailAssets(rom).tables.find(t=>t.n
   glyphs[to]|=(v&1)<<bit;glyphs[to+1]|=(v>>1)<<bit;
  }
  for(let pal=0;pal<4;pal++)for(let v=0;v<4;v++)for(let j=0;j<4;j++)if(p.bgPalette.readUInt16LE(24+v*2)===p.bgPalette.readUInt16LE(pal*8+j*2)){remap[pal*4+v]=j;break;}
- return {glyphs,remap};
+ const occupied=Buffer.alloc(24);for(let id=0;id<12;id++){let bits=0;for(let cell=0;cell<10;cell++)if(glyphs.subarray(id*160+cell*16,id*160+(cell+1)*16).some(Boolean))bits|=1<<cell;occupied.writeUInt16LE(bits,id*2);}return {glyphs,remap,occupied};
 }
 export function jobAssets(rom){return Buffer.concat([rom.subarray(offset(0x28,0x8000),offset(0x28,0x8000)+22*672),rom.subarray(offset(0x29,0xbf80),offset(0x29,0xbf80)+128),rom.subarray(offset(0x29,0xbf00),offset(0x29,0xbf00)+128)]);}
 export function stoneChange(state,actor,work,back){check(actor>=0&&actor<4&&work[0]===3&&work[1]<=3&&!work[3]&&!work[7]&&work[4]===(actor&1?6:8)&&work[2]===(work[1]===3?0:actor*8),'Stone map descriptor');
