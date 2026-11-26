@@ -13,4 +13,6 @@ uint8_t ff3_party_oam(const Ff3PartyOam*s,uint8_t*out) FF3_STATE_BANKED;
  * hidden, not wrapped; on-screen art is never scaled or simplified.
  * This does not own status icons, stone BG, enemies, numbers or windows. */
 uint8_t ff3_party_oam_v6(const uint8_t*source,uint8_t back,uint8_t*out) FF3_STATE_BANKED;
+/* 32/90EA: one changed actor, six original records, same tables as 90D8. */
+uint8_t ff3_party_actor_oam(const Ff3PartyOam*s,uint8_t actor,uint8_t*out) FF3_STATE_BANKED;
 #endif

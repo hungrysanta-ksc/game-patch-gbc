@@ -3,6 +3,36 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "src/battle-action-oam.h",
+      "bytes": 583,
+      "sha256": "c97bcff92338f8ed37f02d9e739f5adb16371c8ff907352c3740d655c1244cb6",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-action-oam.c",
+      "bytes": 1450,
+      "sha256": "34e4ebb005aa7ce86d0d04c1ee659ed0c2e9d07c11d9052fb9e09e1807213fde",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-action-oam-test.c",
+      "bytes": 2263,
+      "sha256": "5f173b7d1d3da57eddd2a05cc961f618d02a8d713a966b6556fb4c315ccddfe9",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-action-cost-audit.lua",
+      "bytes": 1189,
+      "sha256": "ffac4dfdb7ff0160e0be53d6a0c353830cb48f7574d24a2877d7306dd0cdb869",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/battle-action-preparation.md",
+      "bytes": 8590,
+      "sha256": "34b54a5481f236a7efcc0f7275af28b97792243a98c828a2d3be53b766642d55",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "src/battle-motion-sprites.h",
       "bytes": 492,
       "sha256": "90a4f2b25d3ec0daecdf1bdc7692950234d56207212aa1de3b16b389acae66cd",
@@ -46,8 +76,8 @@
     },
     {
       "path": "src/battle-strike-video.c",
-      "bytes": 6566,
-      "sha256": "95b6e50dfccd2ccca7945986dbcf0f7414edea92bc4abcb66fcc4e22ecde2a7c",
+      "bytes": 7019,
+      "sha256": "8d1317237de5648a8c270ca8d0f6c7ee5023775632eba314f9b2bf08690fad3c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -58,8 +88,8 @@
     },
     {
       "path": "tools/verify-battle-strike.mjs",
-      "bytes": 12669,
-      "sha256": "4cecc4fcc3fd6aa1b6fa0b4f5a29fb5cf8746ccd5a1f9fba87e181dfdbb5605f",
+      "bytes": 13720,
+      "sha256": "8b1246f7aeb411de48274595f34dda295680950f60edfb7f98c295c0f93a5e2c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -70,14 +100,14 @@
     },
     {
       "path": "tools/VerifyStrike/Program.cs",
-      "bytes": 6238,
-      "sha256": "06a983d202b216d3b93c8b3ddd76e81264f0e735fab300bd67a7a60fa44119c4",
+      "bytes": 6473,
+      "sha256": "125b35ee6459933d450fda191d8c407a94aac169178299ab83a109e9f8d65aa4",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/battle-native-strike.md",
-      "bytes": 8246,
-      "sha256": "3fb50591d3236c31476ae963c759dae944724d11a98a66840d6bd99aaa3c2d83",
+      "bytes": 8552,
+      "sha256": "e4a5fed270bc98a176ab63c94d380c263931ae44541af61b3a10321d570ba27a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -466,20 +496,20 @@
     },
     {
       "path": "src/battle-party-oam.h",
-      "bytes": 811,
-      "sha256": "3bad46ca7a10938c13b3c95b0ec8f0f222b0ea3dd405bd28422a7d6c82048c7c",
+      "bytes": 981,
+      "sha256": "d7565aa4812c267c2088a5960b105dcdafe5df5a96ab4775bc1a8d1f49ae789a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-party-oam.c",
-      "bytes": 1477,
-      "sha256": "1fe545a0e6adb119b4e183ce1ff6bac9e4af2f0388b34522a6ac71b05b6bfb3e",
+      "bytes": 2092,
+      "sha256": "fb8b85be73011edef3f2549305e9ec13dd551c5e4af40ffc9bed5860ed3bfadb",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-party-oam-test.c",
-      "bytes": 1459,
-      "sha256": "b8dea983cbcb7181908e3fdc863ae9a6234e4ef53aeef4bcfd0bd8824a3dfa08",
+      "bytes": 2084,
+      "sha256": "d0ff72624c21f228d3eba28a1bdb48f4e3586f4e9704af83973ce3ea311a9e48",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -496,8 +526,8 @@
     },
     {
       "path": "tools/build-battle-party-oam.mjs",
-      "bytes": 27964,
-      "sha256": "b2d54d1d335dbada542e7f66a2eb41eb3d20b509722f408ace72f0c1462c4aba",
+      "bytes": 28168,
+      "sha256": "1a2a2e273efae3c1ec125c90b457bb05032f880c7bfed4365e7631885b2e653b",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1336,8 +1366,8 @@
     },
     {
       "path": "tools/verify-battle-select.mjs",
-      "bytes": 2712,
-      "sha256": "58e0bdacdf431ed480dbe48c3f53c06362549ff028a117bb2aff25ca1b08bf32",
+      "bytes": 2888,
+      "sha256": "94f3f35f4e081dde533cddb9216a48db444f5ce9042459981d417145b81214d6",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2170,8 +2200,8 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 60327,
-      "sha256": "c2dcc835a505265d6d30bf90ec9d5088f5d0220d3a553e581d1649994c3714ac",
+      "bytes": 60533,
+      "sha256": "a333fae548b6993e13fd8534edce37b7d5d7824d31c5edac9b96d0d1afb8d283",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2182,8 +2212,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 38069,
-      "sha256": "24246cd11456626150852343d795c4fb3d0dacfa3f3141fc2cdd16477b4536db",
+      "bytes": 38380,
+      "sha256": "7a81ad2ef4c74d6fde3d34ec8d9fe32d0462f4e76161df1fe8f4e3b42c69a26f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3004,8 +3034,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 18260,
-      "sha256": "02d7f7128e6ef16606140017c6186df0d75ae91e0b02a7dfd3597c19b4135591",
+      "bytes": 18418,
+      "sha256": "7ae16c81671d1311189e6d5680e18396d96fcdf376883f15ec0f138ae65296f6",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

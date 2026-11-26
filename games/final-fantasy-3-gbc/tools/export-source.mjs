@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'src/battle-action-oam.h','src/battle-action-oam.c','src/battle-action-oam-test.c','tools/battle-action-cost-audit.lua','docs/battle-action-preparation.md',
  'src/battle-motion-sprites.h','src/battle-motion-sprites.c','src/battle-motion-sprites-test.c','tools/battle-motion-sprites.mjs','tools/build-battle-motion-sprites.mjs','tests/battle-motion-sprites.test.mjs',
  'src/battle-strike-video.h','src/battle-strike-video.c','tools/battle-strike-assets.mjs','tools/verify-battle-strike.mjs','tools/VerifyStrike/VerifyStrike.csproj','tools/VerifyStrike/Program.cs','docs/battle-native-strike.md',
  'src/battle-live-ui.c','src/battle-live-ui.h','tools/battle-live-ui.mjs','tests/battle-live-ui.test.mjs','docs/battle-boss-rows-ui.md',
