@@ -3,6 +3,7 @@ do
  local mem=emu.memType.gameboyDebug
  local flags,active,clock,totals,counts={},false,0,{},{}
  local stack,refs={},{}
+ local previous={}
  local audioNames={'audio_packet','audio_vm','audio_output','audio_metadata','audio_control','audio_snapshot'}
  local function kind()
   if (flags.irq or 0)~=0 then return 'irq' end
@@ -17,6 +18,19 @@ do
  local function charge(t)
   if active then local k=kind();totals[k]=(totals[k] or 0)+t.masterClock-clock end
   clock=t.masterClock
+ end
+ -- Optional interval attribution for automatic actions, not runtime probes.
+ if actionCostFrames then
+  emu.addMemoryCallback(function(_,v)
+   if not active then return end
+   local t=emu.getState();charge(t)
+   local fields={}
+   for k,n in pairs(totals) do
+    fields[#fields+1]=string.format('%s=%d',k,n-(previous[k] or 0))
+    previous[k]=n
+   end
+   emu.log(string.format('action-frame-cost:%d,%d,%s',v,t.clockRate,table.concat(fields,',')))
+  end,emu.callbackType.write,actionCostFrames,actionCostFrames,emu.cpuType.gameboy)
  end
  local function installAudio()
  if actionAudioSites then
@@ -41,7 +55,7 @@ do
   emu.addMemoryCallback(function(_,v)
    local t=emu.getState();charge(t)
    if name=='active' then
-    if v~=0 and not active then active=true;totals={};counts={};clock=t.masterClock;installAudio()
+    if v~=0 and not active then active=true;totals={};counts={};previous={};clock=t.masterClock;installAudio()
     elseif v==0 and active then
      if #stack~=0 then error('Action ended inside audio call') end
      for k,n in pairs(totals) do emu.log(string.format('action-cost:%s,%d,%d,%d',k,n,t.clockRate,counts[k] or 0)) end
