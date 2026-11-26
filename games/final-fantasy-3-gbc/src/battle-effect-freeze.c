@@ -34,7 +34,7 @@ static void mirror(uint8_t bank,uint16_t from,uint16_t to,uint16_t bytes){uint16
 static uint8_t keep(const uint8_t*o){return o[0]&&o[2]&&(o[0]>=112||o[0]<16);}
 static uint8_t gather(void){uint8_t i,x,y,xx,yy,j;uint16_t key;const uint8_t*o;cells=0;
  for(i=8;i<32;i++){ff3_native_service();o=animation_base+i*4;if(!o[0]||!o[2]||keep(o))continue;x=o[1]-8;y=o[0]-16;if(x>152||y>96){effect_freeze_error=2;return 0;}
-  for(yy=y/8;yy<=(y+7)/8;yy++)for(xx=x/8;xx<=(x+7)/8;xx++){key=(uint16_t)yy*32+xx;for(j=0;j<cells&&effect_keys[j]!=key;j++);if(j==cells){if(cells==80){effect_freeze_error=3;return 0;}effect_keys[cells++]=key;}}}
+  for(yy=y/8;yy<=(y+7)/8;yy++)for(xx=x/8;xx<=(x+7)/8;xx++){key=(uint16_t)yy*32+xx;for(j=0;j<cells&&effect_keys[j]!=key;j++){if(!(j&15))ff3_native_service();}if(j==cells){if(cells==80){effect_freeze_error=3;return 0;}effect_keys[cells++]=key;}}}
  for(i=32;i<40;i++){ff3_native_service();o=animation_base+i*4;if(!o[0])continue;x=o[1]-8;y=o[0]-16;for(j=0;j<cells;j++){if(!(j&7))ff3_native_service();xx=(effect_keys[j]&31)*8;yy=(effect_keys[j]>>5)*8;if((uint16_t)x+8>xx&&x<(uint16_t)xx+8&&(uint16_t)y+8>yy&&y<(uint16_t)yy+8){effect_freeze_error=7;return 0;}}}
  return 1;
 }
@@ -74,7 +74,8 @@ static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/3
 uint8_t ff3_effect_freeze(void) BANKED {uint8_t bank,i;uint16_t at,size,j;effect_freeze_error=0;if(effect_signed)return 1;
  effect_freeze_stage=1;
  old_page=resident_page;new_page=old_page^1;if(resident_scroll){effect_freeze_error=5;return 0;}
- if(!store(1152,animation_base,160,1)||!gather())return 0;effect_freeze_stage=2;palettes();
+ ff3_native_service();if(!store(1152,animation_base,160,1))return 0;ff3_native_service();
+ if(!gather())return 0;effect_freeze_stage=2;palettes();
  if(!store(1312,effect_palettes+32,32,1))return 0;memcpy(effect_palettes+32,effect_palettes+64,24);mixed=0;
  /* OBJ color zero is transparent, not its stored RGB value. The borrowed
   * BG palette must encode the field's actual transparent backdrop. */

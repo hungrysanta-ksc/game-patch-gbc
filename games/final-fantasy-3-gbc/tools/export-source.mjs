@@ -1,6 +1,8 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'src/battle-motion-sprites.h','src/battle-motion-sprites.c','src/battle-motion-sprites-test.c','tools/battle-motion-sprites.mjs','tools/build-battle-motion-sprites.mjs','tests/battle-motion-sprites.test.mjs',
+ 'src/battle-strike-video.h','src/battle-strike-video.c','tools/battle-strike-assets.mjs','tools/verify-battle-strike.mjs','tools/VerifyStrike/VerifyStrike.csproj','tools/VerifyStrike/Program.cs','docs/battle-native-strike.md',
  'src/battle-live-ui.c','src/battle-live-ui.h','tools/battle-live-ui.mjs','tests/battle-live-ui.test.mjs','docs/battle-boss-rows-ui.md',
  'docs/battle-boss-residency.md','src/battle-boss.h','src/battle-boss.c','tools/battle-boss-cells.mjs','tools/boss-pattern-map.mjs','tools/battle-boss-audit.lua','tests/battle-boss-cells.test.mjs',
  'docs/battle-resource-contracts.md','tools/battle-resource-contracts.mjs','tools/audit-battle-resource-contracts.mjs','tests/battle-resource-contracts.test.mjs',

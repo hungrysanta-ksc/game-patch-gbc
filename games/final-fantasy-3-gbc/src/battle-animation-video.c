@@ -4,6 +4,7 @@
 #include "battle-numerals.h"
 #include "battle-party-oam.h"
 #include "battle-effect-freeze.h"
+#include "battle-strike-video.h"
 #include "effect-assets.h"
 #include "text-vblank.h"
 #include "platform.h"
@@ -60,7 +61,7 @@ static uint8_t present(uint8_t commit){uint8_t i,j,target=0,count=0,page=party_p
  publish:
  next_page=page;party_pending=1;while(party_pending){ff3_native_service();__asm halt __endasm;}animation_video_frames++;if(animation_video_probe)animation_video_gate=1;return 1;
 }
-void ff3_animation_video_reset(void) BANKED {active=number_active=resources=0;animation_video_error=animation_video_owner=animation_video_gate=0;animation_video_frames=0;}
+void ff3_animation_video_reset(void) BANKED {active=number_active=resources=0;animation_video_error=animation_video_owner=animation_video_gate=0;animation_video_frames=0;ff3_strike_reset();}
 uint8_t ff3_animation_video(uint8_t op,uint8_t effect,uint8_t result) BANKED {(void)result;
  if(animation_video_error)return 3;
  if(animation_video_gate)return 0;
@@ -70,7 +71,9 @@ uint8_t ff3_animation_video(uint8_t op,uint8_t effect,uint8_t result) BANKED {(v
   if(!ff3_animation_start(&animation_state)){animation_video_error=1;return 3;}active=1;capture();
  }
  if(animation_state.done){active=0;return 1;}
- animation_video_owner=animation_state.request;if(animation_video_owner!=28)return 2;
+ animation_video_owner=animation_state.request;
+ if(animation_video_owner==18){uint8_t r=ff3_strike_video();if(r==1){if(!ff3_animation_ack(&animation_state,animation_state.ticket)){animation_video_error=6;return 3;}capture();resources=0;return 0;}return r;}
+ if(animation_video_owner!=28)return 2;
  party_work=2;ff3_native_service();
  if(!number_active){
   ff3_party_copy(50,effect_seeds+(uint16_t)party_profile*96,&numbers,96);memcpy(numbers.values,animation_state.numbers,16);numbers.enemy=animation_state.target_enemy;
