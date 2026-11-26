@@ -3,6 +3,12 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "docs/battle-harp-owner.md",
+      "bytes": 6564,
+      "sha256": "213efa2b63ebfe527e34634237adf54dd840e833588095d6e3e88cb9bce06a94",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "tools/battle-oam-profile.mjs",
       "bytes": 1950,
       "sha256": "d8404473088bc7bc284f082c49cc4818de8dca26f2be9a4fcb8f9f7a10bf6de1",
@@ -124,8 +130,8 @@
     },
     {
       "path": "src/battle-strike-video.c",
-      "bytes": 8799,
-      "sha256": "9b338304ff535167d7a2f1d95d5f6c0cef76a728baf1ca282c7d37c86722fe3b",
+      "bytes": 9270,
+      "sha256": "615a18807acbc73fadbd1ecb60e5d9967764b2484bbecf9850f0bb0b132c9da0",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -136,8 +142,8 @@
     },
     {
       "path": "tools/verify-battle-strike.mjs",
-      "bytes": 19997,
-      "sha256": "1770c42b75815a80c2065321ebf5f625c78ea55f2f64a089068b3f9b51844d5f",
+      "bytes": 21550,
+      "sha256": "24eb25f92e007114b48078fdadb05a018df5b1f87bc4951e6684238d8f7110d7",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2248,8 +2254,8 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 66377,
-      "sha256": "cca69ccf456aac8b81a0c0270d21a76e02d93025de605e125e51797b7c7972bb",
+      "bytes": 67480,
+      "sha256": "a54eab59986e0492b9ed3ffe07295b7caa4605b0c6b044311bffe66ff61aaba6",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2260,8 +2266,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 40511,
-      "sha256": "cc55c563d1a70b513b5898b821dface59345bc0c38d44be4fb543c6c61d7b810",
+      "bytes": 41446,
+      "sha256": "0d23ce25e0d080ce40d68dc57a1adccc576861f3819c9283756f71ca50376c30",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3082,8 +3088,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 18690,
-      "sha256": "e55720c089f0f1af6fbd19014c1da75ad5b018c7f005dd0041dd504b33cab809",
+      "bytes": 18720,
+      "sha256": "738d0b165ec9bbcdd08b034bcddf4ae5942418531360b93e6bc4f7a0aafad4f9",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

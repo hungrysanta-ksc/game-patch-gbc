@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'docs/battle-harp-owner.md',
  'tools/battle-oam-profile.mjs','docs/battle-oam-costs.md',
  'tools/battle-publication-profile.mjs','docs/battle-publication-waits.md',
  'docs/battle-native-impact.md','docs/battle-rng-residency.md',
