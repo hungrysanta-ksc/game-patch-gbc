@@ -26,7 +26,11 @@ extern volatile uint8_t party_page,party_pending,party_profile,party_work,native
 extern uint8_t next_page;
 void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANKED;
 void ff3_native_service(void) NONBANKED;
-static void sound(uint8_t v){while(native_request){ff3_native_service();__asm halt __endasm;}native_argument=v&127;native_request=v==255?8:7;while(native_request){ff3_native_service();__asm halt __endasm;}}
+/* 33/A389..A38B posts $B6 and immediately prepares the next picture.
+ * Producer acknowledgement is not playback synchronization. Preserve an
+ * occupied mailbox, but do not stall the caller after posting a new request;
+ * bounded rendering checkpoints continue servicing the same timed queue. */
+static void sound(uint8_t v){while(native_request){ff3_native_service();__asm halt __endasm;}native_argument=v&127;native_request=v==255?8:7;}
 static uint8_t publish(uint8_t weapon,uint8_t slice){uint8_t i,n=0,a,page=party_page^1,*out=page?party_oam1:party_oam0,*dst,x,y;int16_t xx,yy,dx,dy;const uint8_t*q;
  /* Identical source state still owns a source wait and VBlank publication.
   * Keep the current immutable shadow; never skip a frame or recompose it. */
