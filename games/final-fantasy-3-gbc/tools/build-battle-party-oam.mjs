@@ -1,4 +1,4 @@
-import {magicAssets} from './battle-magic-assets.mjs';
+import {magicAssets,magicResidentAssets} from './battle-magic-assets.mjs';
 import {hitFlashAssets,hitJobAssets} from './battle-hit-assets.mjs';
 import {effectsAssets} from './battle-effects-assets.mjs';
 import {motionSpriteAssets} from './battle-motion-sprites.mjs';
@@ -95,20 +95,21 @@ if(effects){await fs.writeFile(gen+'/hit-assets.h','#include <stdint.h>\nextern 
  for(const [bank,keys]of [[53,['patterns','palettes','props','caps']],[54,['jobs','centers','restore','restore_pal','impact_centers','arrow_centers','angles']]]){const file=gen+'/strike'+bank+'.c';await fs.writeFile(file,'#pragma bank '+bank+'\n#include <stdint.h>\n'+keys.map(k=>'const uint8_t strike_'+k+'[]={'+[...a[k]]+'};').join('\n'));videoSources.push(file);}
  await fs.writeFile(out+'/strike-assets.json',JSON.stringify(Object.fromEntries(Object.entries(a).map(([k,b])=>[k,b.toString('hex')]))));
 }
-if(effects){const a=magicAssets(data);await fs.writeFile(gen+'/battle-magic-frames-assets.h',a.header);const declarations=[];
- for(let i=0;i<4;i++){const bytes=Buffer.concat(a.records.slice(i*24,(i+1)*24)),file=gen+'/magic'+i+'.c';await fs.writeFile(file,'#pragma bank '+(66+i)+'\n#include <stdint.h>\nconst uint8_t magic_resources'+i+'[]={'+[...bytes]+'};\n');videoSources.push(file);declarations.push('extern const uint8_t magic_resources'+i+'[];');}
- await fs.writeFile(gen+'/magic-assets.h',declarations.join('\n')+'\nstatic const uint8_t*const magic_resources[]={magic_resources0,magic_resources1,magic_resources2,magic_resources3};\n');await fs.writeFile(out+'/magic-assets.json',JSON.stringify({source:a.source,records:a.records.map(b=>b.toString('hex'))}));
+if(effects){const a=magicAssets(data),r=magicResidentAssets(data,a);await fs.writeFile(gen+'/battle-magic-frames-assets.h',a.header);
+ for(const [i,bytes]of r.banks.entries()){const file=gen+'/magic'+i+'.c';await fs.writeFile(file,'#pragma bank '+(66+i)+'\n#include <stdint.h>\nconst uint8_t magic_resources'+i+'[]={'+[...bytes]+'};\n');videoSources.push(file);}
+ await fs.writeFile(gen+'/magic-assets.h',r.header);await fs.writeFile(out+'/magic-assets.json',JSON.stringify({source:a.source,records:a.records.map(b=>b.toString('hex'))}));await fs.writeFile(out+'/magic-residency.json',JSON.stringify({...r,header:undefined,banks:r.banks.map(b=>b.toString('hex'))}));
 }
 let outputObject=null;if(stone||boss||effects){outputObject=out+'/audio-output.o';try{const r=await promisify(execFile)(compiler,['-msm83:gb','-DFF3_AUDIO_FAST','-DFF3_SINGLE_ENGINE','-DFF3_BANKED_RUNTIME','-I'+ROOT+'/src','-c','-o',outputObject,ROOT+'/src/audio-output.c'],{cwd:out,maxBuffer:8e6});await fs.writeFile(out+'/audio-output.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(out+'/audio-output.log',(e.stdout||'')+(e.stderr||''));throw e;}}
 const video=await compile(effects?'ff3-battle-effects-video':boss?'ff3-battle-boss-video':overlap?'ff3-battle-stone-overlap-video':confusion?'ff3-battle-confusion-video':stone?'ff3-battle-stone-video':status?'ff3-battle-status-video':terrain?'ff3-battle-terrain-video':resident?'ff3-battle-resident-video':'ff3-battle-party-video',[...names.map(n=>n==='audio-output'&&outputObject?outputObject:ROOT+'/src/'+n+'.c'),...videoSources,...audio.sources],[...(effects?['-DFF3_EFFECTS','-DFF3_AUDIO_FAST']:[]),...(windows?['-DFF3_LIVE_UI']:[]),...(boss?['-DFF3_BOSS','-DFF3_AUDIO_FAST']:[]),...(stone?['-DFF3_STONE','-DFF3_AUDIO_FAST']:[]),...(status?['-DFF3_STATUS_VIDEO']:[]),...(terrain?['-DFF3_TERRAIN']:[]),...(resident?['-DFF3_RESIDENT_BG']:[]),'-DFF3_SINGLE_ENGINE','-DFF3_BANKED_RUNTIME','-DFF3_TEXT_AUDIO','-DFF3_COMPOSITION_CACHE','-Dcache_request=party_work']);
 const symbols={};for(const m of(await fs.readFile(video.rom.replace('.gbc','.noi'),'utf8')).matchAll(/DEF (\w+) (0x[0-9a-f]+)/gi))symbols[m[1]]=Number(m[2]);
 if(effects){
  check(symbols.b_ff3_magic_frame===64&&symbols.b_ff3_magic_video===65&&symbols.l__CODE_64<=16384&&symbols.l__CODE_65<=16384,'Magic code bank ownership');
- const a=JSON.parse(await fs.readFile(out+'/magic-assets.json'));check(a.records.length===88,'Magic record coverage');
- for(let i=0;i<4;i++){const bytes=Buffer.concat(a.records.slice(i*24,(i+1)*24).map(h=>Buffer.from(h,'hex'))),s=symbols['_magic_resources'+i],at=s&16383;
+ const a=JSON.parse(await fs.readFile(out+'/magic-residency.json'));check(a.records.length===88,'Magic record coverage');
+ for(let i=0;i<a.banks.length;i++){const bytes=Buffer.from(a.banks[i],'hex'),s=symbols['_magic_resources'+i],at=s&16383;
   check((s>>>16)===66+i&&at+bytes.length<=16384&&video.bytes.subarray((66+i)*16384+at,(66+i)*16384+at+bytes.length).equals(bytes),'Linked magic graphics/palette '+i);
  }
  check(symbols._magic_tall<0xd000&&symbols._magic_reflect_mask<symbols.s__HEAP,'Magic state in fixed WRAM');
+ check(symbols._effect_members===0xd380&&symbols._effect_keys===0xd2a0&&symbols.b_ff3_effect_read===51,'Bounded shared freeze workspace and reader bank');
 }
 if(effects){check(symbols.b_ff3_hit_video===63&&symbols.l__CODE_63<=16384&&!(symbols._hit_job_tiles&15),'Hit code/resource placement');for(const [i,h]of hitResources.entries())for(const [k,b]of Object.entries(h)){const a=(59+i)*16384+(symbols['_hit_'+k+i]&16383);check(video.bytes.subarray(a,a+b.length).equals(b),'Linked hit resource '+i+'/'+k);}}
 if(effects)for(const [key,hex] of Object.entries(JSON.parse(await fs.readFile(out+'/effects-source.json')))){const bytes=Buffer.from(hex,'hex'),at=50*16384+(symbols['_effect_'+key]&16383);check(video.bytes.subarray(at,at+bytes.length).equals(bytes),'Linked immutable effect '+key);}

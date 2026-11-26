@@ -196,8 +196,8 @@
     },
     {
       "path": "tools/battle-action-cost-audit.lua",
-      "bytes": 5114,
-      "sha256": "d3eb5e7ee9f328ffc0c981821009e9cdaddf106baf4cb1508c5fc41942994ea3",
+      "bytes": 5497,
+      "sha256": "a24ecc019d995168a0c42aa0cac14fccff4ae96d9c13c284da56e2ecabf875c1",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -700,8 +700,8 @@
     },
     {
       "path": "tools/build-battle-party-oam.mjs",
-      "bytes": 31992,
-      "sha256": "6519a4ad96a7b0fde2248ff904e1e0a315223ad2b4896e02d4590aee83b3efe9",
+      "bytes": 32039,
+      "sha256": "4c92c1fc976c8dd323d119fc359f98dd25b835b2554ee580bf771798d138673a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2350,8 +2350,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 24014,
-      "sha256": "a0b35ffc2083eac2376dde30358872cf2ddaaced1878e9bd9f76ebc50abc065f",
+      "bytes": 24094,
+      "sha256": "8f5044c59169b1136b84f824b3514f07ecb12a41ae5f7167461e08ea90574777",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2374,8 +2374,8 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 76326,
-      "sha256": "7d380343def678b99c2db338c2bc934f29d9ece625600127296b8441288c551a",
+      "bytes": 77463,
+      "sha256": "8ecf7cc346ddf0aa255010848b2cc5fc9d805064899ba6bff94bf019093a0faf",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2386,8 +2386,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 46615,
-      "sha256": "b2738a3f568eda3a7edf7166ebfffee12f0aa1fc65846303f3c8c1323d93ab3c",
+      "bytes": 47232,
+      "sha256": "5e6c757898c491cf3b971799b21b8430b3fb3c39edee8fdeac67f47ae6aefc06",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3208,8 +3208,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 19566,
-      "sha256": "53bcf0de19dd8562f947479acfdfd86ca235b6a926fe63aff5ebe49704c1f2b7",
+      "bytes": 19612,
+      "sha256": "6b3f1abb38930c9f024804c417d99c21ecedc7a167d0fff855563f4a6c59e9aa",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3622,14 +3622,14 @@
     },
     {
       "path": "src/battle-effect-freeze.c",
-      "bytes": 9819,
-      "sha256": "dad982e15a3185b2dd6c62a0c814bd9240bae1a6eb7825e0a1b2af7eaa69384b",
+      "bytes": 11977,
+      "sha256": "0c17ab7a018a9c915deb3be69e71c2e0a9773c58d7de93cc08b8d521f2f30017",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-effect-freeze.h",
-      "bytes": 213,
-      "sha256": "0410b5dd87802918a9383a965f235c4c93b831d54b9a6192ee0cf29e8214f5a8",
+      "bytes": 300,
+      "sha256": "2d542e64ce1681961f2ca513e455a97f12417696011bdb0196f0368d4d2512ec",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3682,8 +3682,8 @@
     },
     {
       "path": "src/battle-magic-video.c",
-      "bytes": 7875,
-      "sha256": "e41ec07d78f5b82ae486100d44cd48d6459e929bc42b433a57a4ff3e6dd9dfd2",
+      "bytes": 8037,
+      "sha256": "1e6d398cf23618caeb16da2e959e7db42eb7206b642d27eee4be701eca70f87c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3694,8 +3694,8 @@
     },
     {
       "path": "tools/battle-magic-assets.mjs",
-      "bytes": 1000,
-      "sha256": "f48caadae8163324f84cbd16e95b1028aaa4769b5e565924e506516696470660",
+      "bytes": 3828,
+      "sha256": "e01b9bc57d24c71d3843fe7cd029323dd2c5a4d86fc9c99598ed5276c42ca0a9",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3712,20 +3712,26 @@
     },
     {
       "path": "tools/verify-battle-magic.mjs",
-      "bytes": 8736,
-      "sha256": "12529c8fbca7dfc9bec097a2b177e14df3a3f33e40f82e133a9147b041eb053e",
+      "bytes": 10095,
+      "sha256": "6aefbb70f8fddcc652492fe6de1c5ea541ee7805527706ee69f28a7ee7802974",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tests/battle-magic-video.test.mjs",
-      "bytes": 1323,
-      "sha256": "4e7ec148a45f01d417b6dba2a050c6a3a5c04a3ee90b05d3ea5ecf1360f0b921",
+      "bytes": 3261,
+      "sha256": "df4c9a7f13775bede5be39c2793d5420d43fb515e8d010de90729f343626391e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/battle-magic-video.md",
       "bytes": 8080,
       "sha256": "df4d8bc4c8d2a998043dd4df43182ae8f98adb54dbb27b5bf850367b13d0e9ca",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/battle-magic-residency.md",
+      "bytes": 8613,
+      "sha256": "2b413cde4eacae0e5bd18362979d2930e4fc4cd05cd1765b6e6d4b427021cf66",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]
