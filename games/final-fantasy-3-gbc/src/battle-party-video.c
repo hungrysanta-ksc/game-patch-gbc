@@ -9,6 +9,7 @@
 #include "party-video-assets.h"
 #ifdef FF3_LIVE_UI
 #include "battle-live-ui.h"
+#include "battle-message.h"
 #endif
 #ifdef FF3_BOSS
 #include "battle-boss.h"
@@ -161,6 +162,7 @@ static void load(void){const PartyVideoAsset*a;uint8_t page;
  party_work=1;
 #ifdef FF3_LIVE_UI
  ff3_live_ui_reset();
+ ff3_message_reset();
 #endif
  /* Hide objects at VBlank before replacing their resident patterns. */
  page=party_page^1;memset(page?party_oam1:party_oam0,0,160);next_page=page;party_pending=1;
@@ -195,6 +197,7 @@ void main(void){uint8_t i;
   party_work=party_request||party_step||(!party_pause&&!native_done);ff3_native_service();
   if(party_request)load();
 #ifdef FF3_LIVE_UI
+  else if(message_request&&live_ui_ready){party_work=2;ff3_native_service();ff3_message_update();if(live_ui_error)party_error=60+live_ui_error;party_work=0;}
   else if(live_ui_request&&live_ui_ready){party_work=2;ff3_native_service();ff3_live_ui_update();if(live_ui_error)party_error=60+live_ui_error;party_work=0;}
 #endif
   else if(loaded&&!party_error&&(party_step||(!party_pause&&!native_done))){
