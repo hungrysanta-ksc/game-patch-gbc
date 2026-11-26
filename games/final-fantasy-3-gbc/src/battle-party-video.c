@@ -7,6 +7,9 @@
 #include "memory.h"
 #include "text-vblank.h"
 #include "party-video-assets.h"
+#ifdef FF3_LIVE_UI
+#include "battle-live-ui.h"
+#endif
 #ifdef FF3_BOSS
 #include "battle-boss.h"
 #include "battle-entry-tail.h"
@@ -133,6 +136,10 @@ static void present(void){uint8_t i;uint16_t begin=ff3_clock_now(),elapsed;uint8
 #ifdef FF3_STONE
  if(status_stage){ff3_stone_prepare(resident_page,target);party_work=1;if(stone_error){party_error=40+stone_error;return;}}
 #endif
+ #ifdef FF3_LIVE_UI
+ if(status_stage!=2&&party_frame)ff3_live_ui_prime();
+ if(status_stage==2&&!live_ui_ready){ff3_live_ui_update();if(live_ui_error){party_error=60+live_ui_error;return;}}
+#endif
  elapsed=ff3_clock_now()-begin;if(elapsed>party_max_prepare)party_max_prepare=elapsed;party_prepared++;party_work=0;party_pending=1;
  while(party_pending){ff3_native_service();__asm halt __endasm;}
 }
@@ -152,6 +159,9 @@ static void load(void){const PartyVideoAsset*a;uint8_t page;
  /* A request may arrive after the main-loop work flag was sampled. Loading
   * owns the same cooperative two-tick refill contract as picture work. */
  party_work=1;
+#ifdef FF3_LIVE_UI
+ ff3_live_ui_reset();
+#endif
  /* Hide objects at VBlank before replacing their resident patterns. */
  page=party_page^1;memset(page?party_oam1:party_oam0,0,160);next_page=page;party_pending=1;
  while(party_pending){ff3_native_service();__asm halt __endasm;}
@@ -184,6 +194,9 @@ void main(void){uint8_t i;
    * must refill the original three-tick queue before a costly audio tick. */
   party_work=party_request||party_step||(!party_pause&&!native_done);ff3_native_service();
   if(party_request)load();
+#ifdef FF3_LIVE_UI
+  else if(live_ui_request&&live_ui_ready){party_work=2;ff3_native_service();ff3_live_ui_update();if(live_ui_error)party_error=60+live_ui_error;party_work=0;}
+#endif
   else if(loaded&&!party_error&&(party_step||(!party_pause&&!native_done))){
    if(party_motion.phase==FF3_ENTRY_TAIL){
 #ifdef FF3_STATUS_VIDEO
