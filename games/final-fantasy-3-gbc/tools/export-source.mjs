@@ -107,6 +107,7 @@ export const files=[
  'tools/engine-fixtures.mjs','tools/build-engine.mjs','tools/build-native.mjs','tools/native-plan.mjs','tools/native-reference.mjs',
  'tools/build-native-verifier.mjs','tools/verify-native.mjs','tools/VerifyNative/VerifyNative.csproj','tools/VerifyNative/Program.cs'
 ];
+files.push('src/battle-message.c','src/battle-message.h','tools/battle-message-source.mjs','docs/battle-message-producers.md');
 const entries=[];for(const path of files){const b=await fs.readFile(ROOT+'/'+path);entries.push({path,bytes:b.length,sha256:hash(b),basis:'Project-authored code, specification or documentation; no extracted assets'});}
 const manifest=JSON.stringify({schema:1,scope:'Source-only development package; generated ROM/audio/private inputs excluded',files:entries},null,2)+'\n',target=ROOT+'/export-manifest.json';
 if(process.argv.includes('--check'))check(await fs.readFile(target,'utf8')===manifest,'Export manifest is stale');else await fs.writeFile(target,manifest);

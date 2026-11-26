@@ -46,9 +46,9 @@ class Program {
    if(stone||boss){var e=c.GetProperty("expected")[p][f];if(picture.source!=e.GetProperty("original").GetString()||picture.state!=e.GetProperty("state").GetString())throw new Exception("Live original OAM/state mismatch "+p+"/"+f);}
   }
  }
- if(windows){foreach(var e in c.GetProperty("uiCases").EnumerateArray()){
-  var bytes=e.GetProperty("request").EnumerateArray().Select(x=>(byte)x.GetInt32()).ToArray();for(int i=0;i<bytes.Length;i++)Core.SetMemoryValue(7,Addr("live_ui_input")+(uint)i,bytes[i]);var start=Core.GetTimingInfo(7);Put("live_ui_request",1);
-  for(int i=0;Num("live_ui_request")!=0;i++){if(i>600)throw new Exception("UI request timeout");Step();Observe();}Step(2);Observe();Audit.TakeScreenshot();var endUi=Core.GetTimingInfo(7);uiPictures.Add(new{request=Num("live_ui_request"),error=Num("live_ui_error"),elapsedMs=(endUi.clock-start.clock)*1000.0/endUi.rate});
+ if(windows){for(uint m=0;m<12;m++)Core.SetMemoryValue(7,Addr("message_monsters")+m,0);foreach(var e in c.GetProperty("uiCases").EnumerateArray()){
+  var bytes=e.GetProperty("semantic").EnumerateArray().Select(x=>(byte)x.GetInt32()).ToArray();for(int i=0;i<bytes.Length;i++)Core.SetMemoryValue(7,Addr("message_input")+(uint)i,bytes[i]);var start=Core.GetTimingInfo(7);Put("message_request",1);
+  for(int i=0;Num("message_request")!=0;i++){if(i>600)throw new Exception("UI request timeout");Step();Observe();}bool draw=e.GetProperty("draw").GetBoolean();if(draw){Step(2);Observe();Audit.TakeScreenshot();}var endUi=Core.GetTimingInfo(7);uiPictures.Add(new{draw,request=Num("message_request"),error=Num("message_error"),sourceId=Num("message_source",2),wait=Num("message_wait"),rewind=Num("message_rewind"),packet=Mem(Addr("live_ui_input"),18),elapsedMs=(endUi.clock-start.clock)*1000.0/endUi.rate});
  }}
  if(bossAudit>=0){var bossLog=new StringBuilder(3000000);Audit.GetScriptLog(bossAudit,bossLog,3000000);File.WriteAllText(Text("output")+".boss.log",bossLog.ToString());RemoveScript(bossAudit);}
  if(costs>=0){var costLog=new StringBuilder(3000000);Audit.GetScriptLog(costs,costLog,3000000);File.WriteAllText(Text("output")+".preparation.log",costLog.ToString());}
