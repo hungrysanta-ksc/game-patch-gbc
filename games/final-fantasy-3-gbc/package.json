@@ -133,6 +133,8 @@
     "verify:battle-numerals": "node tools/verify-battle-select.mjs --numerals",
     "build:battle-magic-frames": "node tools/build-battle-magic-frames.mjs",
     "verify:battle-magic-frames": "node tools/verify-battle-select.mjs --magic-frames",
+    "verify:battle-magic": "node tools/verify-battle-magic.mjs",
+    "verify:battle-magic-auto": "node tools/verify-battle-magic.mjs --auto",
     "build:battle-motion-sprites": "node tools/build-battle-motion-sprites.mjs",
     "verify:battle-motion-sprites": "node tools/verify-battle-select.mjs --motion-sprites",
     "verify:battle-strike": "node tools/verify-battle-strike.mjs",

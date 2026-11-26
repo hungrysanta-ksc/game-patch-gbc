@@ -1,5 +1,9 @@
 #ifndef STATE_HOST
+#ifdef FF3_EFFECTS
+#pragma bank 64
+#else
 #pragma bank 8
+#endif
 #endif
 #include "battle-magic-frames.h"
 #include "battle-magic-frames-assets.h"
