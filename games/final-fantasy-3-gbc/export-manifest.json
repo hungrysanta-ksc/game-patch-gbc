@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "src/battle-live-ui.c",
-      "bytes": 4993,
-      "sha256": "cc4c9ce6f29ac1a7df18b90d6e8e808b9707a264bd0ed87905852fe293685e8e",
+      "bytes": 5009,
+      "sha256": "ba648b85c3ea1b3f53819cc6e3ced9de028400d98b590783761c659b70b39bd2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -16,14 +16,14 @@
     },
     {
       "path": "tools/battle-live-ui.mjs",
-      "bytes": 9568,
-      "sha256": "64fada6a13627d535ad54710e8b5e0127eda81313f152856aa1e4e4fbb0746a5",
+      "bytes": 9624,
+      "sha256": "978f93e8873fae5470964ebd13016e505d009a161aa52352a1691f8a2f7529a3",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tests/battle-live-ui.test.mjs",
-      "bytes": 2211,
-      "sha256": "baa24997687a360f286e07e7e00073fec49a7ad97fe0ebd80eb433ce70aafc76",
+      "bytes": 3162,
+      "sha256": "b3cd15df94badbc1c472e88f36bad267e71603d471567b49ee134fe7000241fb",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -418,8 +418,8 @@
     },
     {
       "path": "tools/build-battle-party-oam.mjs",
-      "bytes": 26337,
-      "sha256": "05e6df90e8ced12a064c406d6d19580ac0df60320015e3cfd90bba54200c634a",
+      "bytes": 26409,
+      "sha256": "5f910b39905b2066ce448530747e4d04f33e12c7b36bb9c164c5319d58825309",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1271,7 +1271,7 @@
     {
       "path": "tools/battle-select-view-assets.mjs",
       "bytes": 2004,
-      "sha256": "a33c06a114c3789e0fdfc22a756e19a5778421d045c119aef64646033e98ef27",
+      "sha256": "8336af6731a9daa10a62bc1a9f02f3cd8bf17ed1dbcc922b0dae9230b02116fc",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1336,8 +1336,8 @@
     },
     {
       "path": "tools/battle-action-ui.mjs",
-      "bytes": 4605,
-      "sha256": "a760b91f67b8fcbaf4457dd8ae6ee456d1007e88bb2169cd4b1029e25ef21351",
+      "bytes": 4674,
+      "sha256": "f1f7913b71d4f7ac96ad75fdf4e6061f36373051d3fbf0e80f161f171f314eca",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2104,8 +2104,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 36909,
-      "sha256": "1f842edac727a694c7d7dd2ccb1584278c91101e2a56cedcc4915f8a47955116",
+      "bytes": 37226,
+      "sha256": "242995c2995e44e2baabc538ea85474754315f1a4b8900e938a7b32b212d6b91",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2926,8 +2926,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 17757,
-      "sha256": "b3b24d54f3f2e6c2145c5d2a59af20057ffa52c0e021b3f15812a5e8d525c913",
+      "bytes": 17822,
+      "sha256": "466d9c0347642d2db9ad8ac9bef6392a88b89ccecf00b9c9ebfdc01785dbe62c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3384,6 +3384,18 @@
       "path": "docs/battle-native-effects.md",
       "bytes": 7975,
       "sha256": "fef8bf5ddd51f670bab5f68561b9593bf744161bdc19eba0da1104ccb14b7b38",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-hp-font.mjs",
+      "bytes": 1303,
+      "sha256": "ef4cec4c9324dc0f6fb38d72399b5965c5caadcff6e5df18b6fdf1020147f3a8",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/battle-hp-font.md",
+      "bytes": 4089,
+      "sha256": "8e3bfa4f50bafc062ce4ce4f18a4f7c765b8e731017c17ff9061d0f05a4bc81e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]

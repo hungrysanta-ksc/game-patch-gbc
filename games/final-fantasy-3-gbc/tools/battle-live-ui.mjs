@@ -4,6 +4,7 @@ import {originalActionFlow} from './battle-action-source.mjs';
 import {actionUi} from './battle-action-assets.mjs';
 import {compactOriginalBox,originalActionUi,uiPixels,projectMessageWindows} from './battle-action-ui.mjs';
 import fs from 'node:fs/promises';
+import {hpGlyphs} from './battle-hp-font.mjs';
 import {sourceMessage} from './battle-message-source.mjs';
 import {offset} from './render-budget-source.mjs';
 import {scriptSeed,scriptReference} from './battle-script-source.mjs';
@@ -89,7 +90,7 @@ export async function liveUiAssets(rom,config){
  }
  const messageIndex=[],messageWords=[];for(const [id,words]of messages){const at=messageWords.length;messageIndex.push(id&255,id>>8,at&255,at>>8,words.length);messageWords.push(...words.map(index));}
  let boxOffset=0;const rect=rectangles.map(r=>{const b=[r.x,r.y,r.w,r.h,boxOffset&255,boxOffset>>8];boxOffset+=r.w*r.h/4;return b;});
- return {boxes,glyphs,advances,seed,rect:Buffer.from(rect.flat()),palette:flows[0].menuPalette,message_index:Buffer.from(messageIndex),message_words:Buffer.from(messageWords),message_types:Buffer.from(rom.subarray(offset(0x34,0x9575),offset(0x34,0x9575)+72)),messageCount:messages.size,initial:expected(profiles[0].ui,0),cases,scripts,glyphCount:ids.length,source:flows[0].source,namesPolicy:'Explicit Korean party-name inputs for the diagnostic; not canonical names read from the Japanese ROM.'};
+ return {boxes,glyphs,hpGlyphs,advances,seed,rect:Buffer.from(rect.flat()),palette:flows[0].menuPalette,message_index:Buffer.from(messageIndex),message_words:Buffer.from(messageWords),message_types:Buffer.from(rom.subarray(offset(0x34,0x9575),offset(0x34,0x9575)+72)),messageCount:messages.size,initial:expected(profiles[0].ui,0),cases,scripts,glyphCount:ids.length,source:flows[0].source,namesPolicy:'Explicit Korean party-name inputs for the diagnostic; not canonical names read from the Japanese ROM.'};
 }
 
 export function liveUiRgb(rgb,pixels,palette){const out=Buffer.from(rgb);for(let y=0;y<40;y++)for(let x=0;x<160;x++){if(y<2)continue;const v=palette.readUInt16LE(pixels[y*160+x]*2),at=((y+104)*160+x)*3,r=v&31,g=v>>5&31,b=v>>10;out.set([Math.min(240,(r*26+g*4+b*2)>>2),Math.min(240,(g*24+b*8)>>2),Math.min(240,(r*6+g*4+b*22)>>2)],at);}return out;}
