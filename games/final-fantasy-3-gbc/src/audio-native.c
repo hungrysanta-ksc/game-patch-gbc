@@ -75,7 +75,7 @@ static void silence(void){NR12_REG=NR22_REG=NR32_REG=NR42_REG=0;}
 static void text(const char *p){while(*p)putchar(*p++);}
 #endif
 static void command(uint8_t op,uint8_t arg){switch(op){case 2:case 3:if(!ff3_music_request(&ff3_state,arg,op==3))ff3_error=6;break;case 4:ff3_music_resume(&ff3_state);break;case 5:case 6:ff3_music_stop(&ff3_state,op==6);break;case 7:if(!ff3_audio_effect(&ff3_state,arg))ff3_error=6;break;case 8:ff3_audio_stop_effect(&ff3_state);break;default:ff3_error=6;}}
-#ifdef FF3_OPENING_VIDEO
+#if defined(FF3_OPENING_VIDEO) || defined(FF3_EFFECTS)
 volatile uint16_t native_external_serial,native_external_tick;
 volatile uint8_t native_external_op,native_external_arg;
 #endif
@@ -152,7 +152,7 @@ static void prepare(void){uint8_t end=0,advanced=0;
   ff3_scene_before(native_ticks);
   #else
   if(automatic){while(plan_index<NATIVE_PLAN_COUNT&&native_plan_ticks[plan_index]==native_ticks){command(native_plan_ops[plan_index],native_plan_args[plan_index]);plan_index++;}}
-#ifdef FF3_OPENING_VIDEO
+#if defined(FF3_OPENING_VIDEO) || defined(FF3_EFFECTS)
   if(native_request&&native_request!=255){command(native_request,native_argument);native_external_tick=(uint16_t)native_ticks;native_external_op=native_request;native_external_arg=native_argument;native_external_serial++;native_request=0;}
 #else
   else if(native_request&&native_request!=255){command(native_request,native_argument);native_request=0;}
