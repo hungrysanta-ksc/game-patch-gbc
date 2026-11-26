@@ -9,6 +9,7 @@
 #include "party-video-assets.h"
 #ifdef FF3_EFFECTS
 #include "battle-effect-freeze.h"
+#include "battle-magic-video.h"
 #endif
 #ifdef FF3_LIVE_UI
 #include "battle-live-ui.h"
@@ -85,6 +86,7 @@ static void publish(void) NONBANKED {uint16_t gap;uint8_t ly=LY_REG;
  LCDC_REG=(LCDC_REG&0xf7)|(resident_page?8:0);
 #ifdef FF3_EFFECTS
  if(effect_signed)LCDC_REG&=~16;else LCDC_REG|=16;
+ if(magic_tall)LCDC_REG|=4;else LCDC_REG&=~4;
 #endif
 #else
  SCX_REG=resident_scroll;LCDC_REG=(LCDC_REG&0xf7)|(resident_page?8:0);
