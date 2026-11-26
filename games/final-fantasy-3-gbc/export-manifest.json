@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "src/battle-live-ui.c",
-      "bytes": 4813,
-      "sha256": "23dca112d5d7d03fb9dde7a56fc48bdc37c70d4524e2f7b6ae8e00699d45034f",
+      "bytes": 4993,
+      "sha256": "cc4c9ce6f29ac1a7df18b90d6e8e808b9707a264bd0ed87905852fe293685e8e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -274,8 +274,8 @@
     },
     {
       "path": "src/battle-status-video.c",
-      "bytes": 5870,
-      "sha256": "610223e029a65adb242329a268143626cb2b4518aa56e5559a77a57a5a4084b8",
+      "bytes": 5959,
+      "sha256": "6b8583b55730ae49274ee9657f5e521d4b31092dfdeb45049704ca7822e0e6ef",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -406,8 +406,8 @@
     },
     {
       "path": "src/battle-party-video.c",
-      "bytes": 9143,
-      "sha256": "473bd8543e6eb37d4ab9d56dc66026949a4b1c35acb3fbdac0c5426f0e537daf",
+      "bytes": 9346,
+      "sha256": "c1eaf7751013bc6457c8136589332a6dbc423e0b88774cac49f245c350e179b5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -418,8 +418,8 @@
     },
     {
       "path": "tools/build-battle-party-oam.mjs",
-      "bytes": 24385,
-      "sha256": "4d3e0854396a6bc7263792f1737899e4fb2a44c4fa03bc74180fe5e5a3ecc5ac",
+      "bytes": 26337,
+      "sha256": "05e6df90e8ced12a064c406d6d19580ac0df60320015e3cfd90bba54200c634a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2086,14 +2086,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 10627,
-      "sha256": "a35f63f2a773d259cfc1e32fd7ea97dcd500b4899b703620af65f11cae949751",
+      "bytes": 10864,
+      "sha256": "2b7b15cf6e695e5fae27652bdff02e90f577eb6123252baac50942c610b7d0e5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 57822,
-      "sha256": "2bbd156719f0244caf18645b126e6fb8350dfa32d495bbb008d7ca4d40ca1a2d",
+      "bytes": 58840,
+      "sha256": "d06fdc3b2afbb4f35955631f71829e1e6b40d09e1f4f9f602b89234e57725c85",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2104,8 +2104,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 36093,
-      "sha256": "5a84199d1969fff3fe7609c91cd5f90b563d9d700b59c53bf237526793104782",
+      "bytes": 36909,
+      "sha256": "1f842edac727a694c7d7dd2ccb1584278c91101e2a56cedcc4915f8a47955116",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2926,8 +2926,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 17415,
-      "sha256": "fd6602cf96586623f0ff9cbaa6caa21d49c2e3bb3fd81e3f8fab289f09af316a",
+      "bytes": 17757,
+      "sha256": "b3b24d54f3f2e6c2145c5d2a59af20057ffa52c0e021b3f15812a5e8d525c913",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3220,8 +3220,8 @@
     },
     {
       "path": "src/battle-script-video.c",
-      "bytes": 4240,
-      "sha256": "ac06cd1d8c4da83ccf6345f3131c27b98a3bcfe0f7c614b643510d9bd73003f3",
+      "bytes": 4711,
+      "sha256": "76efdbee21db96933bb8d9babcc8cc098312ceb25edb1028bb6f2648d3f86742",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3324,6 +3324,66 @@
       "path": "docs/battle-native-animation.md",
       "bytes": 6909,
       "sha256": "aef844e17cfeb00565270290664f97b21fcf8d3384b8a6d48d4f6b759c02abf5",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-animation-video.c",
+      "bytes": 5919,
+      "sha256": "18e1ddd017f6ac13b3e24dccb46012aaa4a96c46712fb3e36c81a1966f0119eb",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-animation-video.h",
+      "bytes": 522,
+      "sha256": "8fc3c704b7492d352d8994a54b8fb8a21e25ed4b0331eadd452ad0922220c960",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-effect-freeze.c",
+      "bytes": 9731,
+      "sha256": "8b23f917fa1d50e05c2c5f7d6745954a55ce2ecb3027bd55544057c7e1c6c1b0",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-effect-freeze.h",
+      "bytes": 213,
+      "sha256": "0410b5dd87802918a9383a965f235c4c93b831d54b9a6192ee0cf29e8214f5a8",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-effects-assets.mjs",
+      "bytes": 1577,
+      "sha256": "221786e0114ab0da4877ef56ac950f4481c4499f8f03d67c6e278df6612ef830",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-effects-audit.lua",
+      "bytes": 1486,
+      "sha256": "558f728a193f289dd691280f311f507179481483d9a4eda40da1e4f64fa4e174",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-battle-effects.mjs",
+      "bytes": 8019,
+      "sha256": "27de4f1819c86b6a6089c921856f810a85b5f56c2ac10d6e2f97da45cfd4cbf7",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyEffects/Program.cs",
+      "bytes": 5956,
+      "sha256": "f06670a2a1a9936081c4a6443e06fd776724e0106cb47286b774aea1018c7bd8",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyEffects/VerifyEffects.csproj",
+      "bytes": 358,
+      "sha256": "bcc6b5a8ea8d8e02225a6645c4e89121613a08d5da402b66ac0fe4a85e36a046",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/battle-native-effects.md",
+      "bytes": 7975,
+      "sha256": "fef8bf5ddd51f670bab5f68561b9593bf744161bdc19eba0da1104ccb14b7b38",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]

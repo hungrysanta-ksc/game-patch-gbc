@@ -4,6 +4,10 @@
 #include "battle-live-ui.h"
 #include "platform.h"
 #include <string.h>
+#ifdef FF3_EFFECTS
+#include "battle-animation-video.h"
+#include "battle-effect-freeze.h"
+#endif
 Ff3ActionScript action_script;
 volatile uint8_t action_request,action_enabled,action_blocked,action_gate,action_probe;
 volatile uint16_t action_serial;
@@ -23,6 +27,9 @@ void ff3_native_service(void) NONBANKED;
 /* 2F/AFD8: temporary NES objects only. Native enemy residuals represent
  * source BG, and party objects represent source 02A0..02FF: retain both. */
 static void cleanup(void){uint8_t page=party_page^1;
+#ifdef FF3_EFFECTS
+ if(effect_signed){if(!ff3_effect_release())action_blocked=4;return;}
+#endif
  /* Explicit pairs avoid SDCC merging the high bytes of the selected source
   * and destination pointers. The inactive page must be the only write owner. */
  if(page){memcpy(party_oam1,party_oam0,160);memset(party_oam1,0,32);}
@@ -43,6 +50,9 @@ void ff3_script_video(void) BANKED {Ff3ActionScript*s=&action_script;uint8_t op,
  if(!action_request&&!action_enabled){party_work=2;ff3_native_service();if(message_request)ff3_message_update();else if(live_ui_request)ff3_live_ui_update();if(live_ui_error)party_error=60+live_ui_error;party_work=0;return;}
  if(action_request){if(action_enabled||live_ui_request||message_request||!live_ui_ready){action_blocked=2;action_request=0;return;}
   action_request=0;action_blocked=action_gate=0;seen=0;waiting=0;fraction=0;action_wait_frames=action_cleanups=0;action_wait_ticks=0;
+#ifdef FF3_EFFECTS
+  ff3_animation_video_reset();
+#endif
   if(!ff3_script_start(s)){action_blocked=2;return;}action_enabled=1;
  }
  if(!action_enabled||action_blocked)return;
@@ -58,8 +68,16 @@ void ff3_script_video(void) BANKED {Ff3ActionScript*s=&action_script;uint8_t op,
   now=ff3_clock_now();if(!waiting){waiting=1;wait_begin=deadline=now;next_wait();}
   if((int16_t)(now-deadline)<0)return;key=buttons();action_wait_frames++;action_wait_ticks+=now-wait_begin;wait_begin=now;next_wait();
  }else if(s->kind==FF3_SCRIPT_BUTTON){key=buttons();if(!(key&1))return;
- }else if(s->kind==FF3_SCRIPT_CLEANUP){party_work=2;cleanup();party_work=0;action_cleanups++;
- }else {action_blocked=1;return;} /* Actual graphics owner is not connected. */
+ }else if(s->kind==FF3_SCRIPT_CLEANUP){party_work=2;cleanup();party_work=0;
+#ifdef FF3_EFFECTS
+  if(action_blocked)return;
+#endif
+  action_cleanups++;
+ }
+#ifdef FF3_EFFECTS
+ else if(s->kind==FF3_SCRIPT_GRAPHICS){v=ff3_animation_video(op,s->effect,s->result);if(!v)return;if(v!=1){action_blocked=v==2?1:4;return;}}
+#endif
+ else {action_blocked=1;return;} /* Unimplemented graphics remain held. */
  if(!ff3_script_ack(s,s->ticket,key)){action_blocked=3;return;}
  if(s->kind!=FF3_SCRIPT_WAIT)waiting=0;if(s->done)action_enabled=0;
 }

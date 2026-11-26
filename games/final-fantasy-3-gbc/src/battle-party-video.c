@@ -7,6 +7,9 @@
 #include "memory.h"
 #include "text-vblank.h"
 #include "party-video-assets.h"
+#ifdef FF3_EFFECTS
+#include "battle-effect-freeze.h"
+#endif
 #ifdef FF3_LIVE_UI
 #include "battle-live-ui.h"
 #include "battle-message.h"
@@ -72,6 +75,9 @@ static void publish(void) NONBANKED {uint16_t gap;uint8_t ly=LY_REG;
  terrain_scroll=resident_scroll;ff3_terrain_publish();
  if(terrain_fault){party_error=20+terrain_fault;party_pending=0;return;}
  LCDC_REG=(LCDC_REG&0xf7)|(resident_page?8:0);
+#ifdef FF3_EFFECTS
+ if(effect_signed)LCDC_REG&=~16;else LCDC_REG|=16;
+#endif
 #else
  SCX_REG=resident_scroll;LCDC_REG=(LCDC_REG&0xf7)|(resident_page?8:0);
 #endif
@@ -197,7 +203,11 @@ void main(void){uint8_t i;
  while(1){
   /* Two-tick yield is for active picture work. Idle/finished publication
    * must refill the original three-tick queue before a costly audio tick. */
-  party_work=party_request||party_step||(!party_pause&&!native_done);ff3_native_service();
+  party_work=party_request||party_step||(!party_pause&&!native_done)
+#ifdef FF3_EFFECTS
+   ||action_request||action_enabled
+#endif
+   ;ff3_native_service();
   if(party_request)load();
 #ifdef FF3_LIVE_UI
   else if((action_request|action_enabled|message_request|live_ui_request)&&live_ui_ready){ff3_script_video();}

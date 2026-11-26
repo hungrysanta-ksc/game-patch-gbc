@@ -11,6 +11,9 @@ void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANK
 void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED;
 #include "memory.h"
 #include "text-vblank.h"
+#ifdef FF3_EFFECTS
+void ff3_resident_fix(void) NONBANKED;
+#endif
 #ifdef FF3_BOSS
 #include "battle-boss.h"
 void ff3_resident_fix(void) NONBANKED;
@@ -51,7 +54,7 @@ void ff3_status_video_reset(uint8_t profile) BANKED {
 uint8_t ff3_status_video_advance(void) BANKED {
  const StatusVideoAsset*a=status_assets+profile_id;uint16_t at=0,dest;uint8_t n;
  if(!status_stage){memcpy(&status_tail.motion,&party_motion,39);if(!ff3_entry_tail_start(&status_tail))return 1;status_stage=1;
-#if defined(FF3_STONE) || defined(FF3_BOSS)
+#if defined(FF3_STONE) || defined(FF3_BOSS) || defined(FF3_EFFECTS)
  ff3_resident_fix();
 #endif
  }
