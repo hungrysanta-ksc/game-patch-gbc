@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'src/battle-hit-video.h','src/battle-hit-video.c','tools/battle-hit-assets.mjs','tools/verify-battle-hit.mjs','tests/battle-hit.test.mjs','docs/battle-hit-flash.md',
  'src/battle-thrown-video.h','src/battle-thrown-video.c','docs/battle-thrown-owner.md',
  'src/battle-bow-video.h','src/battle-bow-video.c','docs/battle-bow-owner.md',
  'docs/battle-claw-owner.md',
