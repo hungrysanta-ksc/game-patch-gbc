@@ -123,7 +123,11 @@
     "build:battle-boss-windows": "node tools/build-battle-party-oam.mjs --windows",
     "verify:battle-boss-windows": "node tools/verify-battle-party-video.mjs --windows --costs",
     "build:battle-script": "node tools/build-battle-script.mjs",
-    "verify:battle-script": "node tools/verify-battle-select.mjs --script"
+    "verify:battle-script": "node tools/verify-battle-select.mjs --script",
+    "build:battle-animation": "node tools/build-battle-animation.mjs",
+    "verify:battle-animation": "node tools/verify-battle-select.mjs --animation",
+    "build:battle-numerals": "node tools/build-battle-numerals.mjs",
+    "verify:battle-numerals": "node tools/verify-battle-select.mjs --numerals"
   },
   "engines": {
     "node": ">=20"
