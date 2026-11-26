@@ -6,6 +6,7 @@ import {compactOriginalBox,originalActionUi,uiPixels,projectMessageWindows} from
 import fs from 'node:fs/promises';
 import {sourceMessage} from './battle-message-source.mjs';
 import {offset} from './render-budget-source.mjs';
+import {scriptSeed,scriptReference} from './battle-script-source.mjs';
 
 // Source call boundaries are verification inputs, never a movie linked into
 // the cartridge. Runtime owns five text records and four mutable HP rows.
@@ -48,7 +49,7 @@ export async function liveUiAssets(rom,config){
  // 6502 handlers; it does not duplicate the C selector's arithmetic.
  const state={hp:profiles[1].ui.hp.map(r=>({...r})),windows:Array.from({length:5},()=>[])};let live=0;
  const monsters=Buffer.alloc(12);
- function probe(semantic){const s=sourceMessage(rom,semantic,monsters);let error=0,words=[];
+ function probe(semantic,record=true){const s=sourceMessage(rom,semantic,monsters);let error=0,words=[];
   if(s.kind==='unsupported')error=2;
   else if(s.kind==='open'){
    if(s.sourceId===65535){const name=names[semantic[1]];words=[...name,...Array(6-name.length).fill(255)];}
@@ -62,7 +63,7 @@ export async function liveUiAssets(rom,config){
    else {state.hp[s.window].value=[...s.raw];const row=state.hp[s.window];request=[3,s.window,15,...[...row.name,...Array(6-row.name.length).fill(255),...row.value].map(index)];}
    const top=s.kind==='hp'?5+s.window*8:rectangles[s.window+1].y,h=s.kind==='hp'?8:14;patternBytes=(Math.floor((top+h-1)/8)-Math.floor(top/8)+1)*320;
   }
-  cases.push({profile:2,kind:s.kind,window:s.window,semantic,sourceId:s.sourceId,wait:s.wait,rewind:s.rewind,error,draw,request,patternBytes,pixels:draw?expected(state,live).toString('hex'):undefined,live});
+  const result={profile:2,kind:s.kind,window:s.window,semantic,sourceId:s.sourceId,wait:s.wait,rewind:s.rewind,error,draw,request,patternBytes,pixels:draw?expected(state,live).toString('hex'):undefined,live};if(record)cases.push(result);return result;
  }
  for(let v=0;v<256;v++)probe(input(6,v));
  for(let v=0;v<256;v++)probe(input(8,v));
@@ -71,9 +72,24 @@ export async function liveUiAssets(rom,config){
  for(const script of [0,1,5])probe(input(3,0,0,65,script));
  for(let op=0;op<5;op++){probe(input(op,1));probe(input(op,255));}
  for(const v of [0,1,9,10,99,100,999,1000,9999,10000,65535])probe(input(15,v%4,0,255,1,v,65535-v));
+ const scripts={cases:[],patternBytes:0};let hidden=false;
+ for(const [tag,seed,autonomous,blocked]of [
+  ['message-wait',scriptSeed(2,{speed:4}),false,false],
+  ['actor-message',scriptSeed(4,{speed:8,names:[0,255,255,255]}),false,false],
+  ['no-effect',scriptSeed(255,{effect:0}),false,false],
+  ['autonomous-wait',scriptSeed(2,{speed:4,messages:[]}),true,false],
+  ['animation-owner',scriptSeed(0,{speed:8,names:[0,255,1,255],messages:[]}),false,true]
+ ]){let trace=scriptReference(rom,seed);if(blocked)trace=trace.slice(0,trace.findIndex(e=>e.state[23]===4)+1);const observations=[];
+  for(const e of trace){const s=e.state,kind=s[23],op=s[24];if(!autonomous)observations.push({state:s.toString('hex'),shot:kind!==2,pixels:kind!==2?expected(state,live).toString('hex'):undefined,hidden});
+   if(kind===1){const v=op<4?s[5+op]:op===4?s[9]:op<9?s[op]:s[9+s[20]],r=probe(input(op,v,s[4],s[9+s[20]],s[0]),false);check(!r.error,'Registered live script message');scripts.patternBytes+=r.patternBytes;}
+   if(kind===5)hidden=true;
+  }
+  const terminal=Buffer.from(trace.at(-1).state);if(!blocked){terminal[23]=0;terminal[25]=1;}
+  scripts.cases.push({tag,seed:[...seed],autonomous,blocked,observations,terminal:terminal.toString('hex'),hidden,pixels:expected(state,live).toString('hex'),waitFrames:trace.filter(e=>e.state[23]===2).length});
+ }
  const messageIndex=[],messageWords=[];for(const [id,words]of messages){const at=messageWords.length;messageIndex.push(id&255,id>>8,at&255,at>>8,words.length);messageWords.push(...words.map(index));}
  let boxOffset=0;const rect=rectangles.map(r=>{const b=[r.x,r.y,r.w,r.h,boxOffset&255,boxOffset>>8];boxOffset+=r.w*r.h/4;return b;});
- return {boxes,glyphs,advances,seed,rect:Buffer.from(rect.flat()),palette:flows[0].menuPalette,message_index:Buffer.from(messageIndex),message_words:Buffer.from(messageWords),message_types:Buffer.from(rom.subarray(offset(0x34,0x9575),offset(0x34,0x9575)+72)),messageCount:messages.size,initial:expected(profiles[0].ui,0),cases,glyphCount:ids.length,source:flows[0].source,namesPolicy:'Explicit Korean party-name inputs for the diagnostic; not canonical names read from the Japanese ROM.'};
+ return {boxes,glyphs,advances,seed,rect:Buffer.from(rect.flat()),palette:flows[0].menuPalette,message_index:Buffer.from(messageIndex),message_words:Buffer.from(messageWords),message_types:Buffer.from(rom.subarray(offset(0x34,0x9575),offset(0x34,0x9575)+72)),messageCount:messages.size,initial:expected(profiles[0].ui,0),cases,scripts,glyphCount:ids.length,source:flows[0].source,namesPolicy:'Explicit Korean party-name inputs for the diagnostic; not canonical names read from the Japanese ROM.'};
 }
 
 export function liveUiRgb(rgb,pixels,palette){const out=Buffer.from(rgb);for(let y=0;y<40;y++)for(let x=0;x<160;x++){if(y<2)continue;const v=palette.readUInt16LE(pixels[y*160+x]*2),at=((y+104)*160+x)*3,r=v&31,g=v>>5&31,b=v>>10;out.set([Math.min(240,(r*26+g*4+b*2)>>2),Math.min(240,(g*24+b*8)>>2),Math.min(240,(r*6+g*4+b*22)>>2)],at);}return out;}

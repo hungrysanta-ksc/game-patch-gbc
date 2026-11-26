@@ -10,6 +10,7 @@
 #ifdef FF3_LIVE_UI
 #include "battle-live-ui.h"
 #include "battle-message.h"
+#include "battle-script-video.h"
 #endif
 #ifdef FF3_BOSS
 #include "battle-boss.h"
@@ -49,7 +50,9 @@ Ff3EntryDisplay __at(0xd000) party_motion;
 Ff3PartyOam __at(0xd040) party_state;
 uint8_t __at(0xd060) party_source[96];
 static uint16_t last_vblank;
-static uint8_t next_page,loaded;
+/* Single producer publishes this descriptor only after its shadow is ready. */
+uint8_t next_page;
+static uint8_t loaded;
 void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANKED {uint8_t saved=CURRENT_BANK;SWITCH_ROM(bank);memcpy(dest,source,n);SWITCH_ROM(saved);}
 void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED {
  ff3_text_palette_range(bg,first,count,data);
@@ -197,8 +200,7 @@ void main(void){uint8_t i;
   party_work=party_request||party_step||(!party_pause&&!native_done);ff3_native_service();
   if(party_request)load();
 #ifdef FF3_LIVE_UI
-  else if(message_request&&live_ui_ready){party_work=2;ff3_native_service();ff3_message_update();if(live_ui_error)party_error=60+live_ui_error;party_work=0;}
-  else if(live_ui_request&&live_ui_ready){party_work=2;ff3_native_service();ff3_live_ui_update();if(live_ui_error)party_error=60+live_ui_error;party_work=0;}
+  else if((action_request|action_enabled|message_request|live_ui_request)&&live_ui_ready){ff3_script_video();}
 #endif
   else if(loaded&&!party_error&&(party_step||(!party_pause&&!native_done))){
    if(party_motion.phase==FF3_ENTRY_TAIL){
