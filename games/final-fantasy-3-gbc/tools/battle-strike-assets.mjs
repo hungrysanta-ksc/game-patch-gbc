@@ -29,5 +29,6 @@ export function strikeAssets(rom,profiles){
   impactCenters.push(Buffer.from(points.flatMap((_,i)=>i%4?[]:[points[i],points[i+1],...strikeImpactAnchor(points[i],points[i+1],p.back)])));
   centers.push(Buffer.from(points));restore.push(nativePartyTiles(m.ppu.bytes.subarray(0x1390,0x1590)));restorePal.push(cgbPalette(m.ppu.bytes.subarray(0x3f1c,0x3f20)));
  }
- return {props,patterns:Buffer.concat(patterns),palettes:Buffer.concat(palettes),jobs:Buffer.concat(jobs),centers:Buffer.concat(centers),impact_centers:Buffer.concat(impactCenters),restore:Buffer.concat(restore),restore_pal:Buffer.concat(restorePal)};
+ // Kind 9 reads A080 ($F2), the byte following the nine documented caps.
+ return {caps:Buffer.from(rom.subarray(offset(0x33,0xa077),offset(0x33,0xa081))),props,patterns:Buffer.concat(patterns),palettes:Buffer.concat(palettes),jobs:Buffer.concat(jobs),centers:Buffer.concat(centers),impact_centers:Buffer.concat(impactCenters),restore:Buffer.concat(restore),restore_pal:Buffer.concat(restorePal)};
 }

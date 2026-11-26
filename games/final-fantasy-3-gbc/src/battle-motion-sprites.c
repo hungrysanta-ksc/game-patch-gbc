@@ -3,6 +3,24 @@
 #endif
 #include "battle-motion-sprites.h"
 #include "battle-motion-sprites-assets.h"
+/* 33/A317..A347: fist jitter precedes the independent hit RNG consumer.
+ * Frames 4/13 intentionally use the actor palette, not weapon palette 3. */
+uint8_t ff3_motion_fist(uint8_t x,uint8_t y,uint8_t hand,uint8_t back,uint8_t palette,Ff3BattleRngCursor*rng,uint8_t*out) FF3_STATE_BANKED {
+ const uint8_t*table;
+ if(hand>1||back>1||rng->variant>1)return 0;
+ table=motion_rng_tables+(uint16_t)rng->variant*256;
+ x+=table[rng->counter[0]++]&1;y+=table[rng->counter[0]++]&1;
+ return ff3_motion_sprite(hand?13:4,x,y,0,back,palette,out);
+}
+/* 32/98D1 -> 98E8: same held impact point, different shape 18/19.
+ * Keep the existing staff hot path unchanged. */
+uint8_t ff3_motion_claw_hit(uint8_t frame,uint8_t x,uint8_t y,uint8_t hand,uint8_t back,Ff3BattleRngCursor*rng,uint8_t*point,uint8_t*out) FF3_STATE_BANKED {
+ const uint8_t*table;
+ if(hand>1||back>1||rng->variant>1)return 0;
+ table=motion_rng_tables+(uint16_t)rng->variant*256;
+ if(!(frame&1)){point[0]=x+(table[rng->counter[0]++]&31);point[1]=y+(table[rng->counter[0]++]&31);}
+ return ff3_motion_sprite(18+hand,point[0],point[1],0,back,3,out);
+}
 /* 33/A44F -> 3F/FBEF with range 0..255 returns the table byte exactly
  * (including the original rounded multiply). Only counter 0 advances. */
 uint8_t ff3_motion_impact(uint8_t frame,uint8_t x,uint8_t y,uint8_t hand,uint8_t back,Ff3BattleRngCursor*rng,uint8_t*point,uint8_t*out) FF3_STATE_BANKED {

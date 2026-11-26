@@ -25,8 +25,13 @@ export function motionRngVariants(rom){
  for(let seed=0;seed<256;seed++)check(motionRngTable(rom,seed).equals(variants[(seed&2)>>1]),'Original RNG table variant '+seed);
  const tables=Buffer.concat(variants),r={tables,source:{generator:'3F/FC27..FC91',selector:'3F/FC34..FC39',lookup:'3F/FC0C..FC26',seeds:256,variants:2,bytes:512,sha256:hash(tables)}};rngCache.set(rom,r);return r;
 }
-export function motionImpactReference(rom,{frame=4,x=88,y=80,hand=0,back=0,index=0,table,point=[x+7,y+19]}){
+export function motionImpactReference(rom,{frame=4,x=88,y=80,hand=0,back=0,index=0,table,point=[x+7,y+19],claw=false}){
  const c=battleCpu(rom,0x19);c.m.fill(240,0x200,0x2a0);c.m[0x95]=0;c.m[0x78c3]=back?0x88:0;c.m[0xc8]=0;
- c.m[0xb6]=frame;c.m[0xb8]=0;c.m[0xcd]=hand;c.m.set([x,y],0x7dd7);c.m.set(point.map(n=>n&255),0xbe);c.m.set(table,0x7be3);c.m.set([index,23,197],0x15);c.call(0x98e0);
+ c.m[0xb6]=frame;c.m[0xb8]=0;c.m[0xcd]=hand;c.m.set([x,y],0x7dd7);c.m.set(point.map(n=>n&255),0xbe);c.m.set(table,0x7be3);c.m.set([index,23,197],0x15);c.call(claw?0x98d1:0x98e0);
  return {oam:Buffer.from(c.m.subarray(0x200,0x210)),point:Buffer.from(c.m.subarray(0xbe,0xc0)),counters:Buffer.from(c.m.subarray(0x15,0x18))};
+}
+
+export function motionFistReference(rom,{x,y,hand,back,index,table}){
+ const c=battleCpu(rom,0x19);c.m.fill(240,0x200,0x2a0);c.m[0x95]=0;c.m[0x78c3]=back?0x88:0;c.m[0xc8]=0;c.m[0xc0]=x;c.m[0xc4]=y;c.m[0x7d93]=2;c.m.set(table,0x7be3);c.m.set([index,23,197],0x15);c.pc=hand?0xa317:0xa32f;
+ for(let n=0;c.pc!==0xa33f;n++){check(n<1000,'Original fist RNG body');c.step();}c.call(0x92a1);return {oam:Buffer.from(c.m.subarray(0x200,0x210)),counters:Buffer.from(c.m.subarray(0x15,0x18))};
 }
