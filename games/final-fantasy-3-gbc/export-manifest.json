@@ -3,6 +3,18 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "tools/battle-publication-profile.mjs",
+      "bytes": 1559,
+      "sha256": "00ddd906a1016c472da6aa743001a1c561d5339600fea498f99c8eeff6f30449",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/battle-publication-waits.md",
+      "bytes": 6065,
+      "sha256": "7cdff1225a4a0228ce99d91f2052278098e196875ff00f69c1ac8728e490b4b5",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "docs/battle-native-impact.md",
       "bytes": 7413,
       "sha256": "e5799e718fb63ade646c4db121d31881fe487ebe1f95c1eb7938838a0b0b7acd",
@@ -46,8 +58,8 @@
     },
     {
       "path": "tools/battle-action-cost-audit.lua",
-      "bytes": 2967,
-      "sha256": "a7de6f397fd175a08d51e068ecba76a1e21989b29288b68269b943aa8529f5ad",
+      "bytes": 4303,
+      "sha256": "53f6ea16fef09b0ed5a7f1ce019da2afc8b2f950832543cb265dd128d2db8f8f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -112,8 +124,8 @@
     },
     {
       "path": "tools/verify-battle-strike.mjs",
-      "bytes": 17681,
-      "sha256": "346e42e740476fb2999e23ead5e25afe088a9878da33826a1e731c898c511283",
+      "bytes": 19430,
+      "sha256": "3f39093d1b5199ee99045f3395c43fa3ae5363f8dc85e2343215e47a7aeb8ca2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -442,14 +454,14 @@
     },
     {
       "path": "src/battle-terrain.h",
-      "bytes": 467,
-      "sha256": "27e3925c4ed95aecc04638ecb35a859cebfac7694b13ea389815b9972c2adcfd",
+      "bytes": 500,
+      "sha256": "427162344453f53f584cdbad5cd4182e961f60971216bb2033ebf7a71a48435b",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-terrain.c",
-      "bytes": 5205,
-      "sha256": "6a84f2f793039e1463c9a8e6c9ec41a2384aa7105a721c9ac55044a60f8c8b0a",
+      "bytes": 5214,
+      "sha256": "392fda4fb21833260f0206ed5a6042d4581b196b541484f27120a38d1d5671fa",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -538,8 +550,8 @@
     },
     {
       "path": "src/battle-party-video.c",
-      "bytes": 9346,
-      "sha256": "c1eaf7751013bc6457c8136589332a6dbc423e0b88774cac49f245c350e179b5",
+      "bytes": 9693,
+      "sha256": "ddee70240ddf311269613c7e1c0b56f428a8625ad25ef58f4e47b11edb91bd3f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2224,8 +2236,8 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 64061,
-      "sha256": "af0108220d1562e8a6b5616d36462542954e114f7ed53bf59e01cec52d583dca",
+      "bytes": 65211,
+      "sha256": "a3902e41fcc5e2d6ca333fe74c45445fd0b884aa560d4943058ef5bbc6a4f258",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2236,8 +2248,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 40465,
-      "sha256": "4c92ccff9c9d077316f414ed8006f9082febb4c9ce5b37f8818004c99798d869",
+      "bytes": 40475,
+      "sha256": "aa27a82babdda73d1bd89663a38cbe8af0cd153de44e5a5f08a9791f2daf3920",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3058,8 +3070,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 18554,
-      "sha256": "978798777a633b305a691dfcaf0e5dc9d1d4c164dbe9a01fecc423471f6e38ba",
+      "bytes": 18630,
+      "sha256": "8d70e1515d6c9fb2aacfea8bb9a0e616c2c7639126823ece4a9f1950c286457b",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

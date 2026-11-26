@@ -69,7 +69,15 @@ static void publish(void) NONBANKED {uint16_t gap;uint8_t ly=LY_REG;
 #ifdef FF3_TERRAIN
  SCX_REG=0;
 #endif
- if(!party_pending||ly<144||ly>145||(STAT_REG&3)!=1)return;
+ if(!party_pending||ly<144||(STAT_REG&3)!=1)return;
+#if defined(FF3_EFFECTS) && defined(FF3_TERRAIN)
+ /* F8B0 publishes a ready OAM shadow at the next available blank.
+  * Settled actions have no terrain DMA: retain time for OAM through LY148.
+  * Entry/terrain work keeps its earlier two-transfer deadline. */
+ if(ly>145&&(!action_enabled||terrain_dma_mask||ly>148))return;
+#else
+ if(ly>145)return;
+#endif
 #ifdef FF3_RESIDENT_BG
 #ifdef FF3_TERRAIN
  terrain_scroll=resident_scroll;ff3_terrain_publish();
