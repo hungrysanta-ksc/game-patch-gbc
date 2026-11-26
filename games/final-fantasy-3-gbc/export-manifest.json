@@ -3,6 +3,18 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "tools/battle-oam-profile.mjs",
+      "bytes": 1950,
+      "sha256": "d8404473088bc7bc284f082c49cc4818de8dca26f2be9a4fcb8f9f7a10bf6de1",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/battle-oam-costs.md",
+      "bytes": 6433,
+      "sha256": "5ae0ff218bf39211322064b9e69d677a906aa35222fe63fe424593fc2793cf57",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "tools/battle-publication-profile.mjs",
       "bytes": 1559,
       "sha256": "00ddd906a1016c472da6aa743001a1c561d5339600fea498f99c8eeff6f30449",
@@ -46,20 +58,20 @@
     },
     {
       "path": "src/battle-action-oam.c",
-      "bytes": 1450,
-      "sha256": "34e4ebb005aa7ce86d0d04c1ee659ed0c2e9d07c11d9052fb9e09e1807213fde",
+      "bytes": 1768,
+      "sha256": "0cb1a6612954ce74282a33f05d823eb19023cffc5de586a811d711d27fa1ce5c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-action-oam-test.c",
-      "bytes": 2263,
-      "sha256": "5f173b7d1d3da57eddd2a05cc961f618d02a8d713a966b6556fb4c315ccddfe9",
+      "bytes": 2926,
+      "sha256": "5e316192d73e440cdb67510f2706b7a8ff857f4102b069d32e83a0ac767b9291",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/battle-action-cost-audit.lua",
-      "bytes": 4303,
-      "sha256": "53f6ea16fef09b0ed5a7f1ce019da2afc8b2f950832543cb265dd128d2db8f8f",
+      "bytes": 5114,
+      "sha256": "d3eb5e7ee9f328ffc0c981821009e9cdaddf106baf4cb1508c5fc41942994ea3",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -124,8 +136,8 @@
     },
     {
       "path": "tools/verify-battle-strike.mjs",
-      "bytes": 19430,
-      "sha256": "3f39093d1b5199ee99045f3395c43fa3ae5363f8dc85e2343215e47a7aeb8ca2",
+      "bytes": 19997,
+      "sha256": "1770c42b75815a80c2065321ebf5f625c78ea55f2f64a089068b3f9b51844d5f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2236,8 +2248,8 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 65211,
-      "sha256": "a3902e41fcc5e2d6ca333fe74c45445fd0b884aa560d4943058ef5bbc6a4f258",
+      "bytes": 66377,
+      "sha256": "cca69ccf456aac8b81a0c0270d21a76e02d93025de605e125e51797b7c7972bb",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2248,8 +2260,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 40475,
-      "sha256": "aa27a82babdda73d1bd89663a38cbe8af0cd153de44e5a5f08a9791f2daf3920",
+      "bytes": 40511,
+      "sha256": "cc55c563d1a70b513b5898b821dface59345bc0c38d44be4fb543c6c61d7b810",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3070,8 +3082,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 18630,
-      "sha256": "8d70e1515d6c9fb2aacfea8bb9a0e616c2c7639126823ece4a9f1950c286457b",
+      "bytes": 18690,
+      "sha256": "e55720c089f0f1af6fbd19014c1da75ad5b018c7f005dd0041dd504b33cab809",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

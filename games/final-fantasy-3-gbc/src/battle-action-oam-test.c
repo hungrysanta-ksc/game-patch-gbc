@@ -6,7 +6,7 @@ uint8_t __at(0xd7d0) animation_linework[144];
 static uint8_t base[160],out[160];
 void ff3_native_service(void) NONBANKED {}
 static void objects(uint8_t*b,uint8_t count,uint8_t y){uint8_t i;memset(b,0,160);for(i=0;i<count;i++){b[i*4]=y;b[i*4+1]=8+i*8;b[i*4+2]=i+1;}}
-uint8_t ff3_action_oam_test(void){uint8_t i;
+uint8_t ff3_action_oam_test(void){uint8_t i,j;
  /* Retained/dynamic overlap must allow ten but reject eleven on a line. */
  objects(base,9,40);if(!ff3_action_oam_begin(base,39,1))return 10;
  objects(out,1,40);if(!ff3_action_oam_finish(out,0,1,1)||memcmp(out+4,base,36))return 11;
@@ -33,5 +33,16 @@ uint8_t ff3_action_oam_test(void){uint8_t i;
  objects(out,1,15);if(ff3_action_oam_finish(out,0,1,1))return 27;
  objects(out,1,153);if(ff3_action_oam_finish(out,0,1,1))return 28;
  if(ff3_action_oam_begin(base,41,0)||ff3_action_oam_finish(out,39,2,0))return 29;
+ /* Make each of the eight rows the first overflowing row. Earlier rows
+  * increment, the failing row reaches eleven, later rows stay untouched. */
+ for(i=0;i<8;i++){
+  objects(base,10,40+i);if(!ff3_action_oam_begin(base,39,1))return 30;
+  objects(out,1,40);if(ff3_action_oam_finish(out,0,1,1))return 31;
+  for(j=0;j<8;j++)if(animation_linework[24+j]!=(j<i?1:j==i?11:10))return 32;
+  objects(out,1,64);if(!ff3_action_oam_finish(out,0,1,1))return 33;
+  objects(base,9,40+i);if(!ff3_action_oam_begin(base,39,1))return 34;
+  objects(out,1,40);if(!ff3_action_oam_finish(out,0,1,1))return 35;
+  for(j=0;j<8;j++)if(animation_linework[24+j]!=(j<i?1:10))return 36;
+ }
  return 0;
 }
