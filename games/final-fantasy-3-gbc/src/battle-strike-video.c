@@ -3,6 +3,7 @@
 #include "battle-animation-video.h"
 #include "battle-strike-video.h"
 #include "battle-bow-video.h"
+#include "battle-thrown-video.h"
 #include "battle-motion-sprites.h"
 #include "battle-action-oam.h"
 #include "battle-party-oam.h"
@@ -97,11 +98,11 @@ uint8_t ff3_strike_video(void) BANKED {uint8_t i,w,s,page,*out;
   if(strike_critical||animation_state.actor>=4||!animation_state.target_enemy||animation_state.target>=8)return 2;
   for(i=0;i<2;i++){if(strike_weapons[i]>=88)return 2;ff3_party_copy(53,strike_props+strike_weapons[i]*3,kind+i,1);}
   bow_pair=(kind[0]==3&&kind[1]==8)||(kind[0]==8&&kind[1]==3);
-  for(i=0;i<2;i++)if(!bow_pair&&kind[i]>2&&kind[i]!=4&&kind[i]!=9)return 2;
+  for(i=0;i<2;i++)if(!bow_pair&&kind[i]>2&&kind[i]!=4&&kind[i]!=5&&kind[i]!=6&&kind[i]!=7&&kind[i]!=9)return 2;
   if((kind[0]>1||kind[1]>1||(!kind[0]&&!kind[1]))&&(!strike_rng_ready||battle_rng_cursor.variant>1))return 2;
   actor=animation_state.actor;if(party_motion.status[actor])return 2; /* small/confused/status owners must load their own graphics */
   party_work=2;if(!ff3_action_oam_begin(animation_base,8+actor*6,6)){strike_error=5;party_work=0;return 3;}
-  ff3_party_copy(54,(bow_pair?strike_arrow_centers:kind[0]!=1?strike_impact_centers:strike_centers)+(uint16_t)party_profile*32+animation_state.target*4,center,4);
+  ff3_party_copy(54,(bow_pair||(kind[0]>=5&&kind[0]<=7)?strike_arrow_centers:kind[0]!=1?strike_impact_centers:strike_centers)+(uint16_t)party_profile*32+animation_state.target*4,center,4);
   home=party_state.x[actor];memcpy(saved,party_state.pose,4);memcpy(party_motion.x,party_state.x,4);memcpy(party_motion.y,party_state.y,4);memcpy(party_motion.pose,party_state.pose,4);memcpy(party_motion.destination,party_state.x,4);
   party_motion.destination[actor]-=party_motion.rows[actor]?32:16;party_motion.frame=0;phase=1;hand=bow_pair?(kind[0]==3?0:1):0;
   /* 33/A077,A094: each original kind owns its hit cap, even an empty
@@ -119,7 +120,7 @@ uint8_t ff3_strike_video(void) BANKED {uint8_t i,w,s,page,*out;
   phase=2;
  }
  if(phase==2){while(hand<2&&!kind[hand]&&(kind[0]||kind[1]))hand++;if(hand==2){party_motion.destination[actor]=home;party_motion.frame=0;phase=5;goto pending;}
-  if(!bow_pair&&hand&&kind[0]!=kind[1])ff3_party_copy(54,(kind[hand]!=1?strike_impact_centers:strike_centers)+(uint16_t)party_profile*32+animation_state.target*4,center,4);
+  if(!bow_pair&&hand&&kind[0]!=kind[1])ff3_party_copy(54,(kind[hand]>=5&&kind[hand]<=7?strike_arrow_centers:kind[hand]!=1?strike_impact_centers:strike_centers)+(uint16_t)party_profile*32+animation_state.target*4,center,4);
   ff3_party_copy(53,strike_palettes+(uint16_t)strike_weapons[bow_pair?hand^1:hand]*8,text_staging,8);ff3_text_palette_range(0,3,1,text_staging);frame=0;left=hits[hand]?hits[hand]:1;phase=3;
   if(bow_pair){
    party_state.pose[actor]=hand?6:1;
@@ -127,14 +128,18 @@ uint8_t ff3_strike_video(void) BANKED {uint8_t i,w,s,page,*out;
    ff3_party_copy(54,strike_angles+(uint16_t)party_profile*32+actor*8+animation_state.target,&w,1);
    if(!ff3_bow_begin(actor,party_state.x[actor],party_state.y[actor],hand,party_state.battle_type==0x88,hits[hand],w,center)){strike_error=6;goto fault;}phase=7;
   }
+  if(kind[hand]>=5&&kind[hand]<=7){
+   ff3_party_copy(54,strike_angles+(uint16_t)party_profile*32+actor*8+animation_state.target,&w,1);
+   if(!ff3_thrown_begin(actor,party_state.x[actor],party_state.y[actor],hand,party_state.battle_type==0x88,kind[hand],hits[hand],w,center)){strike_error=6;goto fault;}phase=8;
+  }
   if(kind[hand]==4)sound(0x8b); /* A1AD: once per hand, not per repeat. */
  }
- if(phase==7){
-  s=ff3_bow_next(raw_actor,&battle_rng_cursor,animation_source);
+ if(phase==7||phase==8){
+  s=phase==7?ff3_bow_next(raw_actor,&battle_rng_cursor,animation_source):ff3_thrown_next(raw_actor,&battle_rng_cursor,animation_source);
   if(!s){phase=4;goto pending;}if(s==255){strike_error=6;goto fault;}
-  if(bow_sound)sound(bow_sound);page=party_page;
-  if(s==1){page^=1;out=page?party_oam1:party_oam0;w=ff3_bow_project(animation_source,out);if(w==255){strike_error=4;goto fault;}if(!ff3_action_oam_finish(out,0,w,1)){strike_error=5;goto fault;}strike_prepares++;}else strike_reuses++;
-  strike_picture=2;next_page=page;party_pending=1;while(party_pending){ff3_native_service();__asm halt __endasm;}animation_video_frames++;if(animation_video_probe)animation_video_gate=1;goto pending;
+  w=phase==7?bow_sound:thrown_sound;if(w)sound(w);page=party_page;
+  if(s==1){page^=1;out=page?party_oam1:party_oam0;w=phase==7?ff3_bow_project(animation_source,out):ff3_thrown_project(animation_source,out);if(w==255){strike_error=4;goto fault;}if(!ff3_action_oam_finish(out,0,w,1)){strike_error=5;goto fault;}strike_prepares++;}else strike_reuses++;
+  strike_picture=phase==7?2:3;next_page=page;party_pending=1;while(party_pending){ff3_native_service();__asm halt __endasm;}animation_video_frames++;if(animation_video_probe)animation_video_gate=1;goto pending;
  }
  if(phase==3){
   if(kind[hand]==0||kind[hand]==9){if(!frame)sound(0x8a);pose=hand?6:5;w=hand?13:4;s=hits[hand]?frame:255;}
