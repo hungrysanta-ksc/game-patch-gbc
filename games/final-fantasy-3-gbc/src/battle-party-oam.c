@@ -4,6 +4,20 @@
 #include "battle-party-oam.h"
 #include "battle-party-oam-assets.h"
 typedef char party_oam_abi[(sizeof(Ff3PartyOam)==26)?1:-1];
+#ifdef FF3_EFFECTS
+uint8_t ff3_party_actor_oam(const Ff3PartyOam*s,uint8_t i,uint8_t*out) FF3_STATE_BANKED {
+ uint8_t j,p,id,t,a,x;const uint8_t*shape,*tiles;
+ if(i>=4||(s->pose[i]&127)>=21)return 0;
+ p=s->hidden[i]?0:s->pose[i]&127;id=ff3_po_ids[p+((s->pose[i]&128)?21:0)];
+ shape=ff3_po_shapes+(uint16_t)id*24;tiles=ff3_po_tiles+(uint16_t)p*6;
+ for(j=0;j<6;j++){
+  t=tiles[j];t=(t&128)?t&127:t+ff3_po_offsets[i];
+  a=shape[2]|s->palette[i]|s->override[i];x=shape[3]+s->x[i];
+  if(s->mirror&&s->battle_type==0x88){x=248-x;a^=64;}
+  *out++=shape[0]+s->y[i];*out++=t;*out++=a;*out++=x;shape+=4;
+ }return 1;
+}
+#endif
 uint8_t ff3_party_oam(const Ff3PartyOam*s,uint8_t*out) FF3_STATE_BANKED {
  uint8_t i,j,p,id,t,a,x;const uint8_t*shape,*tiles;
  for(i=0;i<4;i++)if((s->pose[i]&127)>=21)return 0;
