@@ -114,3 +114,11 @@ node tools/verify-battle-party-video.mjs --confusion --costs --poison-workspace
 node tools/verify-battle-load.mjs --no-build
 node tools/export-source.mjs --check
 ```
+
+## 한글 전투 창의 후속 공유
+
+[행 변환과 한글 창](battle-boss-rows-ui.md)은 보스 준비가 끝난 뒤 같은 704바이트를
+UI 320바이트 행 조립과 프레임/글리프 임시 읽기에 사용한다. HP 4행·창 5개의 텍스트와
+표시 마스크·초기 준비 행 번호는 정적 WRAM에 따로 둔다. IRQ는 이 작업 공간을 읽지 않는다.
+창 닫기 복원은 유지된 논리 상태와 ROM의 프레임/글리프에서 해당 행을 다시 만든다.
+메뉴 패턴의 소유권은 BG bank 0의 112..211이며 보스 bank 1의 타일과 공유하지 않는다.

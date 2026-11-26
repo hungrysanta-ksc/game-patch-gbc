@@ -3,18 +3,24 @@
 local mem=emu.memType.gameboyDebug
 local hi,lo=0,0
 local patterns,maps,bad,live,terrain=0,0,0,0,0
+local uiPatterns,uiMaps=0,0
 local function byte(a) return emu.read(a,mem) end
 emu.addMemoryCallback(function(_,v) hi=v&31 end,emu.callbackType.write,0xff53,0xff53,emu.cpuType.gameboy)
 emu.addMemoryCallback(function(_,v) lo=v&240 end,emu.callbackType.write,0xff54,0xff54,emu.cpuType.gameboy)
 emu.addMemoryCallback(function(_,v)
- if byte(bossAuditRequest)~=0 or byte(bossAuditStarted)==0 then return end
+ local ui=bossAuditUi and byte(bossAuditUiOwner)~=0
+ if not ui and (byte(bossAuditRequest)~=0 or byte(bossAuditStarted)==0) then return end
  local dest=hi*256+lo
  local n=((v&127)+1)*16
  local bank=byte(0xff4f)&1
  local ly=byte(0xff44)
  if ly<144 or ly>150 or (byte(0xff41)&3)~=1 or (v&128)~=0 then bad=bad+1 end
  local map=(byte(0xff40)&8)~=0 and 7168 or 6144
- if dest<4096 and bank==1 then
+ if ui then
+  if bank==0 and dest>=1792 and dest+n<=3392 then uiPatterns=uiPatterns+n
+  elseif dest>=6144 and (dest%1024)>=416 and (dest%1024)+n<=576 then uiMaps=uiMaps+n
+  else bad=bad+1 end
+ elseif dest<4096 and bank==1 then
   -- Terrain prepares its second resident page at the boss boundary too.
   -- Keep its 1..20 tile ownership separate from boss tiles 21..255.
   if dest>=16 and dest+n<=336 then terrain=terrain+n
@@ -35,5 +41,6 @@ emu.addMemoryCallback(function(_,v)
  end
 end,emu.callbackType.write,0xff55,0xff55,emu.cpuType.gameboy)
 emu.addEventCallback(function()
+ emu.log(string.format('ui-live:%d,%d',uiPatterns,uiMaps))
  emu.log(string.format('boss-live:%d,%d,%d,%d,%d',patterns,maps,bad,live,terrain))
 end,emu.eventType.codeBreak)

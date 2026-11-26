@@ -34,7 +34,22 @@ export function bossCells(rom,p){
  deps.forEach((ids,i)=>{index.writeUInt16LE(list.length,i*2);list.push(...ids);});index.writeUInt16LE(list.length,a.chunks*2);
  const paletteBytes=Buffer.alloc(64);palettes.forEach((p,i)=>p.forEach((c,j)=>paletteBytes.writeUInt16LE(c,(i*4+j)*2)));
  const rows=Buffer.from(Array.from({length:12},(_,row)=>cells.filter(c=>c.y<row+2).length)),objects=Buffer.concat(cells.filter(c=>c.extra!==255).map(c=>Buffer.from([c.y*8+16,c.x*8+8,c.extra,12+c.residual])));
- return {graphic,chunks:a.chunks,raw,bindings:bindingBytes,routes:Buffer.from(routes),descriptors,index,list:Buffer.from(list),rows,objects,palette:paletteBytes,cells,deps,residuals,stats:{cells:cells.length,residuals,maxChanged:Math.max(...deps.map(d=>d.length)),palettes:palettes.length,sourceBegin:a.begin,sourceBytes:raw.length,sourceSha256:hash(raw),bindingBytes:bindingBytes.length}};
+ const {program,luts}=bossRowProgram(bindingBytes);
+ return {graphic,chunks:a.chunks,raw,bindings:bindingBytes,program,luts,routes:Buffer.from(routes),descriptors,index,list:Buffer.from(list),rows,objects,palette:paletteBytes,cells,deps,residuals,stats:{cells:cells.length,residuals,maxChanged:Math.max(...deps.map(d=>d.length)),palettes:palettes.length,sourceBegin:a.begin,sourceBytes:raw.length,sourceSha256:hash(raw),bindingBytes:bindingBytes.length,programBytes:program.length,lutBytes:luts.length}};
+}
+// Spatial bit selectors, independent of animation state. Each row intersects
+// at most two source bytes. The original block shift still runs at runtime.
+export function bossRowProgram(bindings){
+ const program=Buffer.alloc(bindings.length/128*72),tables=[],dictionary=new Map();
+ for(let row=0;row<bindings.length/16;row++){
+  const groups=new Map();for(let x=0;x<8;x++){const d=bindings.readUInt16LE(row*16+x*2),off=d&4095;if(off===4095)continue;const key=off+':'+(d>>15);if(!groups.has(key))groups.set(key,{off,pal:d>>15,bits:[]});groups.get(key).bits.push([d>>12&7,7-x]);}
+  check(groups.size<=2,'Boss row intersects more than two source bytes');program[row*9]=groups.size;let n=0;
+  for(const g of groups.values()){const lut=Buffer.from(Array.from({length:256},(_,v)=>g.bits.reduce((r,[src,dst])=>r|((v>>src&1)<<dst),0))),key=lut.toString('hex');if(!dictionary.has(key)){dictionary.set(key,tables.length);tables.push(lut);}const at=row*9+1+n++*4;program.writeUInt16LE(g.off,at);program[at+2]=dictionary.get(key);program[at+3]=g.pal;}
+ }
+ check(tables.length<=64,'Boss selectors exceed one ROM bank');return {program,luts:Buffer.concat(tables)};
+}
+export function bossTileRows(a,cell,chunk,shift){
+ const out=Buffer.alloc(32);for(let y=0;y<8;y++){const at=cell*72+y*9;for(let n=0;n<a.program[at];n++){const p=at+1+n*4,off=a.program.readUInt16LE(p);if((off>>6)>chunk)continue;const s=(off>>6)===chunk?shift:0,lut=a.program[p+2]*256,pal=a.program[p+3]*4,convert=v=>a.luts[lut+((off&1)?v<<s&255:v>>s)],lo=convert(a.raw[off]),hi=convert(a.raw[off+8]);for(let color=1;color<4;color++){const mask=color===1?lo&~hi:color===2?hi&~lo:lo&hi;if(!mask)continue;const r=a.routes[cell*8+pal+color];check(r!==255,'Unexpected boss row color');const dst=y*2+(r&128?16:0);if(r&1)out[dst]|=mask;if(r&2)out[dst+1]|=mask;}}}return out;
 }
 export function bossTile(a,cell,chunk,shift){
  check(cell>=0&&cell<a.cells.length&&chunk>=0&&chunk<a.chunks&&shift>=0&&shift<8,'Boss cell work bounds');const out=Buffer.alloc(32);

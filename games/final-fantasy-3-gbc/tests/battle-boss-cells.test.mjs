@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {input} from '../tools/source.mjs';
-import {bossCells,bossLogicalFrame,bossTile} from '../tools/battle-boss-cells.mjs';
+import {bossCells,bossLogicalFrame,bossTile,bossTileRows} from '../tools/battle-boss-cells.mjs';
 import {bossFormations,tailReference} from '../tools/battle-entry-tail-source.mjs';
 import {partyEntryOracle} from '../tools/battle-party-oam-source.mjs';
 import {normalizeBoss} from '../tools/boss-pattern-map.mjs';
@@ -22,7 +22,7 @@ test('all registered bosses retain every shifted NES pixel with bounded resident
   assert.equal(a.graphic,r.graphic);assert.equal(a.raw.length,a.chunks*64);
   assert.ok(a.cells.length+a.residuals+Math.max(...a.deps.map(ids=>ids.reduce((n,id)=>n+1+(a.cells[id].extra!==255),0)))<=235);
   for(const f of tail.frames){if(f.work?.[0]!==1)continue;
-   const chunk=f.work.readUInt16LE(2)>>6,pic=bossLogicalFrame(a,state,chunk,shift),ppu=f.published.ppu;
+   const chunk=f.work.readUInt16LE(2)>>6;for(const id of a.deps[chunk])assert.deepEqual(bossTileRows(a,id,chunk,shift),bossTile(a,id,chunk,shift));const pic=bossLogicalFrame(a,state,chunk,shift),ppu=f.published.ppu;
    // Independent oracle reads actual 6502-produced CHR/nametable bytes.
    // It never uses the compiler bindings or the shifted source formula.
    for(const c of a.cells)for(let y=0;y<8;y++)for(let x=0;x<8;x++){
