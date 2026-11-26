@@ -94,7 +94,8 @@ void ff3_terrain_step(const Ff3EntryDisplay*s) NONBANKED {uint8_t saved=CURRENT_
  if(row<2){dirty[0]|=1<<row;dirty[1]|=1<<row;}
  elapsed=ff3_clock_now()-begin;if(elapsed>terrain_max_step)terrain_max_step=elapsed;
 }
-static uint8_t terrain_dma_mask,terrain_dma_hi0,terrain_dma_lo0,terrain_dma_hi1,terrain_dma_lo1;
+uint8_t terrain_dma_mask;
+static uint8_t terrain_dma_hi0,terrain_dma_lo0,terrain_dma_hi1,terrain_dma_lo1;
 void ff3_terrain_prepare(uint8_t page) NONBANKED {uint16_t dest;
  if(page>1){terrain_fault=4;return;}
  dest=0x8000+((uint16_t)base_tile+page*10)*16;
