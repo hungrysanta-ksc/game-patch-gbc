@@ -3,6 +3,12 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "docs/battle-native-impact.md",
+      "bytes": 7413,
+      "sha256": "e5799e718fb63ade646c4db121d31881fe487ebe1f95c1eb7938838a0b0b7acd",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "tools/battle-action-audio-profile.mjs",
       "bytes": 1370,
       "sha256": "e39a31151ee7437c39580db7d62929e562b24e8939e8aa1aa9c3c557d83948fb",
@@ -46,62 +52,62 @@
     },
     {
       "path": "src/battle-motion-sprites.h",
-      "bytes": 492,
-      "sha256": "90a4f2b25d3ec0daecdf1bdc7692950234d56207212aa1de3b16b389acae66cd",
+      "bytes": 791,
+      "sha256": "414994a103d850f687a2afb54290f91b641dffa5c51d9dccdbb24e00afb81bcd",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-motion-sprites.c",
-      "bytes": 1516,
-      "sha256": "01e40d07ffd1a4a33be8447e6c602df8eb9a7869046573b94b0a2eccee3b4d69",
+      "bytes": 2018,
+      "sha256": "c5a8ba09a83a05512b221685cb1a14922dace3ba0928fd951ade38a412e64d8a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-motion-sprites-test.c",
-      "bytes": 1270,
-      "sha256": "2c5a1a68173c7ae783717f1d304ed240a9e9601030ee54e16fb91518d612972d",
+      "bytes": 1759,
+      "sha256": "f20300f9da1e54a910e0680c78dafb35df3bb658d866f9cc104d90311f2af151",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/battle-motion-sprites.mjs",
-      "bytes": 1477,
-      "sha256": "96c71f68a605ac1eef22d58f71b0b478bbc3f6d6f4420ce7acaef4c192effa41",
+      "bytes": 2171,
+      "sha256": "b32bd56a8c16ad92b16a26b8d8387b5530796e448a63e15d3fcb851dbc11303b",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/build-battle-motion-sprites.mjs",
-      "bytes": 3107,
-      "sha256": "6da1a36e629e59bdcfd0c2ad4ae533d709a199994c1450d12728e4f60ea11eb5",
+      "bytes": 3678,
+      "sha256": "7adb6df61842c76c8d1bba74f39b54e600ec0c0289d4522bad2636a4877da88f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tests/battle-motion-sprites.test.mjs",
-      "bytes": 2136,
-      "sha256": "29586c915440abc1018c63e8f3060cb644b6ce3dbd1631edebe3cefddcdedbb0",
+      "bytes": 3671,
+      "sha256": "bc3fc359d2768f5d776224840ec4f90cd67c0d4af404a49a5b9abd91edcf622a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-strike-video.h",
-      "bytes": 250,
-      "sha256": "5978b504ee2261e267f48f606c75ecef55ee5923aa0f684c1346c2890b3af8b8",
+      "bytes": 339,
+      "sha256": "c01dcf258dc73e596f68e6f245bad7bee1ec44b10244262b9678e5fc471d57cc",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-strike-video.c",
-      "bytes": 7253,
-      "sha256": "700552d4c97722a093cfc9b530101fb5f31b91f745a9f835975d0145acc9ee0b",
+      "bytes": 8090,
+      "sha256": "ba0d25cc5db64fb7bc559087b6b8321673385adaf74afa078f5eb650b74b565e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/battle-strike-assets.mjs",
-      "bytes": 2474,
-      "sha256": "c27a54cc9de29a785cb393bc0371da43536f615d4602b8428e7b5c8f1659c061",
+      "bytes": 3074,
+      "sha256": "650dac3e18c123e01e03ac751c92f5ccf619080739b7b9cf061fe59941dad995",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/verify-battle-strike.mjs",
-      "bytes": 14248,
-      "sha256": "97eb5c6529f08de6caf782cebd4db7f3ba7b14a9746e65863335dbf940e6af33",
+      "bytes": 15966,
+      "sha256": "587b50baba3aa04662db9adc04df76cdae5aeacd41dbeb0429058be9f5fac59e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -112,8 +118,8 @@
     },
     {
       "path": "tools/VerifyStrike/Program.cs",
-      "bytes": 6473,
-      "sha256": "125b35ee6459933d450fda191d8c407a94aac169178299ab83a109e9f8d65aa4",
+      "bytes": 6727,
+      "sha256": "6dd20525b9dbce816d2b77d1a971f21280b5349f48695ccf9e8946b4a4a52917",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -538,8 +544,8 @@
     },
     {
       "path": "tools/build-battle-party-oam.mjs",
-      "bytes": 28168,
-      "sha256": "1a2a2e273efae3c1ec125c90b457bb05032f880c7bfed4365e7631885b2e653b",
+      "bytes": 28185,
+      "sha256": "c45b894b55772543dca696cce908867318d17b0de5c659523cd217273024aa57",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2206,14 +2212,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 11426,
-      "sha256": "ce2308ee18f779b2330a8e8ea40c83962c32a692eb74a39d79172e694e3d8e2a",
+      "bytes": 11782,
+      "sha256": "b68b1d1e0e24bf646eb4e2c17596564d58b0c2f7f3e28f1ec58344f1655e74bd",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 61124,
-      "sha256": "df5d9ff3fe96a90e9151b6d386571422509de489fb1969a5532dbea0f507e894",
+      "bytes": 62669,
+      "sha256": "e342a7b6df054851f3522c612cca12ab05aaf4e5943e542805291c20c9b56179",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2224,8 +2230,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 39069,
-      "sha256": "b9b1654ca7c3b9a63682686c1f31a2e566371f1ee2b6708980270b7229d038a5",
+      "bytes": 40043,
+      "sha256": "7f3e7711bee440ce36b80a5d1d62b2c4b0faa175505d99c5bef2dd8059b8a28b",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3046,8 +3052,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 18490,
-      "sha256": "f96db825804f56831a05b799fae69448fb7f777dca85e34e947afe7479062b91",
+      "bytes": 18523,
+      "sha256": "7fcaa93f4f434b009032dfd82383abf3a8fd22a1150ed6145093df735cf17d1a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

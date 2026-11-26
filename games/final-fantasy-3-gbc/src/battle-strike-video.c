@@ -11,6 +11,9 @@
 #include "strike-assets.h"
 uint8_t strike_weapons[2]={30,0},strike_error;
 uint8_t strike_critical;
+FF3BattleRng strike_rng;
+uint8_t strike_rng_ready;
+static uint8_t hit_point[2];
 uint16_t strike_prepares,strike_reuses;
 static uint8_t center[4],raw_actor[24],have_picture,last_weapon,last_slice,last_x,last_y,last_pose,last_hand;
 static uint8_t phase,actor,hand,frame,left,hits[2],kind[2],home,saved[4],pose;
@@ -31,7 +34,7 @@ void ff3_native_service(void) NONBANKED;
  * occupied mailbox, but do not stall the caller after posting a new request;
  * bounded rendering checkpoints continue servicing the same timed queue. */
 static void sound(uint8_t v){while(native_request){ff3_native_service();__asm halt __endasm;}native_argument=v&127;native_request=v==255?8:7;}
-static uint8_t publish(uint8_t weapon,uint8_t slice){uint8_t i,n=0,a,page=party_page^1,*out=page?party_oam1:party_oam0,*dst,x,y;int16_t xx,yy,dx,dy;const uint8_t*q;
+static uint8_t publish(uint8_t weapon,uint8_t slice){uint8_t i,n=0,limit=22,a,page=party_page^1,*out=page?party_oam1:party_oam0,*dst,x,y;int16_t xx,yy,dx,dy;const uint8_t*q;
  /* Identical source state still owns a source wait and VBlank publication.
   * Keep the current immutable shadow; never skip a frame or recompose it. */
  if(weapon!=255&&have_picture&&last_weapon==weapon&&last_slice==slice&&last_x==party_state.x[actor]&&last_y==party_state.y[actor]&&last_pose==party_state.pose[actor]&&last_hand==hand){page=party_page;strike_reuses++;goto ready;}
@@ -41,11 +44,18 @@ static uint8_t publish(uint8_t weapon,uint8_t slice){uint8_t i,n=0,a,page=party_
  if(weapon!=255){
   memcpy(animation_source+(hand?16:0),raw_actor,24);
   if(!ff3_motion_sprite(weapon,party_state.x[actor],party_state.y[actor],0,party_state.battle_type==0x88,3,animation_source+(hand?0:24))){strike_error=3;return 0;}
-  if(slice!=255&&!ff3_motion_slice(slice,center[0],center[1],hand,party_state.battle_type==0x88,animation_source+40)){strike_error=3;return 0;}
+  if(slice!=255){
+   if(kind[hand]==2){limit=14;if(!ff3_motion_impact(slice,center[0],center[1],hand,party_state.battle_type==0x88,&strike_rng,hit_point,animation_source+40)){strike_error=3;return 0;}}
+   else if(!ff3_motion_slice(slice,center[0],center[1],hand,party_state.battle_type==0x88,animation_source+40)){strike_error=3;return 0;}
+  }
   dst=out;q=animation_source;dx=party_state.battle_type==0x88?-16:-80;dy=-33-actor*4;
-  for(i=0;i<22;i++,q+=4){
+  for(i=0;i<limit;i++,q+=4){
    if(!(i&7))ff3_native_service();
-   if(i==10){if(slice==255)break;dx=(int16_t)center[2]-(party_state.battle_type==0x88?255-center[0]:center[0]);dy=(int16_t)center[3]-center[1]+1;}
+   if(i==10){if(slice==255)break;
+    if(kind[hand]==2){x=((uint8_t)(hit_point[0]-center[0])*7u)>>3;y=((uint8_t)(hit_point[1]-center[1])*7u)>>3;
+     dx=(int16_t)center[2]+(party_state.battle_type==0x88?-(int16_t)x:x)-(party_state.battle_type==0x88?255-hit_point[0]:hit_point[0]);dy=(int16_t)center[3]+y-hit_point[1]+1;
+    }else{dx=(int16_t)center[2]-(party_state.battle_type==0x88?255-center[0]:center[0]);dy=(int16_t)center[3]-center[1]+1;}
+   }
    if(!q[1])continue;xx=(int16_t)q[3]+dx;yy=(int16_t)q[0]+dy;
    if(n==40||xx<0||xx>152||yy<0||yy>136){strike_error=4;return 0;}a=q[2];*dst++=yy+16;*dst++=xx+8;*dst++=q[1];*dst++=(a&3)|((a&64)>>1)|((a&128)>>1);n++;
   }
@@ -66,11 +76,12 @@ void ff3_strike_reset(void) BANKED {phase=strike_error=have_picture=0;strike_pre
 uint8_t ff3_strike_video(void) BANKED {uint8_t i,w,s;
  if(!phase){
   if(strike_critical||animation_state.actor>=4||!animation_state.target_enemy||animation_state.target>=8)return 2;
-  for(i=0;i<2;i++){if(strike_weapons[i]>=88)return 2;ff3_party_copy(53,strike_props+strike_weapons[i]*3,kind+i,1);if(kind[i]!=1&&kind[i]!=0)return 2;}
+  for(i=0;i<2;i++){if(strike_weapons[i]>=88)return 2;ff3_party_copy(53,strike_props+strike_weapons[i]*3,kind+i,1);if(kind[i]>2)return 2;}
+  if((kind[0]==2||kind[1]==2)&&!strike_rng_ready)return 2;
   if(!kind[0]&&!kind[1])return 2;
   actor=animation_state.actor;if(party_motion.status[actor])return 2; /* small/confused/status owners must load their own graphics */
   party_work=2;if(!ff3_action_oam_begin(animation_base,8+actor*6,6)){strike_error=5;party_work=0;return 3;}
-  ff3_party_copy(54,strike_centers+(uint16_t)party_profile*32+animation_state.target*4,center,4);
+  ff3_party_copy(54,(kind[0]==2?strike_impact_centers:strike_centers)+(uint16_t)party_profile*32+animation_state.target*4,center,4);
   home=party_state.x[actor];memcpy(saved,party_state.pose,4);memcpy(party_motion.x,party_state.x,4);memcpy(party_motion.y,party_state.y,4);memcpy(party_motion.pose,party_state.pose,4);memcpy(party_motion.destination,party_state.x,4);
   party_motion.destination[actor]-=party_motion.rows[actor]?32:16;party_motion.frame=0;phase=1;hand=0;
   /* 33/A077,A094: each original kind owns its hit cap, even an empty
@@ -86,6 +97,7 @@ uint8_t ff3_strike_video(void) BANKED {uint8_t i,w,s;
   phase=2;
  }
  if(phase==2){while(hand<2&&!kind[hand])hand++;if(hand==2){party_motion.destination[actor]=home;party_motion.frame=0;phase=5;goto pending;}
+  if(hand&&kind[0]!=kind[1])ff3_party_copy(54,(kind[hand]==2?strike_impact_centers:strike_centers)+(uint16_t)party_profile*32+animation_state.target*4,center,4);
   ff3_party_copy(53,strike_palettes+(uint16_t)strike_weapons[hand]*8,text_staging,8);ff3_text_palette_range(0,3,1,text_staging);frame=0;left=hits[hand]?hits[hand]:1;phase=3;
  }
  if(phase==3){if(!frame)sound(0xb6);pose=hand?(frame<4?7:6):(frame<4?5:1);w=hand?(frame<4?2:3):(frame<4?0:1);party_state.pose[actor]=pose;s=frame>=4&&hits[hand]?frame-4:255;if(!publish(w,s))goto fault;
