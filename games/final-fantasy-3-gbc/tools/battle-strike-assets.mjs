@@ -14,7 +14,7 @@ export function strikeSliceAnchor(x,y,back=false){const [gx,gy]=strikeAnchor(x,y
 // Whole RNG-domain union: normal [-24,19), back [-18,25), y [-15,28).
 export function strikeImpactAnchor(x,y,back=false){const [gx,gy]=strikeAnchor(x,y,back);return [Math.max(back?18:24,Math.min(back?135:141,gx)),Math.max(15,Math.min(116,gy))];}
 export function strikeAssets(rom,profiles){
- const props=Buffer.from(rom.subarray(offset(0x2e,0x9098),offset(0x2e,0x91a0))),patterns=[],palettes=[],jobs=[],centers=[],impactCenters=[],restore=[],restorePal=[];
+ const props=Buffer.from(rom.subarray(offset(0x2e,0x9098),offset(0x2e,0x91a0))),patterns=[],palettes=[],jobs=[],centers=[],impactCenters=[],arrowCenters=[],angles=[],restore=[],restorePal=[];
  const {m}=initializedBattle(rom,{formation:3,rows:[0,1,0,1],terrain:0}),c=m.c;
  for(let id=0;id<88;id++){
   c.m.set([id,0],0x7e1f);m.call(0xa8ea);
@@ -27,8 +27,14 @@ export function strikeAssets(rom,profiles){
  for(const p of profiles){const {m}=initializedBattle(rom,{formation:p.formation,counts:p.counts,back:p.back,rows:[0,1,0,1],terrain:0,partyStatus:p.partyStatus});m.call(0xb469,6000000);m.call(0xb304);const c=m.c,points=[];
   for(let i=0;i<8;i++){const x=c.m[0x7dd7+i*2],y=c.m[0x7dd8+i*2];points.push(x,y,...strikeSliceAnchor(x,y,p.back));}
   impactCenters.push(Buffer.from(points.flatMap((_,i)=>i%4?[]:[points[i],points[i+1],...strikeImpactAnchor(points[i],points[i+1],p.back)])));
+  arrowCenters.push(Buffer.from(points.flatMap((_,i)=>i%4?[]:[points[i],points[i+1],...strikeArrowAnchor(points[i],points[i+1],p.back)])));
+  const aim=[];c.banks=[0x32,0x33,0x3e,0x3f];c.m[0x7cf6]=0x19;
+  for(let actor=0;actor<4;actor++)for(let target=0;target<8;target++){c.m[0x95]=actor;c.x=target;c.y=0;c.call(0xa7a5);aim.push(c.a);}angles.push(Buffer.from(aim));
   centers.push(Buffer.from(points));restore.push(nativePartyTiles(m.ppu.bytes.subarray(0x1390,0x1590)));restorePal.push(cgbPalette(m.ppu.bytes.subarray(0x3f1c,0x3f20)));
  }
  // Kind 9 reads A080 ($F2), the byte following the nine documented caps.
- return {caps:Buffer.from(rom.subarray(offset(0x33,0xa077),offset(0x33,0xa081))),props,patterns:Buffer.concat(patterns),palettes:Buffer.concat(palettes),jobs:Buffer.concat(jobs),centers:Buffer.concat(centers),impact_centers:Buffer.concat(impactCenters),restore:Buffer.concat(restore),restore_pal:Buffer.concat(restorePal)};
+ return {caps:Buffer.from(rom.subarray(offset(0x33,0xa077),offset(0x33,0xa081))),props,patterns:Buffer.concat(patterns),palettes:Buffer.concat(palettes),jobs:Buffer.concat(jobs),centers:Buffer.concat(centers),impact_centers:Buffer.concat(impactCenters),arrow_centers:Buffer.concat(arrowCenters),angles:Buffer.concat(angles),restore:Buffer.concat(restore),restore_pal:Buffer.concat(restorePal)};
 }
+
+// Full embedded-arrow random domain, all original 8x8 dots retained.
+export function strikeArrowAnchor(x,y,back=false){const [gx,gy]=strikeAnchor(x,y,back);return [Math.max(14,Math.min(145,gx)),Math.max(14,Math.min(117,gy))];}

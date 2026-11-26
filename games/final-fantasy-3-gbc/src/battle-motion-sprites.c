@@ -53,3 +53,15 @@ uint8_t ff3_motion_slice(uint8_t frame,uint8_t x,uint8_t y,uint8_t hand,uint8_t 
   *out++=y+motion_slice_data[0x99d2-0x9968+i*2];*out++=t;*out++=back?67:3;*out++=back?248-xx:xx;
  }return 1;
 }
+
+/* Keep the source one's-complement magnitude before multiplication. */
+uint8_t ff3_motion_vector(uint8_t angle,uint8_t distance) FF3_STATE_BANKED {
+ uint8_t s=motion_sine[angle],n=s&128?s^255:s;
+ n=((uint16_t)(uint8_t)(n<<1)*distance)>>8;return s&128?-n:n;
+}
+uint8_t ff3_motion_arrow_point(uint8_t x,uint8_t y,Ff3BattleRngCursor*rng,uint8_t*point) FF3_STATE_BANKED {
+ const uint8_t*t;uint8_t a,b;if(rng->variant>1)return 0;
+ t=motion_rng_tables+(uint16_t)rng->variant*256;a=t[rng->counter[0]++];rng->counter[0]++;b=t[rng->counter[0]++];
+ /* FBEF: round(range * (table + 0.5) / 256). Preserve A44F's discarded draw. */
+ point[0]=x-16+(((uint16_t)a*24+140)>>8);point[1]=y-16+(((uint16_t)b*38+147)>>8);return 1;
+}
