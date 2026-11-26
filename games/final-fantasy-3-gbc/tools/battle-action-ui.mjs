@@ -1,10 +1,11 @@
 import {check} from './source.mjs';
 import {encodeTile} from './npc-composition.mjs';
+import {hpGlyphs,hpGlyphIndex,hpAdvance,hpTextX} from './battle-hp-font.mjs';
 export const actionRows=[13,14,15,16,17,18];
 export const v6Ui={top:103,height:41,hpLeft:48,rowPitch:8};
 // User-approved Korean word spacing: nearest pixel to one third of 8px.
 // Compact HP digits keep their separate, fixed numeric alignment.
-export const battleTextAdvance=(id,compact=false)=>compact?5:id===255?3:8;
+export const battleTextAdvance=(id,compact=false)=>compact?hpAdvance:id===255?3:8;
 function pixel(tiles,id,x,y){const a=id*16+y*2,b=7-x;return (tiles[a]>>b&1)|((tiles[a+1]>>b&1)<<1);}
 // Source grey/white bevel and round corners; omit repeated frame padding.
 export function compactOriginalBox(tiles,w,h){const out=new Uint8Array(w*h),lo=[0,1,2,5],hi=[2,5,6,7],bottom=[2,4,5,7];
@@ -18,8 +19,7 @@ export function drawOriginalUiText(target,w,tiles,words,x,y,{compact=false,hangu
  for(const id of words){const advance=battleTextAdvance(id,compact);
   check(x+advance<=w-3&&y>=0&&y+8<=target.length/w,'Battle UI text overflow; explicit layout required');
   for(let yy=0;yy<(compact?7:8);yy++)for(let xx=0;xx<advance;xx++){
-   const sx=compact?Math.round(xx*6/4)+1:xx,sy=compact?yy+1:yy;
-   if(pixel(id>=256?hangul:tiles,id,sx,sy)===3)target[(y+yy)*w+x+xx]=3;
+   if(pixel(compact?hpGlyphs:id>=256?hangul:tiles,compact?hpGlyphIndex(id):id,xx,yy)===3)target[(y+yy)*w+x+xx]=3;
   }x+=advance;
  }
 }
@@ -36,7 +36,7 @@ export function originalActionUi(ui,flow,text,{smallHp=false}={}){
  const hp=compactOriginalBox(tiles,112,38);
  for(let i=0;i<4;i++){
   drawOriginalUiText(hp,112,tiles,ui.hp[i].name,5,3+i*8,{hangul:text.glyphs});
-  drawOriginalUiText(hp,112,tiles,ui.hp[i].value,63,3+i*8,{compact:true,hangul:text.glyphs});
+  drawOriginalUiText(hp,112,tiles,ui.hp[i].value,hpTextX,3+i*8,{compact:true,hangul:text.glyphs});
  }
  const layers=[{x:48,y:8,w:112,h:38,pixels:hp},...projectMessageWindows(flow.windowDescriptors).map((r,i)=>{
   const pixels=compactOriginalBox(tiles,r.w,r.h);drawOriginalUiText(pixels,r.w,tiles,ui.windows[i],4,3,{hangul:text.glyphs});return {...r,pixels};

@@ -18,12 +18,14 @@ uint16_t live_ui_updates,live_ui_pattern_bytes;
 #define rowdata battle_workspace.map
 #define line (battle_workspace.map+352)
 #define glyph (battle_workspace.map+480)
-static void text(const uint8_t*ids,uint8_t count,uint8_t x,uint8_t y,uint8_t compact,uint8_t row){uint8_t i,id,advance,yy,sy,top=row*8,bits,v,shift;uint16_t at;
+static void text(const uint8_t*ids,uint8_t count,uint8_t x,uint8_t y,uint8_t compact,uint8_t row){uint8_t i,id,advance,yy,top=row*8,bits,v,shift;uint16_t at;
  if(y>=top+8||y+(compact?7:8)<=top)return;
- for(i=0;i<count;i++){id=ids[i];ff3_party_copy(43,live_ui_glyphs+(uint16_t)id*16,glyph,16);ff3_party_copy(43,live_ui_advances+id,&advance,1);if(compact)advance=5;
+ for(i=0;i<count;i++){id=ids[i];
+  if(compact){if(id>11){live_ui_error=5;return;}ff3_party_copy(43,live_ui_hp_glyphs+(uint16_t)id*16,glyph,16);advance=6;}
+  else{ff3_party_copy(43,live_ui_glyphs+(uint16_t)id*16,glyph,16);ff3_party_copy(43,live_ui_advances+id,&advance,1);}
   for(yy=0;yy<(compact?7:8);yy++)if(y+yy>=top&&y+yy<top+8){
-   /* The approved five-pixel HP sampler: round(xx*6/4)+1. */
-   sy=compact?yy+1:yy;bits=glyph[sy*2]&glyph[sy*2+1];if(compact)bits=((bits&64)<<1)|((bits&16)<<2)|((bits&8)<<2)|((bits&2)<<3)|((bits&1)<<3);
+   /* HP is native 5x7 ink with one blank column, never resampled NES ink. */
+   bits=glyph[yy*2]&glyph[yy*2+1];
    at=(uint16_t)(x>>3)*16+(y+yy-top)*2;shift=x&7;v=bits>>shift;rowdata[at]|=v;rowdata[at+1]|=v;
    if(shift&&x/8<19){v=bits<<(8-shift);rowdata[at+16]|=v;rowdata[at+17]|=v;}
   }x+=advance;ff3_native_service();
@@ -35,7 +37,7 @@ static void render(uint8_t dirty){uint8_t row,l,r[6],yy,x,top,bottom,i;uint16_t 
   for(l=0;l<6;l++)if(!l||(mask&(1<<(l-1)))){
    ff3_party_copy(43,live_ui_rect+(uint16_t)l*6,r,6);top=row*8;if(top<r[1])top=r[1];bottom=row*8+8;if(bottom>r[1]+r[3])bottom=r[1]+r[3];
    for(yy=top;yy<bottom;yy++){offset=r[4]+((uint16_t)r[5]<<8)+(uint16_t)(yy-r[1])*(r[2]/4);ff3_party_copy(43,live_ui_boxes+offset,line,r[2]/4);dest=(uint16_t)(r[0]/8)*16+(yy-row*8)*2;for(x=0;x<r[2]/4;x+=2){rowdata[dest]=line[x];rowdata[dest+1]=line[x+1];dest+=16;}ff3_native_service();}
-   if(!l){for(i=0;i<4;i++){text(hp+i*15,6,53,5+i*8,0,row);text(hp+i*15+6,9,111,5+i*8,1,row);}}
+   if(!l){for(i=0;i<4;i++){text(hp+i*15,6,53,5+i*8,0,row);text(hp+i*15+6,9,103,5+i*8,1,row);}}
    else text(words[l-1],lengths[l-1],r[0]+4,r[1]+3,0,row);
    ff3_native_service();
   }
