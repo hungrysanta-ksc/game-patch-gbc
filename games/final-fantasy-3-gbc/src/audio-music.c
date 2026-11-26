@@ -2,7 +2,12 @@
 #pragma bank 8
 #endif
 #include "audio-music.h"
+#if defined(FF3_EFFECTS) && defined(FF3_SINGLE_ENGINE)
+/* Source channel loops stay inside $7F40..$7FFF (192 bytes). */
+#define R(a) FF3_RAM(s)[(uint8_t)((a)-0x7f40)]
+#else
 #define R(a) FF3_RAM(s)[(a)-0x7f40]
+#endif
 uint8_t ff3_music_request(FF3AudioState *s,uint8_t id,uint8_t fade) FF3_BANKED {if(!ff3_audio_song(s,id))return 0;if(fade)R(0x7f42)|=8;return 1;}
 void ff3_music_stop(FF3AudioState *s,uint8_t fade) FF3_BANKED {R(0x7f42)=fade?12:4;}
 void ff3_music_resume(FF3AudioState *s) FF3_BANKED {R(0x7f42)=2;}

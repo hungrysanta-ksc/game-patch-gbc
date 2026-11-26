@@ -208,11 +208,11 @@ if(!ff3_error)dispatch_due();if(native_playing){CRITICAL{TIMA_REG=TMA_REG=128;IF
 /* Fixed-bank cooperative service. Text code may call from any mapped bank;
  * the timer consumer never calls the producer or changes ROM/WRAM banks. */
 void ff3_native_service(void) NONBANKED {uint8_t op,arg;
-#ifdef FF3_OPENING_VIDEO
+#if defined(FF3_OPENING_VIDEO) || defined(FF3_EFFECTS)
  int16_t lead;
 #endif
 native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_playing){op=native_request;arg=native_argument;start(0);native_request=op;native_argument=arg;}while(preparing
-#ifndef FF3_OPENING_VIDEO
+#if !defined(FF3_OPENING_VIDEO) && !defined(FF3_EFFECTS)
  &&!full()
 #endif
  ){
@@ -226,7 +226,16 @@ native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_pl
  if(lead>136&&cache_request&&!native_request&&!battle_active&&
     ((text_transfer_busy&&!transfer_pending)||(scene_phase==4&&!scene_pending)))break;
 #endif
-#if defined(FF3_COMPOSITION_CACHE) && !defined(FF3_OPENING_VIDEO)
+#ifdef FF3_EFFECTS
+ /* One atomic clock sample for queue bounds and cooperative yield. Preserve
+  * both existing thresholds; do not reduce audio lookahead or skip packets. */
+ if((uint8_t)((native_tail+1u)&15u)==native_head)break;
+ lead=(int16_t)(prepare_due-ff3_clock_now());
+ /* Unsigned sign-bit guard is exactly the signed positive-lead test.
+  * Select the tighter bound once, avoiding two promoted signed compares. */
+ if((uint16_t)lead<0x8000u&&(uint16_t)lead>(cache_request?136u:FF3_AUDIO_AHEAD))break;
+#endif
+#if defined(FF3_COMPOSITION_CACHE) && !defined(FF3_OPENING_VIDEO) && !defined(FF3_EFFECTS)
  /* Same two-tick cooperative yield used by exploration. Do not hold a due
   * display update hostage to repeatedly refilling the third lookahead tick. */
  #if defined(FF3_STONE) || defined(FF3_BOSS)

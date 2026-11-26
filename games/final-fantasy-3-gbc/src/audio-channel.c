@@ -3,7 +3,13 @@
 #endif
 #include "audio-channel.h"
 #define R(a) FF3_RAM(s)[(a)-0x7f40]
+#if defined(FF3_EFFECTS) && defined(FF3_SINGLE_ENGINE)
+/* Original X is a channel 0..6. Every channel field is in the 192-byte
+ * RAM image; its largest offset is 185+6. Keep this bounded index 8-bit. */
+#define C(a) FF3_RAM(s)[(uint8_t)((a)-0x7f40+ch)]
+#else
 #define C(a) R((a)+ch)
+#endif
 #if (defined(FF3_OPENING_VIDEO) || defined(FF3_AUDIO_FAST)) && defined(FF3_BANKED_RUNTIME)
 /* Only literal bank-36 table bases with bounded byte indices use this path.
  * Script/envelope pointers still use the checked mapped reader. */
