@@ -3,6 +3,13 @@
 #endif
 #include "battle-motion-sprites.h"
 #include "battle-motion-sprites-assets.h"
+/* 33/A44F -> 3F/FBEF with range 0..255 returns the table byte exactly
+ * (including the original rounded multiply). Only counter 0 advances. */
+uint8_t ff3_motion_impact(uint8_t frame,uint8_t x,uint8_t y,uint8_t hand,uint8_t back,FF3BattleRng*rng,uint8_t*point,uint8_t*out) FF3_STATE_BANKED {
+ if(hand>1||back>1)return 0;
+ if(!(frame&1)){point[0]=x+(rng->table[rng->counter[0]++]&31);point[1]=y+(rng->table[rng->counter[0]++]&31);}
+ return ff3_motion_sprite(16+hand,point[0],point[1],0,back,3,out);
+}
 /* 32/9357..943C. Keep byte wrap, original shape order and zero tile IDs;
  * clipping and OAM allocation belong to the target renderer. */
 uint8_t ff3_motion_sprite(uint8_t frame,uint8_t x,uint8_t y,uint8_t flip,uint8_t back,uint8_t palette,uint8_t*out) FF3_STATE_BANKED {

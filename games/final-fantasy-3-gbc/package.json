@@ -136,7 +136,11 @@
     "verify:battle-strike": "node tools/verify-battle-strike.mjs",
     "verify:battle-strike-positions": "node tools/verify-battle-strike.mjs --positions",
     "verify:battle-strike-numbers": "node tools/verify-battle-strike.mjs --numbers",
-    "verify:battle-strike-auto": "node tools/verify-battle-strike.mjs --auto"
+    "verify:battle-strike-auto": "node tools/verify-battle-strike.mjs --auto",
+    "verify:battle-impact": "node tools/verify-battle-strike.mjs --impact",
+    "verify:battle-impact-positions": "node tools/verify-battle-strike.mjs --impact --positions",
+    "verify:battle-impact-numbers": "node tools/verify-battle-strike.mjs --impact --numbers",
+    "verify:battle-impact-auto": "node tools/verify-battle-strike.mjs --impact --auto"
   },
   "engines": {
     "node": ">=20"

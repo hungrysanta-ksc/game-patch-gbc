@@ -13,3 +13,12 @@ export function motionSpriteReference(rom,{frame=0,x=0xd0,y=0x28,flip=0,back=0,p
  else {check(slice<4,'Source slice index');c.m[0xb8]=0;c.m[0xb9]=slice;c.m[0xcd]=hand;c.m.set([x,y],0x7dd7);c.call(0x991f);}
  return Buffer.from(c.m.subarray(0x200,0x200+c.m[0xc8]));
 }
+export function motionRngTable(rom,seed){
+ const c=battleCpu(rom);c.m.fill(0,0,256);c.a=seed;c.p&=~1;c.call(0xfc27);
+ return Buffer.from(c.m.subarray(0x7be3,0x7ce3));
+}
+export function motionImpactReference(rom,{frame=4,x=88,y=80,hand=0,back=0,index=0,table,point=[x+7,y+19]}){
+ const c=battleCpu(rom,0x19);c.m.fill(240,0x200,0x2a0);c.m[0x95]=0;c.m[0x78c3]=back?0x88:0;c.m[0xc8]=0;
+ c.m[0xb6]=frame;c.m[0xb8]=0;c.m[0xcd]=hand;c.m.set([x,y],0x7dd7);c.m.set(point.map(n=>n&255),0xbe);c.m.set(table,0x7be3);c.m.set([index,23,197],0x15);c.call(0x98e0);
+ return {oam:Buffer.from(c.m.subarray(0x200,0x210)),point:Buffer.from(c.m.subarray(0xbe,0xc0)),counters:Buffer.from(c.m.subarray(0x15,0x18))};
+}

@@ -1,9 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {input} from '../tools/source.mjs';
-import {motionSpriteAssets,motionSpriteReference} from '../tools/battle-motion-sprites.mjs';
-import {strikeAnchor,strikeSliceAnchor} from '../tools/battle-strike-assets.mjs';
+import {motionSpriteAssets,motionSpriteReference,motionRngTable,motionImpactReference} from '../tools/battle-motion-sprites.mjs';
+import {strikeAnchor,strikeSliceAnchor,strikeImpactAnchor} from '../tools/battle-strike-assets.mjs';
 import {originalFormation} from '../tools/battle-placement-source.mjs';
+import {battleCpu} from '../tools/battle-placement-source.mjs';
+
+test('full-range original RNG returns every table byte, and impacts hold the point on odd frames',async()=>{
+ const {data}=await input(),c=battleCpu(data,0x19);
+ for(let v=0;v<256;v++){c.m[0x21]=0;c.m[0x15]=255;c.m[0x7be3+255]=v;c.x=0;c.a=255;c.call(0xfbef);assert.equal(c.a,v);assert.equal(c.m[0x15],0);}
+ for(const seed of [0,2]){const table=motionRngTable(data,seed),a=motionImpactReference(data,{frame:4,table,index:255}),b=motionImpactReference(data,{frame:5,table,index:a.counters[0],point:[...a.point]});assert.deepEqual(a.oam,b.oam);assert.deepEqual(a.counters,b.counters);assert.deepEqual([...a.counters],[1,23,197]);}
+});
+
+test('staff impacts fit the complete RNG domain at every resident target without clipping glyphs',async()=>{
+ const {data}=await input(),f=originalFormation(data,3);
+ for(const back of [0,1])for(const slot of f.slots){const [sx,sy]=slot.center,[gx,gy]=strikeImpactAnchor(sx,sy,back);
+  for(const hand of [0,1]){const o=motionSpriteReference(data,{frame:16+hand,x:sx,y:sy,back});for(let rx=0;rx<32;rx++)for(let ry=0;ry<32;ry++){
+   // Shape/offset bytes are obtained from the actual metasprite consumer;
+   // translating its pivot is linear over this non-wrapping target domain.
+   for(let i=0;i<16;i+=4)if(o[i+1]){const x=gx+(back?-1:1)*Math.floor(rx*7/8)+o[i+3]-(back?255-sx:sx),y=gy+Math.floor(ry*7/8)+o[i]-sy+1;assert.ok(x>=0&&x+8<=160);assert.ok(y>=0&&y+8<=144);}
+  }}
+ }
+});
 
 test('motion assets are immutable source tables and retain masked slash records',async()=>{
  const {data}=await input(),a=motionSpriteAssets(data);

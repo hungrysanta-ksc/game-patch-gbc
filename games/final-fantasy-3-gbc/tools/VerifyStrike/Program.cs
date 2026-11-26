@@ -8,6 +8,8 @@ class Program {
  uint Optional(string k)=>c.GetProperty("symbols").TryGetProperty(k,out var _) ? Num(k,2) : 0;
  void Put(string k,byte v)=>Core.SetMemoryValue(7,Addr(k),v);
  void Bytes(string k,string hex){var b=Convert.FromHexString(hex);for(uint i=0;i<b.Length;i++)Core.SetMemoryValue(7,Addr(k)+i,b[i]);}
+ bool hasRng=c.GetProperty("symbols").TryGetProperty("strike_rng",out var _rng);
+ string? Rng()=>hasRng?Mem(7,Addr("strike_rng"),259):null;
  string Mem(int type,uint a,int n){var b=new byte[n];Core.GetMemoryValues(type,a,a+(uint)n-1,b);return Convert.ToHexString(b).ToLowerInvariant();}
  var audio=new List<object>();var pictures=new List<object>();var runs=new List<object>();var requests=new List<object>();uint external=0;int audit=-1;bool automatic=c.TryGetProperty("automatic",out var auto)&&auto.GetBoolean();string actionAudit="";
  void Observe(){for(int i=0;Num("native_irq_busy")!=0||(Core.GetMemoryValue(7,0xff70)&7)!=1;i++){if(i>20000)throw new Exception("IRQ yield");Step(17,0);}var t=Core.GetTimingInfo(7);
@@ -22,15 +24,15 @@ class Program {
  foreach(var run in c.GetProperty("cases").EnumerateArray()){
   Put("party_profile",(byte)run.GetProperty("profile").GetInt32());Put("party_request",1);for(int i=0;Num("party_request")!=0;i++){if(i>500)throw new Exception("Load timeout");Step();Observe();}
   while(Num("status_stage")!=2){Put("party_step",1);for(int i=0;Num("party_step")!=0;i++){if(i>500)throw new Exception("Entry timeout");Step();Observe();}}
-  Step(2);Observe();Bytes("animation_state",run.GetProperty("animation").GetString()!);Bytes("action_script",run.GetProperty("script").GetString()!);Bytes("strike_weapons",run.GetProperty("weapons").GetString()!);Put("action_probe",0);Put("animation_video_probe",1);Put("action_request",1);
-  if(automatic){Put("animation_video_probe",0);var begin=Core.GetTimingInfo(7);for(int i=0;Num("action_request")!=0||Num("action_enabled")!=0;i++){if(i>3000||Num("action_blocked")!=0)throw new Exception("Automatic strike blocked");Step();Observe();}runs.Add(new{tag=run.GetProperty("tag").GetString(),frames=Num("animation_video_frames",2),prepares=Optional("strike_prepares"),reuses=Optional("strike_reuses"),common=Mem(7,Addr("animation_state"),109),script=Mem(7,Addr("action_script"),29),elapsedMs=(Core.GetTimingInfo(7).clock-begin.clock)*1000.0/begin.rate});var actionLog=new StringBuilder(1000000);Audit.GetScriptLog(audit,actionLog,1000000);actionAudit=actionLog.ToString();continue;}
+  Step(2);Observe();Bytes("animation_state",run.GetProperty("animation").GetString()!);Bytes("action_script",run.GetProperty("script").GetString()!);Bytes("strike_weapons",run.GetProperty("weapons").GetString()!);if(hasRng){Bytes("strike_rng",run.GetProperty("rng").GetString()!);Put("strike_rng_ready",1);}Put("action_probe",0);Put("animation_video_probe",1);Put("action_request",1);
+  if(automatic){Put("animation_video_probe",0);var begin=Core.GetTimingInfo(7);for(int i=0;Num("action_request")!=0||Num("action_enabled")!=0;i++){if(i>3000||Num("action_blocked")!=0)throw new Exception("Automatic strike blocked");Step();Observe();}runs.Add(new{tag=run.GetProperty("tag").GetString(),frames=Num("animation_video_frames",2),prepares=Optional("strike_prepares"),reuses=Optional("strike_reuses"),rng=Rng(),common=Mem(7,Addr("animation_state"),109),script=Mem(7,Addr("action_script"),29),elapsedMs=(Core.GetTimingInfo(7).clock-begin.clock)*1000.0/begin.rate});var actionLog=new StringBuilder(1000000);Audit.GetScriptLog(audit,actionLog,1000000);actionAudit=actionLog.ToString();continue;}
   int frames=0;while(true){
    for(int i=0;Num("animation_video_gate")==0&&(Num("action_request")!=0||Num("action_enabled")!=0);i++){if(i>500||Num("action_blocked")!=0)throw new Exception("Strike failure: "+Num("strike_error")+"/"+Num("animation_video_error")+" owner "+Num("animation_video_owner"));Step();Observe();}
    if(Num("action_blocked")!=0)throw new Exception("Blocked owner "+Num("animation_video_owner"));
    if(Num("animation_video_gate")==0)break;
    if(++frames>256||Num("animation_video_frames",2)!=frames)throw new Exception("Skipped frame");Step(2);Observe();Audit.TakeScreenshot();pictures.Add(new{tag=run.GetProperty("tag").GetString(),frame=frames,owner=Num("animation_video_owner"),source=Mem(7,Addr("animation_source"),160),party=Mem(7,Addr("party_state"),26),oam=Mem(44,0,160),vram=Mem(43,0,16384),objPalette=Mem(46,0,64),bgPalette=Mem(45,0,64),lcdc=Core.GetMemoryValue(7,0xff40)});Put("animation_video_gate",0);
   }
-  runs.Add(new{tag=run.GetProperty("tag").GetString(),frames,prepares=Optional("strike_prepares"),reuses=Optional("strike_reuses"),common=Mem(7,Addr("animation_state"),109),script=Mem(7,Addr("action_script"),29)});
+  runs.Add(new{tag=run.GetProperty("tag").GetString(),frames,prepares=Optional("strike_prepares"),reuses=Optional("strike_reuses"),rng=Rng(),common=Mem(7,Addr("animation_state"),109),script=Mem(7,Addr("action_script"),29)});
  }
  for(int i=0;Num("native_done")==0;i++){if(i>10000)throw new Exception("Audio completion timeout");Step();Observe();}
  var auditLog=new StringBuilder(1000000);Audit.GetScriptLog(audit,auditLog,1000000);File.WriteAllText(Text("output")+".audit.log",actionAudit+"\n"+auditLog.ToString());
