@@ -5,7 +5,7 @@
 #include "text-vblank.h"
 #include "memory.h"
 #include "battle-resident-bg.h"
-/* Only the numeral owner may lend frozen party pixels to BG. OBJ patterns
+/* Numeral and settled ordinary-magic owners may lend frozen party pixels to BG. OBJ patterns
  * remain in blocks 0/1. Signed BG addressing lends block 2 without evicting
  * enemy, terrain, party, status or window resources from their original slots. */
 uint8_t effect_signed,effect_freeze_error;
@@ -15,6 +15,9 @@ uint16_t __at(0xd200) effect_pixels[64];
 uint8_t __at(0xd280) effect_glyph[16];
 uint8_t __at(0xd290) effect_encoded[16];
 uint16_t __at(0xd2a0) effect_keys[112];
+/* Per-cell source OBJ index, built once. Four entries cover aligned/offset
+ * tile grids; FE requests the unchanged full scan for greater overlap. */
+uint8_t __at(0xd380) effect_members[320];
 uint8_t __at(0xd870) effect_palettes[128];
 extern uint8_t __at(0xd6a0) animation_base[160];
 extern uint8_t __at(0xdc00) party_oam0[160];
@@ -23,33 +26,130 @@ extern volatile uint8_t party_page,party_pending;
 extern uint8_t next_page;
 void ff3_native_service(void) NONBANKED;
 static uint16_t color(uint8_t i){return effect_palettes[i*2]|((uint16_t)effect_palettes[i*2+1]<<8);}
-/* A single bounded read in HBlank. A 0->2 boundary still leaves a full
- * 80-dot OAM search before VRAM closes; timer IRQs run between bytes. */
-static void read_vram(uint8_t bank,uint16_t address,uint8_t*out,uint16_t count){uint8_t ok;uint16_t i=0;
- while(i<count){ok=0;while(STAT_REG&3);CRITICAL{if(!(STAT_REG&3)){VBK_REG=bank;out[i]=*(volatile uint8_t*)address;VBK_REG=0;ok=1;}}if(ok){i++;address++;if(!(i&15))ff3_native_service();}}
+static uint8_t freeze_read_bank,freeze_read_count;
+static uint16_t freeze_read_source,freeze_read_target;
+/* Pan Docs: after observing mode 0/1, the next mode 2 lasts 80 dots.
+ * Four unrolled reads fit that window in CGB double speed. A masked recheck
+ * excludes an IRQ crossing into mode 3. Normal speed uses one byte instead.
+ * Preserve IE/IME and BC; no bank switch or producer call in the masked part. */
+static void read_batch(void) __naked {
+ __asm
+ push bc
+ ld a,(_freeze_read_source)
+ ld l,a
+ ld a,(_freeze_read_source+1)
+ ld h,a
+ ld a,(_freeze_read_target)
+ ld e,a
+ ld a,(_freeze_read_target+1)
+ ld d,a
+ ld a,(_freeze_read_count)
+ ld b,a
+ ld a,(_freeze_read_bank)
+ ld c,a
+93000$:
+ ld a,b
+ cp #4
+ jr c,93010$
+ ldh a,(_KEY1_REG)
+ and #128
+ jr z,93010$
+93001$:
+ ldh a,(_STAT_REG)
+ and #2
+ jr nz,93001$
+ ldh a,(_IE_REG)
+ push af
+ xor a
+ ldh (_IE_REG),a
+ ldh a,(_STAT_REG)
+ and #2
+ jr nz,93020$
+ ld a,c
+ ldh (_VBK_REG),a
+ ld a,(hl+)
+ ld (de),a
+ inc de
+ ld a,(hl+)
+ ld (de),a
+ inc de
+ ld a,(hl+)
+ ld (de),a
+ inc de
+ ld a,(hl+)
+ ld (de),a
+ inc de
+ xor a
+ ldh (_VBK_REG),a
+ pop af
+ ldh (_IE_REG),a
+ dec b
+ dec b
+ dec b
+ dec b
+ jp nz,93000$
+ pop bc
+ ret
+93010$:
+ ldh a,(_STAT_REG)
+ and #2
+ jr nz,93010$
+ ldh a,(_IE_REG)
+ push af
+ xor a
+ ldh (_IE_REG),a
+ ldh a,(_STAT_REG)
+ and #2
+ jr nz,93020$
+ ld a,c
+ ldh (_VBK_REG),a
+ ld a,(hl+)
+ ld (de),a
+ inc de
+ xor a
+ ldh (_VBK_REG),a
+ pop af
+ ldh (_IE_REG),a
+ dec b
+ jp nz,93000$
+ pop bc
+ ret
+93020$:
+ pop af
+ ldh (_IE_REG),a
+ jp 93000$
+ __endasm;
 }
+static void read_vram(uint8_t bank,uint16_t address,uint8_t*out,uint16_t count){
+ while(count){freeze_read_bank=bank;freeze_read_source=address;freeze_read_target=(uint16_t)out;freeze_read_count=count>128?128:(uint8_t)count;
+  read_batch();address+=freeze_read_count;out+=freeze_read_count;count-=freeze_read_count;ff3_native_service();}
+}
+void ff3_effect_read(uint8_t bank,uint16_t address,uint8_t*out,uint16_t count) BANKED {read_vram(bank,address,out,count);}
 static void palettes(void){uint8_t i,ok;for(i=0;i<128;i++){ok=0;while(!ok){while(STAT_REG&3);CRITICAL{if(!(STAT_REG&3)){if(i<64){BCPS_REG=i;effect_palettes[i]=BCPD_REG;}else{OCPS_REG=i-64;effect_palettes[i]=OCPD_REG;}ok=1;}}}if(!(i&7))ff3_native_service();}}
 static uint8_t store(uint16_t at,void*p,uint16_t n,uint8_t write){if(!ff3_wram_copy(3,at,p,n,write)){effect_freeze_error=1;return 0;}return 1;}
 static void mirror(uint8_t bank,uint16_t from,uint16_t to,uint16_t bytes){uint16_t at;for(at=0;at<bytes;at+=256){read_vram(bank,from+at,text_staging,256);ff3_text_copy(bank,to+at,text_staging,256);ff3_native_service();}}
 static uint8_t keep(const uint8_t*o){return o[0]&&o[2]&&(o[0]>=112||o[0]<16);}
-static uint8_t gather(void){uint8_t i,x,y,xx,yy,j;uint16_t key;const uint8_t*o;cells=0;
+static uint8_t gather(void){uint8_t i,x,y,xx,yy,j,k;uint16_t key;const uint8_t*o;cells=0;
  for(i=8;i<32;i++){ff3_native_service();o=animation_base+i*4;if(!o[0]||!o[2]||keep(o))continue;x=o[1]-8;y=o[0]-16;if(x>152||y>96){effect_freeze_error=2;return 0;}
-  for(yy=y/8;yy<=(y+7)/8;yy++)for(xx=x/8;xx<=(x+7)/8;xx++){key=(uint16_t)yy*32+xx;for(j=0;j<cells&&effect_keys[j]!=key;j++){if(!(j&15))ff3_native_service();}if(j==cells){if(cells==80){effect_freeze_error=3;return 0;}effect_keys[cells++]=key;}}}
+  for(yy=y/8;yy<=(y+7)/8;yy++)for(xx=x/8;xx<=(x+7)/8;xx++){key=(uint16_t)yy*32+xx;for(j=0;j<cells&&effect_keys[j]!=key;j++);if(j==cells){if(cells==80){effect_freeze_error=3;return 0;}effect_keys[cells++]=key;memset(effect_members+(uint16_t)j*4,255,4);}
+   for(k=0;k<4&&effect_members[(uint16_t)j*4+k]!=255;k++);if(k<4)effect_members[(uint16_t)j*4+k]=i;else effect_members[(uint16_t)j*4+3]=254;
+  }}
  for(i=32;i<40;i++){ff3_native_service();o=animation_base+i*4;if(!o[0])continue;x=o[1]-8;y=o[0]-16;for(j=0;j<cells;j++){if(!(j&7))ff3_native_service();xx=(effect_keys[j]&31)*8;yy=(effect_keys[j]>>5)*8;if((uint16_t)x+8>xx&&x<(uint16_t)xx+8&&(uint16_t)y+8>yy&&y<(uint16_t)yy+8){effect_freeze_error=7;return 0;}}}
  return 1;
 }
 static uint8_t reverse_bits(uint8_t v){v=((v&0x55)<<1)|((v>>1)&0x55);v=((v&0x33)<<2)|((v>>2)&0x33);return(v<<4)|(v>>4);}
-static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/32*8,xx,yy,i,j,p,found,v,bit,sy,sx,mask;uint16_t c;int16_t dx,dy;const uint8_t*o;
+static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/32*8,xx,yy,i,j,p,found,v,bit,sy,sx,mask,member,count;uint16_t c;int16_t dx,dy;const uint8_t*o,*members=effect_members+(uint16_t)tile*4;
+ count=members[3]==254?24:4;
  read_vram(0,(old_page?0x9c00:0x9800)+key,&t,1);read_vram(1,(old_page?0x9c00:0x9800)+key,&a,1);read_vram((a>>3)&1,0x8000+(uint16_t)t*16,effect_glyph,16);
  /* The normal field behind a settled party is black. With aligned X and
   * one source palette, native bitplanes can be combined directly. Only
   * the terrain boundary needs the general exact-color cell converter. */
  v=0;for(i=0;i<16;i++)v|=effect_glyph[i];p=255;
  if(!v&&color((a&7)*4)==color(0)){
-  found=1;for(i=8;i<32;i++){if(!(i&7))ff3_native_service();o=animation_base+i*4;if(!o[0]||!o[2]||keep(o))continue;dx=(int16_t)o[1]-8-x;dy=(int16_t)o[0]-16-y;if(dx<=-8||dx>=8||dy<=-8||dy>=8)continue;
+  found=1;for(i=0;i<count;i++){if(!(i&7))ff3_native_service();member=count==24?8+i:members[i];if(member==255)break;o=animation_base+member*4;if(!o[0]||!o[2]||keep(o))continue;dx=(int16_t)o[1]-8-x;dy=(int16_t)o[0]-16-y;if(dx<=-8||dx>=8||dy<=-8||dy>=8)continue;
    if(dx||(p!=255&&p!=(o[3]&7))||(o[3]&7)>2){found=0;break;}p=o[3]&7;}
   if(found&&p!=255){memset(effect_encoded,0,16);
-   for(i=32;i>8;){i--;o=animation_base+i*4;if(!o[0]||!o[2]||keep(o)||o[1]-8!=x)continue;dy=(int16_t)o[0]-16-y;if(dy<=-8||dy>=8)continue;
+   for(i=count;i>0;){i--;member=count==24?8+i:members[i];if(member==255)continue;o=animation_base+member*4;if(!o[0]||!o[2]||keep(o)||o[1]-8!=x)continue;dy=(int16_t)o[0]-16-y;if(dy<=-8||dy>=8)continue;
     read_vram((o[3]>>3)&1,0x8000+(uint16_t)o[2]*16,effect_glyph,16);
     for(yy=0;yy<8;yy++){sy=yy-dy;if(sy>=8)continue;if(o[3]&64)sy=7-sy;t=effect_glyph[sy*2];a=effect_glyph[sy*2+1];if(o[3]&32){t=reverse_bits(t);a=reverse_bits(a);}mask=t|a;effect_encoded[yy*2]=(effect_encoded[yy*2]&~mask)|t;effect_encoded[yy*2+1]=(effect_encoded[yy*2+1]&~mask)|a;}ff3_native_service();}
    p+=4;goto encoded;
@@ -57,7 +157,7 @@ static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/3
  }
  for(yy=0;yy<8;yy++){ff3_native_service();for(xx=0;xx<8;xx++){sy=a&64?7-yy:yy;bit=a&32?xx:7-xx;v=((effect_glyph[sy*2]>>bit)&1)|(((effect_glyph[sy*2+1]>>bit)&1)<<1);effect_pixels[yy*8+xx]=color((a&7)*4+v);}}
  /* Reverse traversal retains the original earlier-OBJ priority. */
- for(i=32;i>8;){ff3_native_service();i--;o=animation_base+i*4;if(!o[0]||!o[2]||keep(o))continue;dx=(int16_t)o[1]-8-x;dy=(int16_t)o[0]-16-y;if(dx<=-8||dx>=8||dy<=-8||dy>=8)continue;
+ for(i=count;i>0;){ff3_native_service();i--;member=count==24?8+i:members[i];if(member==255)continue;o=animation_base+member*4;if(!o[0]||!o[2]||keep(o))continue;dx=(int16_t)o[1]-8-x;dy=(int16_t)o[0]-16-y;if(dx<=-8||dx>=8||dy<=-8||dy>=8)continue;
   read_vram((o[3]>>3)&1,0x8000+(uint16_t)o[2]*16,effect_glyph,16);
   for(yy=0;yy<8;yy++){ff3_native_service();sy=yy-dy;if(sy>=8)continue;if(o[3]&64)sy=7-sy;
    for(xx=0;xx<8;xx++){sx=xx-dx;if(sx>=8)continue;bit=o[3]&32?sx:7-sx;v=((effect_glyph[sy*2]>>bit)&1)|(((effect_glyph[sy*2+1]>>bit)&1)<<1);if(v)effect_pixels[yy*8+xx]=color(32+(o[3]&7)*4+v);}}

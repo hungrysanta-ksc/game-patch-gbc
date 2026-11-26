@@ -5,6 +5,7 @@ do
  local stack,refs={},{}
  local previous={}
  local display={}
+ local frameRecords={}
  local oamOwner=nil
  local audioNames={'audio_packet','audio_vm','audio_output','audio_metadata','audio_control','audio_snapshot'}
  local function kind()
@@ -59,7 +60,10 @@ do
     previous[k]=n
    end
    if not display.ready or not display.dma or not display.ack then error('Missing publication boundary') end
-   emu.log(string.format('action-frame-cost:%d,%d,%s|display:%d,%d,%d,%d,%d|attempts:%s|lines:%d,%d',v,t.clockRate,table.concat(fields,','),display.ready,display.dma,display.ack,t.masterClock,display.page,table.concat(display.attempts or {},','),display.dmaLy,display.ackLy))
+   local record=string.format('action-frame-cost:%d,%d,%s|display:%d,%d,%d,%d,%d|attempts:%s|lines:%d,%d',v,t.clockRate,table.concat(fields,','),display.ready,display.dma,display.ack,t.masterClock,display.page,table.concat(display.attempts or {},','),display.dmaLy,display.ackLy)
+   -- Mesen retains 500 log entries. Keep every publication of a long action
+   -- together so debugger-stop safety reports cannot evict its early frames.
+   if actionCostBuffered then frameRecords[#frameRecords+1]=record else emu.log(record) end
    display={}
   end,emu.callbackType.write,actionCostFrames,actionCostFrames,emu.cpuType.gameboy)
  end
@@ -86,10 +90,11 @@ do
   emu.addMemoryCallback(function(_,v)
    local t=emu.getState();charge(t)
    if name=='active' then
-    if v~=0 and not active then active=true;totals={};counts={};previous={};display={};clock=t.masterClock;installAudio()
+    if v~=0 and not active then active=true;totals={};counts={};previous={};display={};frameRecords={};clock=t.masterClock;installAudio()
     elseif v==0 and active then
      if #stack~=0 then error('Action ended inside audio call') end
      if oamOwner then error('Action ended inside OAM preparation') end
+     if actionCostBuffered then emu.log(table.concat(frameRecords,'\n'));frameRecords={} end
      for k,n in pairs(totals) do emu.log(string.format('action-cost:%s,%d,%d,%d',k,n,t.clockRate,counts[k] or 0)) end
      active=false
      for _,r in ipairs(refs) do emu.removeMemoryCallback(r[1],emu.callbackType.exec,r[2],r[2],emu.cpuType.gameboy) end
