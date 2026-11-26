@@ -1,10 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {input} from '../tools/source.mjs';
-import {motionSpriteAssets,motionSpriteReference,motionRngTable,motionImpactReference} from '../tools/battle-motion-sprites.mjs';
+import {motionSpriteAssets,motionSpriteReference,motionRngTable,motionRngVariants,motionImpactReference} from '../tools/battle-motion-sprites.mjs';
 import {strikeAnchor,strikeSliceAnchor,strikeImpactAnchor} from '../tools/battle-strike-assets.mjs';
 import {originalFormation} from '../tools/battle-placement-source.mjs';
 import {battleCpu} from '../tools/battle-placement-source.mjs';
+
+test('all original RNG seeds select one of two immutable tables without changing counter wrap',async()=>{
+ const {data}=await input(),r=motionRngVariants(data);
+ assert.equal(r.source.sha256,'d1751ab6c928dcc5bf552a560440507f7ab279961a89de2bb81fe0d5de71707c');
+ assert.equal(r.tables.length,512);
+ for(let seed=0;seed<256;seed++)assert.deepEqual(motionRngTable(data,seed),r.tables.subarray((seed&2)*128,(seed&2)*128+256));
+});
 
 test('full-range original RNG returns every table byte, and impacts hold the point on odd frames',async()=>{
  const {data}=await input(),c=battleCpu(data,0x19);

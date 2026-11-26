@@ -18,6 +18,10 @@ void ff3_save_menu_prepare(uint8_t *state,uint8_t *counter,const uint8_t *positi
 void ff3_save_count_commit(uint8_t *counter) FF3_STATE_BANKED;
 typedef struct {uint8_t index,direction;} FF3FieldRng;
 typedef struct {uint8_t table[256],counter[3];} FF3BattleRng;
+/* FC27's generated table is immutable until the next seed; (seed&2)>>1
+ * selects one of two ROM-resident tables. Keep all three original counters. */
+typedef struct {uint8_t variant,counter[3];} Ff3BattleRngCursor;
+typedef char Ff3BattleRngCursorSize[(sizeof(Ff3BattleRngCursor)==4)?1:-1];
 uint8_t ff3_field_random(FF3FieldRng *rng) FF3_STATE_BANKED;
 /* Explicit virtual NES zero page + entry A/C; never hash arbitrary GBC RAM. */
 void ff3_battle_seed(FF3BattleRng *rng,const uint8_t *zero_page,uint8_t accumulator,uint8_t carry) FF3_STATE_BANKED;
