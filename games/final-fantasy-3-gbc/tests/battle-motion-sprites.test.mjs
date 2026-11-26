@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {input} from '../tools/source.mjs';
-import {motionSpriteAssets,motionSpriteReference,motionRngTable,motionRngVariants,motionImpactReference} from '../tools/battle-motion-sprites.mjs';
+import {motionSpriteAssets,motionSpriteReference,motionRngTable,motionRngVariants,motionImpactReference,motionVectorCpu,motionVectorReference,motionArrowPointReference} from '../tools/battle-motion-sprites.mjs';
 import {strikeAnchor,strikeSliceAnchor,strikeImpactAnchor} from '../tools/battle-strike-assets.mjs';
 import {originalFormation} from '../tools/battle-placement-source.mjs';
 import {battleCpu} from '../tools/battle-placement-source.mjs';
@@ -67,4 +67,13 @@ test('effect target centers follow the resident enemy sampling, retreat and back
   assert.ok(Math.abs((239-Math.floor((167-bx+.5)*8/7))-(255-sx))<=1);
   assert.equal(x+bx,159);assert.equal(y,by);
  }
+});
+
+test('all byte sine/distance inputs preserve the original signed fixed-point multiply',async()=>{
+ const{data}=await input(),c=motionVectorCpu(data),sine=motionSpriteAssets(data).sine;
+ for(let angle=0;angle<256;angle++)for(let distance=0;distance<256;distance++){const s=sine[angle],n=(((s&128?s^255:s)*2&255)*distance)>>8;assert.equal(motionVectorReference(c,angle,distance),(s&128?-n:n)&255);}
+});
+test('arrow random points consume the discarded draw and exact rounded ranges across wrap',async()=>{
+ const{data}=await input();for(const seed of [0,2]){const table=motionRngTable(data,seed);
+ for(let index=0;index<256;index++){const r=motionArrowPointReference(data,{x:48,y:63,index,table});assert.deepEqual([...r.point],[32+((table[index]*24+140)>>8),47+((table[(index+2)&255]*38+147)>>8)]);assert.deepEqual([...r.counters],[(index+3)&255,23,197]);}}
 });

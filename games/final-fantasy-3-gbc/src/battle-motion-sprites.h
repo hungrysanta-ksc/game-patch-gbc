@@ -11,4 +11,7 @@ uint8_t ff3_motion_impact(uint8_t frame,uint8_t x,uint8_t y,uint8_t hand,uint8_t
 /* 33/A317..A347 consumes two RNG bytes every frame, including misses. */
 uint8_t ff3_motion_fist(uint8_t x,uint8_t y,uint8_t hand,uint8_t back,uint8_t palette,Ff3BattleRngCursor*rng,uint8_t*out) FF3_STATE_BANKED;
 uint8_t ff3_motion_claw_hit(uint8_t frame,uint8_t x,uint8_t y,uint8_t hand,uint8_t back,Ff3BattleRngCursor*rng,uint8_t*point,uint8_t*out) FF3_STATE_BANKED;
+/* 33/BFC6 fixed-point sine; 32/9823 consumes three RNG draws per arrow. */
+uint8_t ff3_motion_vector(uint8_t angle,uint8_t distance) FF3_STATE_BANKED;
+uint8_t ff3_motion_arrow_point(uint8_t x,uint8_t y,Ff3BattleRngCursor*rng,uint8_t*point) FF3_STATE_BANKED;
 #endif
