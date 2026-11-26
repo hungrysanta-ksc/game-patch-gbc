@@ -1258,8 +1258,8 @@
     },
     {
       "path": "tools/verify-battle-select.mjs",
-      "bytes": 2536,
-      "sha256": "377818a103f8535a8282505098735b581d2e162194a3fb2e8c90b1808c2ff7cb",
+      "bytes": 2646,
+      "sha256": "e0023039e7668bd0b8bc5d792e7d5588128de173d206dd8ab54720f2d9b4a4dc",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2086,14 +2086,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 10325,
-      "sha256": "a9eab4c65e53944ba5a4738c35c63c2a12572925ca5f48653d6e764a1ada2037",
+      "bytes": 10627,
+      "sha256": "a35f63f2a773d259cfc1e32fd7ea97dcd500b4899b703620af65f11cae949751",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 56800,
-      "sha256": "87883fca1c55f0529994535f73f0306e832bd4839147b270fd3807d7cf03e82f",
+      "bytes": 57822,
+      "sha256": "2bbd156719f0244caf18645b126e6fb8350dfa32d495bbb008d7ca4d40ca1a2d",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2104,8 +2104,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 35357,
-      "sha256": "1c99e81d71a63b1c1152325699c8b97f32cc3fa5328f4eabb3f510e781c34be5",
+      "bytes": 36093,
+      "sha256": "5a84199d1969fff3fe7609c91cd5f90b563d9d700b59c53bf237526793104782",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2926,8 +2926,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 17037,
-      "sha256": "63d67f83c89e9422ffa91ee366a8240c8ed3d0f97c2a130914ff412e052d6726",
+      "bytes": 17415,
+      "sha256": "fd6602cf96586623f0ff9cbaa6caa21d49c2e3bb3fd81e3f8fab289f09af316a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3252,6 +3252,78 @@
       "path": "docs/battle-native-script.md",
       "bytes": 9129,
       "sha256": "2109362cba3ea6368cb3a9dfabc9126f8b5dd66d455a8c04a8f8cdea3e94876b",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-animation.c",
+      "bytes": 4801,
+      "sha256": "13bd0c18d91705728adef1ceb7129841f68049cb0aace3ac7ce4b2b64064873b",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-animation.h",
+      "bytes": 819,
+      "sha256": "31dcdf981689ffc5c6a2b58cb9ba863873697c670bb4078a7a34e48203bf6337",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-animation-test.c",
+      "bytes": 1470,
+      "sha256": "b64e367c5aa4ac28dd3e272c957a62c2c2d693a5c0f170c6bdad5edff988a6a6",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-animation-source.mjs",
+      "bytes": 4318,
+      "sha256": "eaee3186bffa45a291fd9597f32c2ffb004327dc85e93cb0097b7b20ff02e9cf",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-battle-animation.mjs",
+      "bytes": 2991,
+      "sha256": "d0e474ddfd20ef135c0ade806fde8df3b819b427db1bfe9ccb4eec1ea13094d6",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-numerals.c",
+      "bytes": 2098,
+      "sha256": "9e57f584796ffa562b87d13b7c635cc781a3de064b75a7b5fc1627c21c1f764e",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-numerals.h",
+      "bytes": 575,
+      "sha256": "4563e40a5bdea3241cb433b4f82527947a271fe46a9673398bfa191e79650c5c",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-numerals-test.c",
+      "bytes": 1582,
+      "sha256": "7e39cc5e5418ec1b56bb45e3395737f0fa02fddd5f8ef846a832c8a0266c7224",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-numerals-source.mjs",
+      "bytes": 3238,
+      "sha256": "ff456ccfe8a1068b74d1f1ef5af3612ae342238d2d8a7262a5afe9bafdf56330",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-battle-numerals.mjs",
+      "bytes": 2963,
+      "sha256": "6875b1e4652337fca92de4b50994af8ffe32663d85e4ed2de6589c927abc7721",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/battle-animation.test.mjs",
+      "bytes": 2792,
+      "sha256": "5ca83d7fbc11db59cdcbcfb3b2db0d0eab2ecc891780591a2d3b3c77af5f012d",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/battle-native-animation.md",
+      "bytes": 6909,
+      "sha256": "aef844e17cfeb00565270290664f97b21fcf8d3384b8a6d48d4f6b759c02abf5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]
