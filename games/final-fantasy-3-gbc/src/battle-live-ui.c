@@ -5,6 +5,9 @@
 #include "live-ui-assets.h"
 #include "battle-workspace.h"
 #include "text-vblank.h"
+#ifdef FF3_EFFECTS
+#include "battle-effect-freeze.h"
+#endif
 void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANKED;
 void ff3_native_service(void) NONBANKED;
 volatile uint8_t live_ui_request,live_ui_error,live_ui_ready;
@@ -37,7 +40,11 @@ static void render(uint8_t dirty){uint8_t row,l,r[6],yy,x,top,bottom,i;uint16_t 
    ff3_native_service();
   }
   dest=0x8700+(uint16_t)row*320;
-  live_ui_transfer=1;for(offset=0;offset<320;offset+=160){memcpy(text_staging,rowdata+offset,160);ff3_text_copy(0,dest+offset,text_staging,160);ff3_native_service();}live_ui_transfer=0;live_ui_pattern_bytes+=320;
+  live_ui_transfer=1;for(offset=0;offset<320;offset+=160){memcpy(text_staging,rowdata+offset,160);ff3_text_copy(0,dest+offset,text_staging,160);
+#ifdef FF3_EFFECTS
+   if(effect_signed&&!row)ff3_text_copy(0,dest+offset+0x1000,text_staging,offset?96:160);
+#endif
+   ff3_native_service();}live_ui_transfer=0;live_ui_pattern_bytes+=320;
  }
  live_ui_updates++;
 }

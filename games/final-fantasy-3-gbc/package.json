@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:battle-effects": "node tools/build-battle-party-oam.mjs --effects",
+    "verify:battle-effects": "node tools/verify-battle-effects.mjs",
+    "verify:battle-effects-auto": "node tools/verify-battle-effects.mjs --auto --dense",
     "audit:battle-entry-tail": "node tools/audit-battle-entry-tail.mjs",
     "build:battle-entry-tail": "node tools/build-battle-entry-tail.mjs",
     "verify:battle-entry-tail": "node tools/verify-battle-select.mjs --entry-tail",
