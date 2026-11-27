@@ -1,5 +1,8 @@
 #include <gb/gb.h>
 #include <gb/cgb.h>
+#ifdef FF3_SCENE_LAYOUT
+#include "scene-loop.h"
+#endif
 #include <gb/isr.h>
 #include <gbdk/console.h>
 #include <stdio.h>
@@ -288,6 +291,7 @@ native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_pl
  native_busy=0;}
 void ff3_native_begin(void) NONBANKED {uint8_t i;NR52_REG=128;NR50_REG=0x77;NR51_REG=0xff;NR10_REG=0;NR30_REG=0;for(i=0;i<16;i++)((volatile uint8_t*)0xff30)[i]=ff3_resource_byte(6,4112u+i);NR30_REG=128;silence();set_interrupts(VBL_IFLAG|TIM_IFLAG);native_busy=1;
 #ifdef FF3_SCENE_LAYOUT
+scene_audio_boots++;
 /* Legacy diagnostics choose their startup schedule by active display owner.
  * Compile-time field support does not make a battle boot a silent field boot. */
 start(scene_video_owner!=FF3_VIDEO_FIELD);

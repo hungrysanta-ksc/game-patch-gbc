@@ -5,6 +5,10 @@
 #include "text-vblank.h"
 #include "platform.h"
 #include "exploration-art.h"
+#ifdef FF3_SCENE_LAYOUT
+#include "scene-loop.h"
+void ff3_native_service(void) NONBANKED;
+#endif
 static void cell(uint8_t x,uint8_t y,uint8_t *tile,uint8_t *attr){uint8_t m;
  x&=127;y&=127;m=((x|y)&64)?map_workspace.properties[3]:map_workspace.tiles[(uint16_t)(y>>1)*32+(x>>1)];
  if(m>=128){field.error=1;m=0;}*tile=map_workspace.metas[(uint16_t)m*4+(y&1)*2+(x&1)];*attr=map_workspace.attributes[m];
@@ -93,7 +97,11 @@ uint8_t ff3_field_render(uint8_t boot) BANKED {
  field.camera_x=((((uint16_t)((field.x+7)&63)<<4)+field.subx)-72)&1023;
  field.camera_y=((((uint16_t)((field.y+7)&63)<<4)+field.suby)-64)&1023;
  tx=((field.camera_x>>3)-4)&127;ty=((field.camera_y>>3)-4)&127;
- if(boot){DISPLAY_OFF;field.cache_x=tx;field.cache_y=ty;for(i=0;i<32;i++)row((ty+i)&127,1);
+ if(boot){DISPLAY_OFF;field.cache_x=tx;field.cache_y=ty;for(i=0;i<32;i++){row((ty+i)&127,1);
+#ifdef FF3_SCENE_LAYOUT
+   if(scene_mode&&scene_phase==4)ff3_native_service();
+#endif
+  }
   if(!ff3_asset_open(FF3_NPC_GRAPHICS,FIELD_GRAPHIC,&a)||!ff3_asset_read(&a,0,text_staging,256)){field.error=7;return 0;}
   VBK_REG=1;memcpy((void*)0x8c00,text_staging,256);VBK_REG=0;set_sprite_palette(2,2,field_player_palette);
  }else{

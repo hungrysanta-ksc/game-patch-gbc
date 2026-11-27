@@ -8,6 +8,9 @@
 #include "text-vblank.h"
 #include "platform.h"
 #include "memory.h"
+#ifdef FF3_SCENE_LAYOUT
+#include "scene-loop.h"
+#endif
 void ff3_native_begin(void) NONBANKED;void ff3_native_service(void) NONBANKED;
 extern volatile uint8_t native_request,native_argument;
 uint16_t dialogue_name_state[24];
@@ -23,6 +26,14 @@ void main(void)
 BANKED
 #endif
 {uint8_t k,pressed,old=0,i,was,catchup;
+#ifdef FF3_SCENE_LAYOUT
+ if(scene_mode&&scene_phase==4){
+  if(!ff3_field_restore_display()){scene_fault=4;return;}
+  ff3_field_video_init();ff3_text_video_init();text_idle=ff3_native_service;
+  old=joypad();field.previous=neskeys(old);field.pressed=0;
+  ff3_scene_song(FIELD_SONG);deadline();field.ready=0xa5;scene_phase=1;
+ }else{
+#endif
  cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;
 #ifndef FF3_SCENE_LAYOUT
  SWITCH_ROM(1);
@@ -36,7 +47,17 @@ BANKED
  if(!ff3_map_display(FIELD_WORLD,FIELD_MAP,DIALOGUE_X,DIALOGUE_Y)||!ff3_objects_init(FIELD_WORLD,map_workspace.properties[4],ff3_game_state+0x80)||!ff3_objects_display(FIELD_WORLD,FIELD_MAP,DIALOGUE_X,DIALOGUE_Y,0))asset_error=10;
  ff3_field_init();ff3_field_render(1);ff3_field_video_init();ff3_text_video_init();
  ff3_native_begin();text_idle=ff3_native_service;native_argument=FIELD_SONG;native_request=2;deadline();field.ready=0xa5;
+#ifdef FF3_SCENE_LAYOUT
+ if(scene_mode)scene_phase=1;
+ }
+#endif
  while(1){ff3_native_service();
+#ifdef FF3_SCENE_LAYOUT
+  /* Finish the source tile step/event before exchanging owners. */
+  if(scene_mode&&scene_request==1&&!field.mode&&!field.speed&&!field.subx&&!field.suby&&!field.request&&!npc_active&&!text_visible){
+   ff3_field_flush();if(ff3_field_video_suspend()){scene_request=0;return;}
+  }
+#endif
   if(memory_probe_request){memory_probe_request=0;ff3_memory_probe();}
   if(field.request){switch(field.request){case 1:ff3_field_front();break;case 2:field.result=ff3_field_touch();break;case 3:field.result=ff3_field_talk();break;case 4:field.result=ff3_field_terrain();break;case 5:ff3_field_pixel();break;case 6:npc_draw_valid=0;ff3_field_render(0);break;case 7:ff3_npc_pixels();break;case 8:ff3_npc_schedule();break;case 9:ff3_npc_pixels();ff3_npc_schedule();ff3_field_render(0);break;case 10:npc_execution[0]+=ff3_npc_command(npc_execution[1]);break;case 11:ff3_npc_frame();break;case 12:field.result=ff3_field_video_suspend();break;case 13:ff3_field_video_init();npc_draw_valid=0;field.result=ff3_field_render(0);break;}field.request=0;}
   if(field.pause||field.error||asset_error||text_error||npc_error||field.video_fault){__asm halt __endasm;continue;}
