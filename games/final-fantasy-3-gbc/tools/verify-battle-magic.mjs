@@ -1,3 +1,4 @@
+import {magicGridAudit,magicGridResult} from './battle-magic-grid-audit.mjs';
 import {freezeAudit,freezeResult} from './battle-freeze-audit.mjs';
 import {magicAheadAudit,magicAheadResult} from './battle-magic-ahead-audit.mjs';
 import {magicBoundaryAudit,magicBoundaryResult} from './battle-magic-boundary-audit.mjs';
@@ -23,7 +24,7 @@ emu.addMemoryCallback(function(_,v)
 end,emu.callbackType.write,${symbols.animation_video_frames},${symbols.animation_video_frames},emu.cpuType.gameboy)
 emu.addEventCallback(function()emu.log(string.format('magic-residency:%d,%d',poolChecks,poolBad))end,emu.eventType.codeBreak)
 `;
- await fs.writeFile(config,JSON.stringify({dll:local.mesenCore,home,rom,romSha256,output,symbols,cases,automatic,actionOnly:false,longAction:false,auditPath:ROOT+'/tools/battle-effects-audit.lua',audit:timing+'effectsPendingAddress='+symbols.party_pending+'\neffectsFrameAddress='+symbols.animation_video_frames+'\n'+await fs.readFile(ROOT+'/tools/battle-effects-audit.lua','utf8')+residency+await freezeAudit(symbols,dir)+magicAheadAudit(symbols)}));
+ await fs.writeFile(config,JSON.stringify({dll:local.mesenCore,home,rom,romSha256,output,symbols,cases,automatic,actionOnly:false,longAction:false,auditPath:ROOT+'/tools/battle-effects-audit.lua',audit:timing+'effectsPendingAddress='+symbols.party_pending+'\neffectsFrameAddress='+symbols.animation_video_frames+'\n'+await fs.readFile(ROOT+'/tools/battle-effects-audit.lua','utf8')+residency+await freezeAudit(symbols,dir)+magicAheadAudit(symbols)+magicGridAudit(symbols)}));
  if(!process.argv.includes('--skip-build')){const b=await run(local.dotnet,['build',ROOT+'/tools/VerifyStrike/VerifyStrike.csproj','-c','Release','--nologo','--configfile',ROOT+'/tools/Capture/NuGet.Config'],{cwd:ROOT,env,maxBuffer:4e6});await fs.writeFile(output+'-compiler.log',b.stdout+b.stderr);}
  try{const r=await run(local.dotnet,[ROOT+'/tools/VerifyStrike/bin/Release/net8.0/VerifyStrike.dll',config],{cwd:ROOT,env,maxBuffer:8e6,timeout:1200000});await fs.writeFile(output+'-run.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(output+'-run.log',(e.stdout||'')+(e.stderr||''));throw e;}}
 const actual=JSON.parse(await fs.readFile(output));check(actual.romSha256===romSha256,'Captured artifact');
@@ -47,6 +48,7 @@ check(end?.ticks===report.audio.ticks,'Complete audio schedule');const audit=awa
 const residency=[...audit.matchAll(/magic-residency:(\d+),(\d+)/g)].at(-1)?.slice(1).map(Number);check(residency&&residency[1]===0&&residency[0]===cases.reduce((n,c)=>n+magicSource(data,c).frames.length-1,0),'Resident pool has no per-frame or per-target writes');
 const mapPreservation=freezeResult(audit,cases.filter(c=>c.mask).length);
 const ahead=magicAheadResult(audit,expectedAhead);
+const grid=magicGridResult(audit,expectedAhead+cases.reduce((n,c)=>n+(c.mask?1+[0,1,2,3].filter(i=>c.mask&(128>>i)).length:0),0));
 let cadence;
 if(automatic){
  const rows=[...audit.matchAll(/action-frame-cost:(\d+),(\d+),([^|]+)\|display:(\d+),(\d+),(\d+),(\d+),(\d+)\|attempts:([^|]*)\|lines:(\d+),(\d+)/g)].map(m=>({frame:+m[1],rate:+m[2],ready:+m[4],dma:+m[5],ack:+m[6],done:+m[7],page:+m[8],dmaLy:+m[10],ackLy:+m[11]}));
@@ -55,4 +57,4 @@ if(automatic){
  const elapsed=actual.runs[0].elapsedMs,total=Object.values(costs).reduce((n,v)=>n+v.ms,0);check(total>elapsed*.98&&total<=elapsed+1,'Complete exclusive action costs');
  cadence={frames:rows.length,elapsedMs:elapsed,firstToLastMs:(rows.at(-1).dma-rows[0].dma)*1000/rows[0].rate,maxIntervalMs:Math.max(...rows.slice(1).map((r,i)=>(r.dma-rows[i].dma)*1000/r.rate)),maxReadyToDmaMs:Math.max(...rows.map(r=>(r.dma-r.ready)*1000/r.rate)),costs,boundaries:magicBoundaryResult(audit,rows.at(-1).done)};
 }
-const summary={romSha256,cases:cases.length,frames,allScreens:actual.pictures.length,maxObjects,peak,audioTicks:end.ticks,soundRequests:sounds.length,safety,residency,mapPreservation,ahead,cadence,scope:'Enemy ordinary magic against party, no reflection. Party precast/projectiles, enemy target projection, special bodies and summons remain separate.'};await fs.writeFile(output.replace('.json','-summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
+const summary={romSha256,cases:cases.length,frames,allScreens:actual.pictures.length,maxObjects,peak,audioTicks:end.ticks,soundRequests:sounds.length,safety,residency,mapPreservation,ahead,grid,cadence,scope:'Enemy ordinary magic against party, no reflection. Party precast/projectiles, enemy target projection, special bodies and summons remain separate.'};await fs.writeFile(output.replace('.json','-summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
