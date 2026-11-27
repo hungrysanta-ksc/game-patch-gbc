@@ -20,7 +20,7 @@ static uint8_t selected;
 uint8_t ff3_encounter_prepare(void) BANKED {
  uint8_t i,j,k,n;Ff3Entry entry;FF3BattleRng*r=(FF3BattleRng*)battle_workspace.map;
  encounter_error=0;strike_rng_ready=0;
- if(!scene_rng_ready){encounter_error=1;return 0;}
+ if(scene_rng_ready!=1){encounter_error=1;return 0;}
  if(scene_background){encounter_error=2;return 0;}
  for(selected=0;selected<ENCOUNTER_FORMATIONS;selected++)if(encounter_bounds[selected][0]==scene_formation)break;
  if(selected==ENCOUNTER_FORMATIONS){encounter_error=3;return 0;}

@@ -1,9 +1,10 @@
 import {check} from './source.mjs';
 import {encounterSeedOriginal,encounterSeedCases} from './encounter-seed-source.mjs';
+import {playSeedOriginal,playSeedCases} from './play-seed-source.mjs';
 import {battleCpu} from './battle-placement-source.mjs';
 import {physicalRng} from './battle-physical-source.mjs';
 import {initializedBattle,displayStatus} from './battle-transition-source.mjs';
-export const contextSizes=[0,26,8,578,30,634,258];
+export const contextSizes=[0,26,8,578,30,634,258,272];
 const select=(c,p)=>{c.banks=[p*2,p*2+1,62,63];c.m[0x7cf6]=p;};
 export function contextReference(rom){
  const table=physicalRng(rom),c=battleCpu(rom);
@@ -16,6 +17,7 @@ export function contextReference(rom){
   if(op===4){if(![3,7].includes(s[24]))ok=0;else{select(c,0x18);c.m.set([0x75,0x75],0x6e);c.m.set([0x75,0x76],0x22);for(let i=0;i<8;i++){c.m.set(s.subarray(i*2,i*2+2),0x7676+i*64);c.m[0x76a1+i*64]=s[16+i];}c.m[0x75a4]=s[25];c.m[0x78d8]=s[28];c.m[0x7e99]=s[29];c.a=s[24];c.call(0xa300);s[25]=c.m[0x75a4];s[26]=c.m[0x30];s[27]=c.m[0x69];s[28]=c.m[0x78d8];s[29]=c.m[0x7e99];}}
   if(op===5){if(s[609]>7||s[613]>=20||(s[609]*64+44<512&&(s[s[609]*64+44]&7)!==s[609]))ok=0;else{select(c,0x18);const at=0x7675+s[609]*64;c.m.set(s.subarray(0,512),0x7675);c.m.set(s.subarray(512,576),0x7575);c.m.set([0x75,0x75,at&255,at>>8],0x6e);c.m[0x64]=s[609]*2;c.m[0x68]=s[609];c.m.set(s.subarray(576,592),0xe0);c.m.set(s.subarray(592,600),0x7da7);c.m.set(s.subarray(600,608),0x7ec4);c.m[0x7be1]=s[608];c.m.set(s.subarray(610,612),0xbb);c.m[0x7ee1]=s[612];c.m[0x78ee]=s[613];c.m.set(s.subarray(614),0x78da);c.call(0xbf53);s.set(c.m.subarray(0x7675,0x7875));s.set(c.m.subarray(0xe0,0xf0),576);s.set(c.m.subarray(0x7da7,0x7daf),592);s.set(c.m.subarray(0x7ec4,0x7ecc),600);s[608]=c.m[0x7be1];s[612]=c.m[0x7ee1];s.set(c.m.subarray(0x78da,0x78ee),614);}}
   if(op===6)s[257]=encounterSeedOriginal(rom,s.subarray(0,256),s[256]).seed;
+  if(op===7)s[271]=playSeedOriginal(rom,s.subarray(0,79),s.subarray(79,271));
   return{ok,state:s,counters:Buffer.from(c.m.subarray(0x15,0x18))};
  };
 }
@@ -27,6 +29,7 @@ export function contextCases(){const rows=[],add=(op,s,n=0)=>rows.push({op,state
  for(const limit of [3,7])for(let mask=0;mask<256;mask++){const s=Buffer.alloc(30);for(let i=0;i<8;i++){s[i*2]=(mask&(1<<i))?[128,64,0][i%3]:0;s[i*2+1]=(mask&(1<<i))&&i%3===2?1:0;s[16+i]=128|i;}s.set([limit,17,99,99,55,66],24);add(4,s,mask);}
  for(const target of [0,7])for(const blocked of [0,1,2,3,4,5,6,7,8,9,10])for(const vacant of [0,3,5,6,7,8]){const s=Buffer.alloc(634);for(let i=0;i<8;i++){s.fill(i+11,i*64,(i+1)*64);s[i*64+44]=128|i;s[i*64+56]=79;s[592+i]=i<6?i%4:255;s[600+i]=255;}if(vacant<8)s[592+vacant]=255;s[608]=255;s[609]=target;s[610]=2;s[612]=255;s[512+49]=1;s[512+50]=1;s.fill(255,614);s[576+target*2]=blocked===1?128:blocked===2?64:blocked===3?32:blocked===4?8:0;s[577+target*2]=blocked===5?128:blocked===6?32:0;if(blocked===7)s[610]=0;if(blocked===8)s[target*64+56]=0;if(blocked===9)s[512+22]=s[512+27]=2;if(blocked===10){s[512+49]=0;s[512+27]=2;}add(5,s);}
  for(const {dp,flags}of encounterSeedCases()){const s=Buffer.concat([dp,Buffer.from([flags,0xa5])]);add(6,s);}
+ for(const s of playSeedCases())add(7,s);
  return rows;
 }
 export function contextFixtures(rom,extra=[]){const run=contextReference(rom),chunks=[],rows=[...contextCases(),...extra],counts={};

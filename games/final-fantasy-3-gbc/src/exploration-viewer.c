@@ -11,6 +11,8 @@
 #ifdef FF3_SCENE_LAYOUT
 #include "scene-loop.h"
 #include "battle-encounter.h"
+#include "battle-context.h"
+#include "audio-engine.h"
 #endif
 void ff3_native_begin(void) NONBANKED;void ff3_native_service(void) NONBANKED;
 extern volatile uint8_t native_request,native_argument;
@@ -30,7 +32,7 @@ BANKED
 #ifdef FF3_SCENE_LAYOUT
  if(scene_mode&&scene_phase==4){
   /* Diagnostic completion consumes this request, without a victory/result. */
-  if(scene_mode==3){field.trigger=0;field.error=0;}
+  if(scene_mode==3){field.trigger=0;field.error=0;scene_rng_ready=2;}
   if(!ff3_field_restore_display()){scene_fault=4;return;}
   ff3_field_video_init();ff3_text_video_init();text_idle=ff3_native_service;
   old=joypad();field.previous=neskeys(old);field.pressed=0;
@@ -67,6 +69,7 @@ BANKED
   }
   if(scene_mode==3&&scene_rng_ready&&field.error==4&&field.trigger==0x20&&!field.world&&field.map==29&&!field.mode&&!field.speed&&!field.subx&&!field.suby&&!field.request&&!npc_active&&!text_visible){
    scene_formation=field.battle;scene_background=field.battle_background;
+   if(scene_rng_ready==2){scene_rng_seed=ff3_play_seed((const volatile uint8_t*)&field,ff3_state.ram);scene_rng_ready=1;}
    ff3_field_flush();if(ff3_field_video_suspend()){scene_request=0;return;}
   }
   if(scene_mode&&scene_mode!=3&&scene_request==1&&!field.mode&&!field.error&&!field.trigger&&!field.speed&&!field.subx&&!field.suby&&!field.request&&!npc_active&&!text_visible){

@@ -5,6 +5,7 @@ class Program {
  static void Main(string[] args){using var doc=JsonDocument.Parse(File.ReadAllText(args[0]));var c=doc.RootElement;
  bool live=c.TryGetProperty("liveParty",out var liveOption)&&liveOption.GetBoolean();
  bool encounterMode=c.TryGetProperty("encounterMode",out var encounterOption)&&encounterOption.GetBoolean();
+ bool autoSeed=c.TryGetProperty("autoSeed",out var seedOption)&&seedOption.GetBoolean();
  int cycleCount=c.GetProperty("cases").GetArrayLength();
  string Text(string k)=>c.GetProperty(k).GetString()!;uint Addr(string k)=>c.GetProperty("symbols").GetProperty(k).GetUInt32();
  uint Num(string k,int n=1){uint v=0;for(int i=0;i<n;i++)v|=(uint)Core.GetMemoryValue(7,Addr(k)+(uint)i)<<(i*8);return v;}
@@ -40,6 +41,7 @@ class Program {
  try{Core.InitDll();Core.InitializeEmu(Text("home"),IntPtr.Zero,IntPtr.Zero,true,true,true,true);Audit.ConfigureVideo();Core.SetEmulationConfig(new Core.Speed{speed=0,turbo=0,rewind=100});Assert(Core.LoadRom(Text("rom"),IntPtr.Zero),"ROM load");Core.InitializeDebugger();Core.Pause();Wait(()=>Core.IsExecutionStopped()&&Core.IsPaused());
   for(int i=0;Num("state_ready")!=0xa5;i++){Assert(i<600,"Boot gate");Step();}Put("state_start",encounterMode?6u:live?5u:4u);
   for(int i=0;Num("scene_phase")!=1;i++){Assert(i<600,"Initial field ready");Step();}
+  if(autoSeed)Assert(Num("scene_rng_ready")==2,"Boot arms live seed producer");
   PauseField(); // Initial song is replaced once by the bounded source test schedule.
   script=Audit.LoadScript("roundtrip-audit",Text("auditPath"),Text("audit"),-1);Assert(script>=0,"Audit load");Put("native_request",255);
   for(int i=0;Num("native_request")!=0;i++){Assert(i<50,"Audio schedule start");Step();}audio.Clear();requests.Clear();external=Num("native_external_serial",2);lastTicks=0;Frame();
@@ -56,9 +58,11 @@ class Program {
     string selected=Bytes("field",79);Assert(F(77)==job.GetProperty("formation").GetByte(),"Source selected formation");
     Put("scene_request",1);Run(3);Assert(Num("scene_phase")==1&&Num("scene_request")==1&&Bytes("field",79)==selected,"No fixed-profile fallback or implicit RNG seed");Put("scene_request",0);
     Core.SetMemoryValue(7,collision,property);SetF(25,0);PauseField();position=Bytes("field",17);npcs=Bytes("object_part1",192)+Bytes("object_part2",192);map=Mem(7,0xd000,0x7f0);logicFrame=F(73);
-    encounters.Add(new{cycle,seed,selected,property=(byte)(property|0x40)});Put("scene_rng_seed",job.GetProperty("seed").GetUInt32());Put("scene_rng_ready",1);dispatch=Core.GetTimingInfo(7);
+    encounters.Add(new{cycle,seed,selected,property=(byte)(property|0x40)});
+    if(autoSeed)Put("scene_rng_ready",2);else{Put("scene_rng_seed",job.GetProperty("seed").GetUInt32());Put("scene_rng_ready",1);}dispatch=Core.GetTimingInfo(7);
    }else{Put("scene_profile",job.GetProperty("profile").GetUInt32());Put("scene_request",1);}
    Until(()=>Num("scene_phase")==3&&Num("party_request")==0&&Num("party_ready")==0xa5,"battle resource load",1000);var loaded=Core.GetTimingInfo(7);
+   if(autoSeed){job=c.GetProperty("variants")[cycle][(int)Num("scene_rng_seed")];Assert(Num("scene_rng_ready")==0,"Seed consumed exactly once");}
    while(Num("status_stage")!=2){Put("party_step",1);Until(()=>Num("party_step")==0,"original entry");}Run(2);
    int frames=0;bool deferred=false;
    if(encounterMode){
@@ -107,8 +111,9 @@ class Program {
     var clean=Convert.FromHexString(position);clean[10]=clean[16]=0;position=Convert.ToHexString(clean).ToLowerInvariant();
    }
    Until(()=>Num("scene_phase")==1&&Num("scene_cycles")==cycle+1,"field resource restore",1000);var returned=Core.GetTimingInfo(7);
+   if(autoSeed)Assert(Num("scene_rng_ready")==2,"Return re-arms fresh seed");
    Assert(Bytes("field",17)==position&&F(73)==logicFrame,"Player and logic clock retained");Assert(Bytes("object_part1",192)+Bytes("object_part2",192)==npcs,"NPC context retained");Assert(Mem(7,0xd000,0x7f0)==map,"Map context retained");Assert(Bytes("ff3_game_state",1024)==state,"Persistent game state retained");
-   FieldShot("restored-"+cycle);cycles.Add(new{cycle,profile=job.GetProperty("profile").GetInt32(),frames,deferred,loadMs=(loaded.clock-dispatch.clock)*1000.0/dispatch.rate,encounterToLoadMs=(loaded.clock-begin.clock)*1000.0/begin.rate,roundtripMs=(returned.clock-begin.clock)*1000.0/begin.rate});ResumeField();
+   FieldShot("restored-"+cycle);cycles.Add(new{cycle,profile=job.GetProperty("profile").GetInt32(),rngSeed=Num("scene_rng_seed"),frames,deferred,loadMs=(loaded.clock-dispatch.clock)*1000.0/dispatch.rate,encounterToLoadMs=(loaded.clock-begin.clock)*1000.0/begin.rate,roundtripMs=(returned.clock-begin.clock)*1000.0/begin.rate});ResumeField();
    // Real controller input after return: close the original selected NPC
    // event, walk away and return. No position, NPC or dialogue state writes.
    if(encounterMode)Walk("U",10,7);
