@@ -2,6 +2,24 @@
 #pragma bank 16
 #endif
 #include "battle-context.h"
+/* FA26 -> FB17/FB87 -> 2E/9E8E..9F28 -> FC27..FC2E.
+ * Apply the 27 source DP writes without allocating a second 256-byte image.
+ * 9F98 leaves A=0; carry comes from the vehicle/flags comparisons at 9EAF.
+ * Keep all 229 inherited bytes, including live sound scratch D0..DF.
+ * The final carry is NOT folded back after the last source ADC. */
+uint8_t ff3_encounter_seed(const uint8_t *dp,uint8_t flags) FF3_STATE_BANKED {
+ static const uint8_t low[18]={0,0,0,0x97,0x10,0,0x88,0x88,0x99,0,0,0,0,0,0,0,0,0};
+ uint8_t i=0,v,a=0,carry=dp[0x46]>=4&&flags>=4;uint16_t sum;
+ do{
+  v=dp[i];
+  if(i<18&&i!=2)v=low[i];
+  else if(i==0x7e)v=flags;
+  else if(i==0xab)v=0x17;
+  else if((i>=0xa9&&i<=0xac)||i==0xb8||(i>=0xc9&&i<=0xcc))v=0;
+  sum=(uint16_t)a+v+carry;a=(uint8_t)sum;carry=sum>>8;
+ }while(++i);
+ return a;
+}
 static uint8_t random(FF3BattleRng *r,uint8_t upper){uint8_t n;ff3_battle_random(r,1,0,upper,&n);return n;}
 /* FC92 returns a zero quotient when both sum and divisor are zero. */
 static uint8_t average(const uint8_t *p,uint8_t n){uint16_t sum=0;uint8_t count=0;while(n--){if(*p){sum+=*p;count++;}p++;}return count?(uint8_t)(sum/count):0;}
