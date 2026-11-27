@@ -35,7 +35,7 @@ const mr=JSON.parse(await fs.readFile(battle+'/magic-residency.json'));
 const partyResources=livePartyAssets(data);
 await fs.writeFile(gen+'/live-party-assets.h','#include <stdint.h>\n'+Object.keys(partyResources).map(n=>'extern const uint8_t '+n+'[];').join('\n')+'\n');
 for(const bank of [15,78]){const file=gen+'/live-party'+bank+'.c';await fs.writeFile(file,'#pragma bank '+bank+'\n#include <stdint.h>\n'+Object.entries(partyResources).filter(([n])=>(n==='equipment_properties')===(bank===15)).map(([n,b])=>'const uint8_t '+n+'[]={'+[...b]+'};').join('\n'));generated.push(file);}
-generated.push(...await encounterScreenAssets(data,gen,battle,{map:dungeon?181:29}));
+generated.push(...await encounterScreenAssets(data,gen,battle,{map:dungeon?181:29,maps:dungeon?[181,111,115,112,22,113]:[29]}));
 for(const name of [...[1,2,3,4,5,6,8].map(i=>'audio-bank'+i),'live-ui','strike53',...Array.from({length:4},(_,i)=>['party','resident','terrain','hit'].map(k=>k+i)).flat(),...mr.banks.map((_,i)=>'magic'+i)])generated.push(battle+'/generated/'+name+'.c');
 const flags=['-msm83:gb','-DFF3_SCENE_LAYOUT','-DFF3_SINGLE_ENGINE','-DFF3_BANKED_RUNTIME','-DFF3_TEXT_AUDIO','-DFF3_EXPLORATION','-DFF3_EFFECTS','-DFF3_AUDIO_FAST','-DFF3_LIVE_UI','-DFF3_STATUS_VIDEO','-DFF3_TERRAIN','-DFF3_RESIDENT_BG','-DFF3_COMPOSITION_CACHE','-Dcache_request=party_work','-I'+gen,'-I'+ROOT+'/src'];
 async function compile(args,name){try{const r=await run(compiler,args,{cwd:out,maxBuffer:8e6,timeout:600000});await fs.writeFile(out+'/'+name+'.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(out+'/'+name+'.log',(e.stdout||'')+(e.stderr||''));throw e;}}

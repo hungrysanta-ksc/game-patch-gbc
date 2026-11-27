@@ -130,8 +130,8 @@
     },
     {
       "path": "tools/build-scene-layout.mjs",
-      "bytes": 9757,
-      "sha256": "b3826d320723053059357954248003501dcd392352aedd66484ae1854a8a3b6b",
+      "bytes": 9800,
+      "sha256": "57d8895c2b62f6a63d2e9f8fba84eb91e5617a5b8ec8060e09fbf99d9eb307f2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1690,8 +1690,8 @@
     },
     {
       "path": "tools/verify-battle-select.mjs",
-      "bytes": 2950,
-      "sha256": "7b40b235fe78dde5bc9de86e864079093dd6e6923733d8633df4be491cce58b1",
+      "bytes": 3000,
+      "sha256": "c4ee27fee96a5c6dc5b779c5f8b9edd8c7d96a400528fc29517df9f717eb3ed7",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2518,14 +2518,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 13717,
-      "sha256": "73b08b4ceff9e0b804a5509b81fffb6720663afd526463716e85cf016d140ceb",
+      "bytes": 13920,
+      "sha256": "d18a2ebefdafc9b96750d9c3f91e83c7f5b65ce9a494fbabccb110c468e20b9c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 97365,
-      "sha256": "34608ca5e87bd4b2a858a6c308e92f24d8dad13494d1c6a997928648f10536a4",
+      "bytes": 97793,
+      "sha256": "9c0d9a4d86ff780ff9d856d74202015c58fab7e3cec4f67baa97f8c47b47b99e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2536,8 +2536,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 56926,
-      "sha256": "3aed2fcd3c16e05b78d5a9ce5d62ac698da1cc5658617eb38a2ffebd1c093864",
+      "bytes": 57381,
+      "sha256": "4c311d291fe60b274e405ba6a229277ec26f7bf832b75c9f663a2992f5391b50",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3076,8 +3076,8 @@
     },
     {
       "path": "src/exploration-viewer.c",
-      "bytes": 7285,
-      "sha256": "2d345da0f8481d865b87bdfcae6887a7be55603090c408773b9cb11a9ccecfc7",
+      "bytes": 7291,
+      "sha256": "de4f5fd71f9db573cde3eaab5e97d6506a341f1345cd6082d5df27ae1771e6ef",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3358,8 +3358,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 22673,
-      "sha256": "6558971e3929c0ac706a0f304bfddaca94e00588ac150b01ef5243200b4352f1",
+      "bytes": 22953,
+      "sha256": "c1398decb0c92b598bde8d7bd21d62b3ee6d66a3acf33346e0eb39775c886221",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4055,7 +4055,7 @@
     {
       "path": "spec/scene-resource-sources.json",
       "bytes": 29433,
-      "sha256": "039493a53a5ebc20f4054577d35b5867a230690cb1b2c1d9d97599f307e32e6f",
+      "sha256": "c937b5c1114388f4a5c9bee19f3835cfda6eab3fbcd77fd4b2517ca57f015ee8",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4120,20 +4120,20 @@
     },
     {
       "path": "src/battle-encounter.c",
-      "bytes": 2758,
-      "sha256": "c28c7710f65921b6b1584ca2afa8cec435b8c964c15aac9ba45ca8b3db049608",
+      "bytes": 2922,
+      "sha256": "4fc010d0db7376c7950e17941421d12e55d81fe64d22c5866bd6572d11747d0e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-encounter.h",
-      "bytes": 623,
-      "sha256": "ac46b75f26adc55869df072ec8e559ca5b1989afc345f7a330ce459ffc80f375",
+      "bytes": 684,
+      "sha256": "7a0468fba874937367075b5f3673e686aa98489c4abeaafeefa4c412fc0411dc",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/encounter-screen-assets.mjs",
-      "bytes": 7387,
-      "sha256": "cc6051fecfecf9144160f94d78962a5984adadf36001d814bbb882ae131d976f",
+      "bytes": 7602,
+      "sha256": "6d79a159f245b6e43b01cff190f86ae6542dddb129327cb8f82e67d4c3af676e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4150,8 +4150,8 @@
     },
     {
       "path": "tests/encounter-resources.test.mjs",
-      "bytes": 2804,
-      "sha256": "220b4641452d7dad3c0d68490e1ce521374371835452edb92c177719ee2c432b",
+      "bytes": 3124,
+      "sha256": "a42c7362ed1175183a3f61d34d9183b3e6ba9706349f90999b3e9d5f763c581d",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4254,6 +4254,60 @@
       "path": "docs/first-dungeon-encounters.md",
       "bytes": 6559,
       "sha256": "389d3bc0abefad88d4fa026682655bf5738054416d13890a805ef66c25b28d2e",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/encounter-catalog.mjs",
+      "bytes": 820,
+      "sha256": "f154f60af6f867bc19e17ce2d9aefb2af8ca53ed736b46172791986739498bf2",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/encounter-catalog.test.mjs",
+      "bytes": 1230,
+      "sha256": "5cd663fa79fe550583e258831260b984fde700a573e8ab9aea4e0927d87b2011",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-result.h",
+      "bytes": 1282,
+      "sha256": "c6e943ef5508894a4cbfcff03a5b3623631dd86344ae56a661681a5235a5ffbe",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-result.c",
+      "bytes": 3266,
+      "sha256": "3e8f31470be13cee6a5241a3e082bf7de512c597016b6c83ecd62386adefaca3",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-result-test.c",
+      "bytes": 1748,
+      "sha256": "099900d93ed9bdd6967a1400cc6d30853ca7512f507a29fd2bdc45a3bfaf9ac8",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-result-source.mjs",
+      "bytes": 5938,
+      "sha256": "3778d14ece079a7bd9065622c82526d025e927d683264d6e199325e9512f761c",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/build-battle-result.mjs",
+      "bytes": 3452,
+      "sha256": "6647478f4a571c6a577ba59c4af0aaa544f823cd6b869b2e0e448af1943f3d80",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/battle-result.test.mjs",
+      "bytes": 2862,
+      "sha256": "d569739fd10eae13b586d9ae559133ffd11bdab4b515ff257e299a3d3718bbfe",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/encounter-result-handoff.md",
+      "bytes": 7682,
+      "sha256": "555e57e577ee6b63a5a5ef91642d084f2955459aef05f62d6a0efb115130bcc2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]

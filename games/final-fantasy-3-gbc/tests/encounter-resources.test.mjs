@@ -2,6 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {input} from '../tools/source.mjs';import {sourceInitialState} from '../tools/state-source.mjs';
 import {encounterEntryOriginal} from '../tools/encounter-entry-source.mjs';
 import {partyEntryOracle} from '../tools/battle-party-oam-source.mjs';
+import {originalFormation} from '../tools/battle-placement-source.mjs';
 import {residentEnemy} from '../tools/battle-resident-bg.mjs';import {hitFlashAssets} from '../tools/battle-hit-assets.mjs';
 
 test('source RNG reaches every count combination in the current complete encounter group',async()=>{
@@ -11,8 +12,10 @@ test('source RNG reaches every count combination in the current complete encount
 });
 test('every registered count/direction retains all source pixels within the joint OBJ budget',async()=>{
  const {data}=await input();
- for(const counts of [[2,0,0,0],[3,0,0,0],[4,0,0,0],[1,1,0,0],[1,2,0,0],[2,1,0,0],[2,2,0,0]])for(const back of [false,true]){
-  const formation=counts[1]?1:0,p=partyEntryOracle(data,{formation,counts,back}),before=residentEnemy(p),offsets=formation===0?[-4,-6]:[0,0];
+ const entries=[];for(let formation=0;formation<4;formation++){const ranges=originalFormation(data,formation).ranges;const visit=counts=>{if(counts.length===4){entries.push({formation,counts});return;}const r=ranges[counts.length];for(let n=r.min;n<=r.max;n++)visit([...counts,n]);};visit([]);}
+ assert.ok(entries.length>7);
+ for(const {formation,counts}of entries)for(const back of [false,true]){
+  const p=partyEntryOracle(data,{formation,counts,back}),before=residentEnemy(p),offsets=formation===0?[-4,-6]:[0,0];
   p.enemyYOffsets=offsets;const bg=residentEnemy(p),hit=hitFlashAssets(data,p,bg);
   assert.ok(bg.objects.length<=8);assert.ok(bg.stats.tiles+20<=256);assert.equal(hit.maps.length,8*704);
   assert.equal(bg.words.filter(Boolean).length,before.words.filter(Boolean).length);

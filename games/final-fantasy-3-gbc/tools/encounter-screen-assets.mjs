@@ -2,6 +2,7 @@
 // counts/layout. Compile spatial resources for every count in the current
 // field's complete group, never an entry/action movie or a fallback picture.
 import fs from 'node:fs/promises';
+import {encounterCatalog} from './encounter-catalog.mjs';
 import {check,hash} from './source.mjs';
 import {battleCpu,originalFormation} from './battle-placement-source.mjs';
 import {segment} from './state-source.mjs';
@@ -13,10 +14,11 @@ import {strikeAssets} from './battle-strike-assets.mjs';
 import {effectsAssets} from './battle-effects-assets.mjs';
 import {nativePartyTiles} from './battle-party-oam-source.mjs';
 const at=(b,c)=>16+b*8192+(c&8191);
-export async function encounterScreenAssets(rom,gen,battle,{map=29}={}){
+export async function encounterScreenAssets(rom,gen,battle,{map=29,maps=[map]}={}){
  const world=0,group=rom[at(0x2e,0x92f0)+map],background=rom[at(0x39,0xbc00)+map];
  check([0,8].includes(background),'Registered terrain consumer');
- const formations=[...new Set(rom.subarray(at(0x2e,0x94f0)+group*8,at(0x2e,0x94f0)+group*8+8))],profiles=[],keys=[],bounds=[];
+ check(maps.includes(map),'Primary map belongs to catalog');
+ const catalog=encounterCatalog(rom,maps),formations=catalog.formations,profiles=[],keys=[],bounds=[];
  for(const formation of formations){const c=battleCpu(rom);c.m[0x7ced]=formation;segment(c,0xa02a,0xa0b7);const ranges=[...c.m.subarray(0x7d6f,0x7d73)],ids=[...c.m.subarray(0x7d6b,0x7d6f)];bounds.push([formation,...ranges,c.m[0x7d68]>>6,...ids,...ids.map(id=>id===255?0:rom[at(0x30,0x8000)+id*16])]);
   const visit=counts=>{if(counts.length<4){const r=ranges[counts.length];for(let n=r>>4;n<=(r&15);n++)visit([...counts,n]);return;}
    const f=originalFormation(rom,formation,{counts});check(!f.unresolved&&f.layout!==9,'Registered source placement');
@@ -62,7 +64,7 @@ export async function encounterScreenAssets(rom,gen,battle,{map=29}={}){
   let s=await fs.readFile(battle+'/generated/'+file+'.c','utf8');for(const n of names)s=s.replace(new RegExp('(const uint8_t '+prefix+'_'+n+'\\[\\]=\\{)([0-9,]*)(\\};)'),(_,a,b,c)=>a+b+','+[...values[n]]+c);const path=gen+'/'+file+'.c';await fs.writeFile(path,s);generated.push(path);
  }
  const keyRows=keys.map((k,j)=>'{'+[...k,4+j]+'}').join(',');
- await fs.writeFile(gen+'/encounter-screen-assets.h','#include <stdint.h>\n#define ENCOUNTER_BACKGROUND '+background+'\n#define ENCOUNTER_KEYS '+keys.length+'\n#define ENCOUNTER_GROUP '+group+'\nstatic const uint8_t encounter_keys[][7]={'+keyRows+'};\nstatic const uint8_t encounter_bounds[][14]={'+bounds.map(b=>'{'+b+'}').join(',')+'};\n#define ENCOUNTER_FORMATIONS '+bounds.length+'\n');
- await fs.writeFile(gen+'/../encounter-resources.json',JSON.stringify({world,map,group,background,formations,bounds,profiles:proof,scope:'Complete current field encounter group, spatial resources only; source count/entry decision and actions execute at runtime.'},null,2));
+ await fs.writeFile(gen+'/encounter-screen-assets.h','#include <stdint.h>\n#define ENCOUNTER_MAPS '+maps.length+'\nstatic const uint8_t encounter_maps[]={'+maps+'};\n#define ENCOUNTER_BACKGROUND '+background+'\n#define ENCOUNTER_KEYS '+keys.length+'\n#define ENCOUNTER_GROUP '+group+'\nstatic const uint8_t encounter_keys[][7]={'+keyRows+'};\nstatic const uint8_t encounter_bounds[][14]={'+bounds.map(b=>'{'+b+'}').join(',')+'};\n#define ENCOUNTER_FORMATIONS '+bounds.length+'\n');
+ await fs.writeFile(gen+'/../encounter-resources.json',JSON.stringify({world,map,group,background,...catalog,bounds,profiles:proof,scope:'Complete registered same-terrain encounter groups, shared spatial resources only; source count/entry decision and actions execute at runtime.'},null,2));
  return generated;
 }

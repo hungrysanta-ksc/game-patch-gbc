@@ -149,6 +149,7 @@ files.push('src/battle-encounter.c','src/battle-encounter.h','tools/encounter-sc
 files.push('tools/encounter-seed-source.mjs','tools/audit-encounter-seed.mjs','tests/encounter-seed.test.mjs','docs/encounter-seed-boundary.md');
 files.push('tools/play-seed-source.mjs','tools/seed-ownership.mjs','tools/audit-seed-ownership.mjs','tests/play-seed.test.mjs','docs/play-seed.md');
 files.push('tools/dungeon-source.mjs','tools/dungeon-audit.lua','tools/verify-dungeon.mjs','tools/VerifyDungeon/Program.cs','tools/VerifyDungeon/VerifyDungeon.csproj','tests/dungeon.test.mjs','docs/first-dungeon-encounters.md');
+files.push('tools/encounter-catalog.mjs','tests/encounter-catalog.test.mjs','src/battle-result.h','src/battle-result.c','src/battle-result-test.c','tools/battle-result-source.mjs','tools/build-battle-result.mjs','tests/battle-result.test.mjs','docs/encounter-result-handoff.md');
 const entries=[];for(const path of files){const b=await fs.readFile(ROOT+'/'+path);entries.push({path,bytes:b.length,sha256:hash(b),basis:'Project-authored code, specification or documentation; no extracted assets'});}
 const manifest=JSON.stringify({schema:1,scope:'Source-only development package; generated ROM/audio/private inputs excluded',files:entries},null,2)+'\n',target=ROOT+'/export-manifest.json';
 if(process.argv.includes('--check'))check(await fs.readFile(target,'utf8')===manifest,'Export manifest is stale');else await fs.writeFile(target,manifest);

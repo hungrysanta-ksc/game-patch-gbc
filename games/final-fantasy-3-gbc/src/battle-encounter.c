@@ -17,6 +17,7 @@ extern volatile uint8_t party_work;
 void ff3_native_service(void) NONBANKED;
 uint8_t encounter_type,encounter_first,encounter_counts[4],encounter_error;
 static uint8_t selected;
+uint8_t ff3_encounter_map(uint8_t world,uint8_t map) BANKED {uint8_t i;if(world)return 0;for(i=0;i<ENCOUNTER_MAPS;i++)if(encounter_maps[i]==map)return 1;return 0;}
 uint8_t ff3_encounter_prepare(void) BANKED {
  uint8_t i,j,k,n;Ff3Entry entry;FF3BattleRng*r=(FF3BattleRng*)battle_workspace.map;
  encounter_error=0;strike_rng_ready=0;
