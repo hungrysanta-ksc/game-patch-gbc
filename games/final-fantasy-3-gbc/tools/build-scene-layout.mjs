@@ -1,3 +1,4 @@
+import {encounterScreenAssets} from './encounter-screen-assets.mjs';
 import {checkEncounterAssets} from './field-encounter-source.mjs';
 import {livePartyAssets} from './live-party-source.mjs';
 import fs from 'node:fs/promises';import {execFile} from 'node:child_process';import {promisify} from 'node:util';
@@ -20,7 +21,8 @@ const mr=JSON.parse(await fs.readFile(battle+'/magic-residency.json'));
 const partyResources=livePartyAssets(data);
 await fs.writeFile(gen+'/live-party-assets.h','#include <stdint.h>\n'+Object.keys(partyResources).map(n=>'extern const uint8_t '+n+'[];').join('\n')+'\n');
 for(const bank of [15,78]){const file=gen+'/live-party'+bank+'.c';await fs.writeFile(file,'#pragma bank '+bank+'\n#include <stdint.h>\n'+Object.entries(partyResources).filter(([n])=>(n==='equipment_properties')===(bank===15)).map(([n,b])=>'const uint8_t '+n+'[]={'+[...b]+'};').join('\n'));generated.push(file);}
-for(const name of [...[1,2,3,4,5,6,8].map(i=>'audio-bank'+i),'live-ui','effects','strike53','strike54',...Array.from({length:4},(_,i)=>['party','resident','terrain','hit'].map(k=>k+i)).flat(),...mr.banks.map((_,i)=>'magic'+i)])generated.push(battle+'/generated/'+name+'.c');
+generated.push(...await encounterScreenAssets(data,gen,battle));
+for(const name of [...[1,2,3,4,5,6,8].map(i=>'audio-bank'+i),'live-ui','strike53',...Array.from({length:4},(_,i)=>['party','resident','terrain','hit'].map(k=>k+i)).flat(),...mr.banks.map((_,i)=>'magic'+i)])generated.push(battle+'/generated/'+name+'.c');
 const flags=['-msm83:gb','-DFF3_SCENE_LAYOUT','-DFF3_SINGLE_ENGINE','-DFF3_BANKED_RUNTIME','-DFF3_TEXT_AUDIO','-DFF3_EXPLORATION','-DFF3_EFFECTS','-DFF3_AUDIO_FAST','-DFF3_LIVE_UI','-DFF3_STATUS_VIDEO','-DFF3_TERRAIN','-DFF3_RESIDENT_BG','-DFF3_COMPOSITION_CACHE','-Dcache_request=party_work','-I'+gen,'-I'+ROOT+'/src'];
 async function compile(args,name){try{const r=await run(compiler,args,{cwd:out,maxBuffer:8e6,timeout:600000});await fs.writeFile(out+'/'+name+'.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(out+'/'+name+'.log',(e.stdout||'')+(e.stderr||''));throw e;}}
 async function config(f,b){await fs.writeFile(gen+'/scene-layout-config.h','#define FF3_SCENE_ARENA '+overlayBase+'u\n#define FF3_FIELD_DATA_BYTES '+f+'u\n#define FF3_BATTLE_DATA_BYTES '+b+'u\n');}
@@ -34,14 +36,15 @@ async function object([name,segment]){const obj=out+'/'+name+'.o',extra=segment?
 }
 for(let i=0;i<entries.length;i+=4){const r=await Promise.allSettled(entries.slice(i,i+4).map(object));for(const v of r){if(v.status!=='fulfilled')throw v.reason;objects.push(v.value);}}
 const rom=out+'/ff3-scene-layout.gbc';
-async function link(){await compile([...flags,'-Wm-yC','-Wm-yt0x1b','-Wm-ya4','-Wm-yo128','-Wl-m','-Wl-j','-Wl-b_FF3_FIELD='+overlayBase,'-Wl-b_FF3_BATTLE='+overlayBase,'-o',rom,...objects,...generated],'link');return parseSymbols(await fs.readFile(rom.replace('.gbc','.noi'),'utf8'));}
+async function link(){await compile([...flags,'-Wm-yC','-Wm-yt0x1b','-Wm-ya4','-Wm-yo256','-Wl-m','-Wl-j','-Wl-b_FF3_FIELD='+overlayBase,'-Wl-b_FF3_BATTLE='+overlayBase,'-o',rom,...objects,...generated],'link');return parseSymbols(await fs.readFile(rom.replace('.gbc','.noi'),'utf8'));}
 let s=await link();const layout=checkSceneLayout(s);await config(layout.fieldBytes,layout.battleBytes);
 await object(['scene-memory',null]);await object(['scene-layout-probe',null]);s=await link();check(JSON.stringify(checkSceneLayout(s))===JSON.stringify(layout),'Stable final layout');
-check(!/overflow|Multiple write|undefined global/i.test(await fs.readFile(out+'/link.log','utf8')),'Clean final linker output');const bytes=await fs.readFile(rom);checkGbc(bytes,128,0x1b,3);
+check(!/overflow|Multiple write|undefined global/i.test(await fs.readFile(out+'/link.log','utf8')),'Clean final linker output');const bytes=await fs.readFile(rom);checkGbc(bytes,256,0x1b,3);
 for(const [bank,data]of relocated.banks)check(bytes.subarray(bank*16384,(bank+1)*16384).equals(data),'Linked relocated field bytes '+bank);
 checkEncounterAssets(bytes,s,data);
+for(const [name,address]of Object.entries(s))if(/^_encounter_patterns\d+$/.test(name))check((address&15)===0,'DMA-aligned encounter patterns '+name);
 // Every generated battle/audio array remains intact at its linked symbol.
 let arrays=0;for(const file of generated.filter(p=>!p.startsWith(gen+'/field-'))){const source=await fs.readFile(file,'utf8');for(const m of source.matchAll(/const uint8_t (\w+)\[\]=\{([0-9,]*)\}/g)){const data=Buffer.from(m[2].split(',').filter(Boolean).map(Number)),at=s['_'+m[1]],offset=(at>>>16)*16384+(at&0x3fff);check(Number.isInteger(at)&&bytes.subarray(offset,offset+data.length).equals(data),'Linked original asset '+m[1]);arrays++;}}
 for(const i of inputs)check(hash(await fs.readFile(ROOT+'/'+i.path))===i.sha256,'Source changed during build '+i.path);
-const report={scope:'Combined real field/effects modules with cold diagnostics and mode 4 controlled display / mode 5 canonical-party roundtrips. Natural formation/action/result bridge remains pending.',romSha256:hash(bytes),evidence,layout,relocation:{entries:relocated.entries,changedBytes:relocated.changedBytes,payloads:relocated.payloads},linkedBattleArrays:arrays,inputs,roundtripReady:false,controlledRoundtripMode:4,controlledLivePartyMode:5};
+const report={scope:'Combined real field/effects modules with cold diagnostics and mode 4 controlled display / mode 5 canonical-party / mode 6 selected-encounter resource roundtrips. Natural seed/action/result bridge remains pending.',romSha256:hash(bytes),evidence,layout,relocation:{entries:relocated.entries,changedBytes:relocated.changedBytes,payloads:relocated.payloads},linkedBattleArrays:arrays,inputs,roundtripReady:false,controlledRoundtripMode:4,controlledLivePartyMode:5,controlledEncounterMode:6};
 await fs.writeFile(out+'/report.json',JSON.stringify(report,null,2));await fs.copyFile(battle+'/conversion.bin',out+'/conversion.bin');await fs.writeFile(out+'/audio.json',JSON.stringify(JSON.parse(await fs.readFile(battle+'/report.json')).audio));console.log(JSON.stringify({...report,inputs:inputs.length,relocation:{entries:relocated.entries,payloadBanks:relocated.payloads.length}},null,2));

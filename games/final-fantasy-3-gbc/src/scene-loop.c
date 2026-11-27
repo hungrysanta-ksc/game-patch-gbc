@@ -3,10 +3,12 @@
 #pragma bank 76
 #include <gb/cgb.h>
 #include "scene-loop.h"
+#include "battle-encounter.h"
 #include "scene-memory.h"
 #include "text-vblank.h"
 volatile uint8_t scene_mode,scene_request,scene_phase,scene_fault;
 volatile uint8_t scene_cycles,scene_profile,scene_audio_boots;
+volatile uint8_t scene_formation,scene_background,scene_rng_seed,scene_rng_ready;
 extern volatile uint8_t native_request,native_argument;
 void ff3_native_service(void) NONBANKED;
 void field_legacy_main(void) BANKED;void battle_legacy_main(void) BANKED;
@@ -22,6 +24,7 @@ void ff3_scene_run(void) BANKED {
   field_legacy_main();if(scene_fault)return;
   scene_phase=2;
   if(!ff3_scene_battle_begin()){scene_fault=2;return;}
+  if(scene_mode==3&&!ff3_encounter_prepare()){scene_fault=5;return;}
   battle_legacy_main();if(scene_fault)return;
   scene_phase=4;
   if(!ff3_scene_field_restore()){scene_fault=3;return;}

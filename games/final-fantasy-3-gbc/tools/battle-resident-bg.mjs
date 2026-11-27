@@ -19,6 +19,7 @@ export function residentEnemy(p){
  const words=Uint16Array.from({length:448*88},(_,i)=>{const x=i%448,y=i/448|0;
   return y<84?pixel(p.back?239-Math.floor((167-x+.5)*8/7):16+Math.floor((x+8+.5)*8/7),48+Math.floor((y+.5)*8/7)):0;
  });
+ if(p.enemyYOffsets){const before=words.slice();words.fill(0);for(let y=0;y<84;y++)for(let x=0;x<448;x++){const v=before[y*448+x];if(!v)continue;const yy=y+p.enemyYOffsets[y<42?0:1];check(yy>=0&&yy<88&&!words[yy*448+x],'Whole enemy dots preserved by row placement');words[yy*448+x]=v;}}
  function id(tile){const key=tile.toString('hex');if(!ids.has(key)){check(patterns.length<256,'Resident bank-1 tile capacity');ids.set(key,patterns.length);patterns.push(tile);}return ids.get(key);}
  for(let y=0;y<11;y++)for(let x=0;x<56;x++){
   const tile=Uint16Array.from({length:64},(_,i)=>words[(y*8+(i>>3))*448+x*8+(i&7)]),c=compilePixelComposition(tile,pal,{width:8,height:8,palettes});
