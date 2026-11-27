@@ -54,12 +54,12 @@ BANKED
  while(1){ff3_native_service();
 #ifdef FF3_SCENE_LAYOUT
   /* Finish the source tile step/event before exchanging owners. */
-  if(scene_mode&&scene_request==1&&!field.mode&&!field.speed&&!field.subx&&!field.suby&&!field.request&&!npc_active&&!text_visible){
+  if(scene_mode&&scene_request==1&&!field.mode&&!field.error&&!field.trigger&&!field.speed&&!field.subx&&!field.suby&&!field.request&&!npc_active&&!text_visible){
    ff3_field_flush();if(ff3_field_video_suspend()){scene_request=0;return;}
   }
 #endif
   if(memory_probe_request){memory_probe_request=0;ff3_memory_probe();}
-  if(field.request){switch(field.request){case 1:ff3_field_front();break;case 2:field.result=ff3_field_touch();break;case 3:field.result=ff3_field_talk();break;case 4:field.result=ff3_field_terrain();break;case 5:ff3_field_pixel();break;case 6:npc_draw_valid=0;ff3_field_render(0);break;case 7:ff3_npc_pixels();break;case 8:ff3_npc_schedule();break;case 9:ff3_npc_pixels();ff3_npc_schedule();ff3_field_render(0);break;case 10:npc_execution[0]+=ff3_npc_command(npc_execution[1]);break;case 11:ff3_npc_frame();break;case 12:field.result=ff3_field_video_suspend();break;case 13:ff3_field_video_init();npc_draw_valid=0;field.result=ff3_field_render(0);break;}field.request=0;}
+  if(field.request){switch(field.request){case 1:ff3_field_front();break;case 2:field.result=ff3_field_touch();break;case 3:field.result=ff3_field_talk();break;case 4:field.result=ff3_field_terrain();break;case 5:ff3_field_pixel();break;case 6:npc_draw_valid=0;ff3_field_render(0);break;case 7:ff3_npc_pixels();break;case 8:ff3_npc_schedule();break;case 9:ff3_npc_pixels();ff3_npc_schedule();ff3_field_render(0);break;case 10:npc_execution[0]+=ff3_npc_command(npc_execution[1]);break;case 11:ff3_npc_frame();break;case 12:field.result=ff3_field_video_suspend();break;case 13:ff3_field_video_init();npc_draw_valid=0;field.result=ff3_field_render(0);break;case 14:ff3_field_encounter(field.keys);break;case 15:ff3_field_tick();break;case 16:ff3_field_battle_background();break;}field.request=0;}
   if(field.pause||field.error||asset_error||text_error||npc_error||field.video_fault){__asm halt __endasm;continue;}
   if((int16_t)(ff3_clock_now()-field.deadline)<0){__asm halt __endasm;continue;}
   for(i=0;i<16;i++)if(((volatile uint8_t*)0xd7f0)[i]!=0xa7||((volatile uint8_t*)0xd940)[i]!=0xa7||((volatile uint8_t*)0xdb60)[i]!=0xa7||((volatile uint8_t*)0xdca0)[i]!=0xa7)field.error=10;
@@ -80,9 +80,9 @@ BANKED
   }
   field.keys=neskeys(k);catchup=0;
   do{was=field.direction;advance();ff3_field_tick();catchup++;
+   if(field.speed||field.subx||field.suby||was!=field.direction||(uint8_t)field.steps!=field.result)field.render_dirty=1;
    if(field.mode||field.error)break;
    field.npc_busy=1;ff3_npc_pixels();
-   if(field.speed||field.subx||field.suby||was!=field.direction||(uint8_t)field.steps!=field.result)field.render_dirty=1;
    ff3_npc_schedule();field.npc_busy=0;if(catchup==1)ff3_native_service();
   }while(catchup<2&&(int16_t)(ff3_clock_now()-field.deadline)>=0);
   if(field.mode==1){npc_draw_valid=0;field.dialogue_frame=field.frame;ff3_field_flush();ff3_field_render(0);ff3_field_flush();ff3_npc_start(field.world,object_part1[field.slot],ff3_game_state);field.mode=npc_active?3:0;dialogue_clock();continue;}

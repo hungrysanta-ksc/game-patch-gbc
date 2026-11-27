@@ -1,3 +1,4 @@
+import {encounterOriginal} from './field-encounter-source.mjs';
 import fs from 'node:fs/promises';import {execFile} from 'node:child_process';import {promisify} from 'node:util';
 import {ROOT,input,hash,check} from './source.mjs';import {parseSymbols,checkSceneLayout} from './scene-link-layout.mjs';
 import {animationSeed} from './battle-animation-source.mjs';import {scriptSeed} from './battle-script-source.mjs';
@@ -21,6 +22,11 @@ else{home=await fs.mkdtemp(ROOT+'/.local/mesen-roundtrip-');const auditPath=ROOT
  await logged(['build',ROOT+'/tools/VerifySceneRoundtrip/VerifySceneRoundtrip.csproj','-c','Release','--configfile',ROOT+'/tools/Capture/NuGet.Config'],'build.log');
  await logged([ROOT+'/tools/VerifySceneRoundtrip/bin/Release/net8.0/VerifySceneRoundtrip.dll',config],'run.log');}
 const actual=JSON.parse(await fs.readFile(output));check(actual.done&&actual.romSha256===romSha256&&actual.boots===1&&actual.cycles.length===2,'Same boot two actual display roundtrips');
+check(actual.encounter?.controlled&&actual.encounter.statePreserved&&actual.encounter.audioAdvanced>0,'Controlled runtime encounter boundary');
+const encounterSeed=Buffer.from(actual.encounter.seed,'hex'),encounterActual=Buffer.from(actual.encounter.selected,'hex');
+encounterSeed[17]=0;const encounterExpected=encounterOriginal(data,16,encounterOriginal(data,14,encounterSeed));
+for(const i of [10,14,15,76,77,78])check(encounterActual[i]===encounterExpected[i],'Original runtime encounter field '+i);
+check(encounterActual[16]===4&&encounterActual[5]===0&&encounterActual[2]===0&&encounterActual[3]===0,'Explicit unsupported formation boundary after full tile');
 const audio=JSON.parse(await fs.readFile(dir+'/audio.json')),ref=nativeReference(data,await fs.readFile(dir+'/conversion.bin'),{ticks:audio.ticks,plan:audio.plan,beforeTick(c,t){for(const r of actual.requests)if(r.tick===t)sourceAction(c,r.op,r.arg);}});let end;
 for(const f of actual.audio){const b=Buffer.from(f.consumed,'hex'),events=b.readUInt32LE(4);if(events){end=ref.advanceToEvent(events);check(end.ticks===b.readUInt32LE(0)&&end.sourceHash===b.readUInt16LE(8)&&end.gbHash===b.readUInt16LE(10),'Original dynamic audio through scene exchange');}}
 check(end?.ticks===7200,'Full original audio schedule');
@@ -46,4 +52,4 @@ check(indices.every((n,i)=>n===source[i].frames.length)&&actual.cycles.every(c=>
 check(Buffer.from(actual.requests.filter(r=>r.op!==2).map(r=>r.op===8?255:r.arg|128)).equals(Buffer.from(source.flatMap(s=>s.sounds))),'Every original magic sound request');
 check(actual.requests.filter(r=>r.op===2&&r.arg===32).length===2&&actual.requests.filter(r=>r.op===2&&r.arg===12).length===2,'Source battle and map music calls');
 const first=actual.audio[0];let accumulated=0,previous=first.timer,min=0,max=0;for(const a of actual.audio){accumulated+=(a.timer-previous)&65535;previous=a.timer;const drift=accumulated/4096-(a.master-first.master)/a.rate;min=Math.min(min,drift);max=Math.max(max,drift);}check(max-min<0.0005,'Continuous timer/master clock');
-const result={romSha256,coreSha256,boots:actual.boots,cycles:actual.cycles,fieldScreens:actual.shots.length,magicFrames,screens:files.length,sourceTicks:end.ticks,audioObservations:actual.audio.length,requests:actual.requests,bus,memory,stack:actual.stack,phases:actual.phases,timerDriftRangeUs:(max-min)*1e6,layout:report.layout,scope:'One boot, controlled display enter/return, real original field movement and NPC dialogue after both returns. Not natural encounter, live party/formation import or victory/result processing.'};await fs.writeFile(out+'/report.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));
+const result={romSha256,coreSha256,boots:actual.boots,encounter:actual.encounter,cycles:actual.cycles,fieldScreens:actual.shots.length,magicFrames,screens:files.length,sourceTicks:end.ticks,audioObservations:actual.audio.length,requests:actual.requests,bus,memory,stack:actual.stack,phases:actual.phases,timerDriftRangeUs:(max-min)*1e6,layout:report.layout,scope:'One boot, controlled display enter/return, real original field movement and NPC dialogue after both returns. Controlled eligible-tile encounter dispatch also verified after both returns; not natural map reachability, live party/formation import or victory/result processing.'};await fs.writeFile(out+'/report.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));

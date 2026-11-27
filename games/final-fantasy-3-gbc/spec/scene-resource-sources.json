@@ -570,7 +570,7 @@
     },
     {
       "path": "src/exploration-viewer.c",
-      "sha256": "f49fb9c3df7841fce0e268c4fde0b0955842e9e7da4d5db7c1dbd70ead442b31",
+      "sha256": "b4879a5b5afa6923b7f141cfba2a4c7b879b940cefeaf19961ac340b80325934",
       "sites": [
         {
           "line": 37,
@@ -580,28 +580,28 @@
     },
     {
       "path": "src/exploration.c",
-      "sha256": "02090936e937b34d7752c90bfaf11315d64206669c7c2de7639666439f500c27",
+      "sha256": "1415394a13cf1b08bfeb50fa61c763be0d36594da331919f4d3bbaa8b977a749",
       "sites": [
         {
-          "line": 7,
+          "line": 8,
           "text": "volatile FF3Exploration __at(0xdb70) field;"
         }
       ]
     },
     {
       "path": "src/exploration.h",
-      "sha256": "cf4a8098be7e6a5abd1988c78ab79c8f39ad462ae6818ba69b7f8b45bbc17e93",
+      "sha256": "00fde30c9695d5973a82a17f3900fb132b7edfc3674e5f461507fcbf2c8c0550",
       "sites": [
         {
-          "line": 22,
+          "line": 24,
           "text": "extern volatile FF3Exploration __at(0xdb70) field;"
         },
         {
-          "line": 23,
+          "line": 25,
           "text": "extern uint8_t __at(0xdc00) field_oam[160];"
         },
         {
-          "line": 24,
+          "line": 26,
           "text": "extern uint8_t __at(0xdbc0) field_staging[64];"
         }
       ]

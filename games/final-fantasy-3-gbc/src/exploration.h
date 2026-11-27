@@ -18,6 +18,8 @@ typedef struct {
  uint8_t npc_busy;
  uint8_t frame,dialogue_frame;
  uint8_t event_busy;
+ /* Original $F7/$6A/$6B. Persist with field state across scene suspension. */
+ uint8_t formation_rng,battle,battle_background;
 } FF3Exploration;
 extern volatile FF3Exploration __at(0xdb70) field;
 extern uint8_t __at(0xdc00) field_oam[160];
@@ -30,6 +32,8 @@ uint8_t ff3_field_terrain(void) BANKED;
 void ff3_field_pixel(void) BANKED;
 void ff3_field_tick(void) BANKED;
 void ff3_field_init(void) BANKED;
+void ff3_field_encounter(uint8_t event) BANKED;
+void ff3_field_battle_background(void) BANKED;
 void ff3_npc_pixels(void) BANKED;
 void ff3_npc_schedule(void) BANKED;
 uint8_t ff3_npc_command(uint8_t op) BANKED;

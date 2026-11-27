@@ -1,7 +1,8 @@
+import {checkEncounterAssets} from './field-encounter-source.mjs';
 import fs from 'node:fs/promises';import {execFile} from 'node:child_process';import {promisify} from 'node:util';
 import {ROOT,input,hash,check,checkGbc} from './source.mjs';
 import {commonModules,fieldModules,battleModules,overlayBase,relocateField,parseSymbols,checkSceneLayout} from './scene-link-layout.mjs';
-const {local}=await input(),out=ROOT+'/build/scene-layout',gen=out+'/generated',field=ROOT+'/build/exploration',battle=ROOT+'/build/battle-effects';await fs.mkdir(gen,{recursive:true});
+const {data,local}=await input(),out=ROOT+'/build/scene-layout',gen=out+'/generated',field=ROOT+'/build/exploration',battle=ROOT+'/build/battle-effects';await fs.mkdir(gen,{recursive:true});
 const run=promisify(execFile),compiler=local.gbdk+'/bin/lcc.exe',lock=JSON.parse(await fs.readFile(ROOT+'/spec/toolchain.json'));check(hash(await fs.readFile(compiler))===lock.gbdk.lccSha256,'Pinned compiler');
 const evidence=[];for(const [dir,name,key]of [[field,'ff3-exploration','romSha256'],[battle,'ff3-battle-effects-video','videoRomSha256']]){const r=JSON.parse(await fs.readFile(dir+'/report.json')),rom=await fs.readFile(dir+'/'+name+'.gbc');check(hash(rom)===r[key],'Input diagnostic identity');evidence.push({name,sha256:r[key]});}
 // Common generated headers must agree except the original audio diagnostic
@@ -34,6 +35,7 @@ let s=await link();const layout=checkSceneLayout(s);await config(layout.fieldByt
 await object(['scene-memory',null]);await object(['scene-layout-probe',null]);s=await link();check(JSON.stringify(checkSceneLayout(s))===JSON.stringify(layout),'Stable final layout');
 check(!/overflow|Multiple write|undefined global/i.test(await fs.readFile(out+'/link.log','utf8')),'Clean final linker output');const bytes=await fs.readFile(rom);checkGbc(bytes,128,0x1b,3);
 for(const [bank,data]of relocated.banks)check(bytes.subarray(bank*16384,(bank+1)*16384).equals(data),'Linked relocated field bytes '+bank);
+checkEncounterAssets(bytes,s,data);
 // Every generated battle/audio array remains intact at its linked symbol.
 let arrays=0;for(const file of generated.filter(p=>!p.startsWith(gen+'/field-'))){const source=await fs.readFile(file,'utf8');for(const m of source.matchAll(/const uint8_t (\w+)\[\]=\{([0-9,]*)\}/g)){const data=Buffer.from(m[2].split(',').filter(Boolean).map(Number)),at=s['_'+m[1]],offset=(at>>>16)*16384+(at&0x3fff);check(Number.isInteger(at)&&bytes.subarray(offset,offset+data.length).equals(data),'Linked original asset '+m[1]);arrays++;}}
 for(const i of inputs)check(hash(await fs.readFile(ROOT+'/'+i.path))===i.sha256,'Source changed during build '+i.path);

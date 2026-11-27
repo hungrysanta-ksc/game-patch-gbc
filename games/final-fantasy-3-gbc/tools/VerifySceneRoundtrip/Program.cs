@@ -12,12 +12,12 @@ class Program {
  void Write(string k,string hex){var b=Convert.FromHexString(hex);for(uint i=0;i<b.Length;i++)Core.SetMemoryValue(7,Addr(k)+i,b[i]);}
  void Assert(bool p,string message){if(!p)throw new Exception(message+" phase="+Num("scene_phase")+" sceneFault="+Num("scene_fault")+" field="+Bytes("field",40));}
  NativeLibrary.SetDllImportResolver(typeof(Core).Assembly,(n,a,p)=>n=="MesenCore.dll"?NativeLibrary.Load(Text("dll")):IntPtr.Zero);Directory.CreateDirectory(Text("home"));
- var audio=new List<object>();var shots=new List<object>();var pictures=new List<object>();var cycles=new List<object>();var requests=new List<object>();var phases=new List<object>();uint external=0,lastTicks=0,lastPhase=0;int script=-1,total=0;bool done=false;
+ var audio=new List<object>();var shots=new List<object>();var pictures=new List<object>();var cycles=new List<object>();var requests=new List<object>();var phases=new List<object>();uint external=0,lastTicks=0,lastPhase=0;int script=-1,total=0;bool done=false,encounterPending=false;object? encounter=null;
  void Frame(){Step();total++;for(int i=0;Num("native_irq_busy")!=0||(Core.GetMemoryValue(7,0xff70)&7)!=1;i++){Assert(i<20000,"IRQ yield");Step(17,0);}
   Assert(Num("scene_fault")+Num("scene_arena_fault")+Num("memory_fault")+Num("text_transfer_fault")+Num("ff3_error")==0,"Shared runtime fault");
   Assert(Num("native_underruns",2)+Num("native_max_late",2)==0,"Audio continuity late="+Num("native_max_late",2)+" under="+Num("native_underruns",2));
   Assert(Num("scene_audio_boots")==1,"Audio initialized only once");
-  if(Num("scene_phase")==1)Assert(F(16)+F(39)+Num("asset_error")+Num("npc_error")+Num("text_error")==0,"Field runtime");
+  if(Num("scene_phase")==1)Assert((F(16)==0||(encounterPending&&F(16)==4))&&F(39)+Num("asset_error")+Num("npc_error")+Num("text_error")==0,"Field runtime");
   if(Num("scene_phase")==3)Assert(Num("party_error")==0,"Battle runtime");
   uint ticks=Num("native_consumed",4);Assert(ticks>=lastTicks,"Audio was restarted");lastTicks=ticks;
   uint serial=Num("native_external_serial",2);if(serial!=external){Assert(serial==external+1,"Lost source sound request");external=serial;requests.Add(new{tick=Num("native_external_tick",2),op=Num("native_external_op"),arg=Num("native_external_arg")});}
@@ -65,7 +65,20 @@ class Program {
    for(int pages=0;F(19)==2;pages++){Assert(pages<20,"Dialogue pages");uint before=Num("text_page");Keys("A");Until(()=>F(19)!=2||Num("text_page")!=before||Num("text_visible")==0,"acknowledge");Release();}
    Until(()=>F(19)==0&&Num("npc_active")==0,"event return");Walk("D",10,10);Walk("R",11,10);Walk("L",10,10);FieldShot("walked-"+cycle);ResumeField();Walk("U",10,7);
   }
-  while(Num("native_done")==0){Walk("D",10,10);Walk("U",10,7);Assert(total<8500,"Bounded audio completion");}done=true;
- }finally{if(script>=0){var log=new StringBuilder(8000000);Audit.GetScriptLog(script,log,8000000);File.WriteAllText(Text("output")+".audit.log",log.ToString());}uint untouched=0;while(untouched<512&&Core.GetMemoryValue(39,0x1e00+untouched)==0x5a)untouched++;File.WriteAllText(Text("output"),JsonSerializer.Serialize(new{romSha256=Text("romSha256"),home=Text("home"),done,audio,requests,shots,pictures,cycles,phases,stack=new{floor=0xde00,watermarkUsed=512-untouched,untouched,guard=Mem(39,0x1df0,16)},boots=Num("scene_audio_boots")}));Core.Stop();Core.Release();}
+  // Controlled eligible tile/rate in the reviewed town, NOT natural reachability.
+  // Keep the real map/party; drive the runtime with the controller after both
+  // returns and leave the unsupported real-formation request observable.
+  PauseField();byte tile=Core.GetMemoryValue(7,0xd000+8*32+10);uint collision=0xd687+(uint)tile*2;
+  byte property=Core.GetMemoryValue(7,collision);Assert((property&0x88)==0,"Safe encounter fixture tile");
+  Core.SetMemoryValue(7,collision,(byte)(property|0x40));SetF(25,255);SetF(14,5);SetF(15,0);SetF(76,255);
+  string seed=Bytes("field",79),party=Bytes("ff3_game_state",1024);uint steps=(uint)(F(28)|(F(29)<<8));encounterPending=true;var start=Core.GetTimingInfo(7);
+  Keys("D");ResumeField();Until(()=>F(16)==4&&F(64)==0&&F(47)==0&&F(65)==0&&F(66)==0,"latched encounter after complete step");
+  Assert(F(0)==3&&F(1)==1&&F(2)==0&&F(3)==0&&F(5)==0&&(uint)(F(28)|(F(29)<<8))==steps+1,"Exactly one complete tile before dispatch");
+  string selected=Bytes("field",79);uint at=Num("native_consumed",4);Put("scene_request",1);Run(30);Keys("");
+  Assert(Bytes("field",79)==selected&&Num("scene_phase")==1&&Num("scene_cycles")==2&&Num("scene_request")==1,"Pending real encounter cannot become a diagnostic battle or poll another step");Put("scene_request",0);
+  Assert(Bytes("ff3_game_state",1024)==party&&Num("native_consumed",4)>at,"Party retained and audio advances at unsupported boundary");
+  encounter=new{controlled=true,seed,selected,property=(byte)(property|0x40),statePreserved=true,audioAdvanced=Num("native_consumed",4)-at,ms=(Core.GetTimingInfo(7).clock-start.clock)*1000.0/start.rate};
+  while(Num("native_done")==0){Frame();Assert(total<8500,"Bounded audio completion");}done=true;
+ }finally{if(script>=0){var log=new StringBuilder(8000000);Audit.GetScriptLog(script,log,8000000);File.WriteAllText(Text("output")+".audit.log",log.ToString());}uint untouched=0;while(untouched<512&&Core.GetMemoryValue(39,0x1e00+untouched)==0x5a)untouched++;File.WriteAllText(Text("output"),JsonSerializer.Serialize(new{romSha256=Text("romSha256"),home=Text("home"),done,audio,requests,shots,pictures,cycles,phases,encounter,stack=new{floor=0xde00,watermarkUsed=512-untouched,untouched,guard=Mem(39,0x1df0,16)},boots=Num("scene_audio_boots")}));Core.Stop();Core.Release();}
  }
 }
