@@ -7,6 +7,12 @@ volatile uint16_t text_transfer_chunks,text_transfer_bytes,text_transfer_frames,
 uint8_t __at(0xd950) text_staging[256];
 static volatile uint8_t pending,owner,transfer_bank,transfer_rom_bank;
 static volatile uint16_t transfer_source,transfer_address,transfer_count;
+#ifdef FF3_EFFECTS
+extern uint8_t resident_effect_clone_valid;
+static void invalidate_clone(uint8_t bank,uint16_t address,uint16_t count){
+ if(bank&&address<0x9800u&&(address>=0x9000u||count>0x9000u-address))resident_effect_clone_valid=0;
+}
+#endif
 void ff3_text_service(void) NONBANKED {if(text_idle)text_idle();}
 /* LY resets from 153 to 0 before VBlank ends. Two reads can accidentally
  * combine 153 >= 144 with 0 <= 150; sample once, including under DI. */
@@ -91,6 +97,9 @@ static void finish(void){while(pending){pump();if(pending){ff3_text_service();if
 void ff3_text_copy(uint8_t bank,uint16_t address,const uint8_t *data,uint16_t count) NONBANKED {
  if(!count)return;
  if(pending||count>256||((uint16_t)data|address|count)&15||(uint16_t)data<0xd950||(uint16_t)data>0xda50-count){text_transfer_fault=1;return;}
+#ifdef FF3_EFFECTS
+ invalidate_clone(bank,address,count);
+#endif
  transfer_source=(uint16_t)data;transfer_address=address;transfer_count=count;transfer_bank=bank;pending=1;finish();
 }
 void ff3_text_video(uint8_t visible) NONBANKED {
@@ -106,6 +115,9 @@ void ff3_text_palette_range(uint8_t bg,uint8_t first,uint8_t count,const uint8_t
 void ff3_text_rom_copy(uint8_t bank,uint16_t address,uint8_t rom_bank,const uint8_t *data,uint16_t count) NONBANKED {
  if(!count)return;
  if(pending||!(KEY1_REG&128)||bank>1||!rom_bank||*(const uint8_t*)0x148>7||rom_bank>=((uint16_t)2<<*(const uint8_t*)0x148)||((uint16_t)data|address|count)&15||address<0x8000u||address>=0x9800u||count>0x9800u-address||(uint16_t)data<0x4000u||(uint16_t)data>=0x8000u||count>0x8000u-(uint16_t)data){text_transfer_fault=1;return;}
+#ifdef FF3_EFFECTS
+ invalidate_clone(bank,address,count);
+#endif
  transfer_source=(uint16_t)data;transfer_address=address;transfer_count=count;transfer_bank=bank;transfer_rom_bank=rom_bank;pending=6;finish();
 }
 void ff3_text_clear_map(uint8_t bank) NONBANKED {
