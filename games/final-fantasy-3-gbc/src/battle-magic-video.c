@@ -56,16 +56,19 @@ static uint8_t borrow(void){uint16_t at;uint8_t i,ok,*q;
  for(at=0;at<256;at+=128){read_vram(0,0x84a0+at,text_staging,128);if(!ff3_wram_copy(4,1152+at,text_staging,128,1))return 0;}
  retained=0;memset(base,0,32);
  for(i=32;i<40;i++){q=animation_base+i*4;if(!q[0])continue;
-  if(retained==8||(!(q[3]&8)&&q[2]>=74&&q[2]<90))return 0;read_vram((q[3]>>3)&1,0x8000+(uint16_t)q[2]*16,glyph,16);orient(text_staging,q[3]);memset(text_staging+16,0,16);
-  ff3_text_copy(0,0x84a0+(uint16_t)retained*32,text_staging,32);memcpy(base+retained*4,q,4);base[retained*4+2]=74+retained*2;base[retained*4+3]=q[3]&7;retained++;
+  if(retained==8||(!(q[3]&8)&&q[2]>=74&&q[2]<90))return 0;read_vram((q[3]>>3)&1,0x8000+(uint16_t)q[2]*16,glyph,16);orient(text_staging+(uint16_t)retained*32,q[3]);memset(text_staging+(uint16_t)retained*32+16,0,16);
+  memcpy(base+retained*4,q,4);base[retained*4+2]=74+retained*2;base[retained*4+3]=q[3]&7;retained++;ff3_native_service();
  }
+ /* No consumer owns these pairs until clear() publishes tall OAM. Collect
+  * all retained cells before the bounded transfer, not one wait per cell. */
+ ff3_text_copy(0,0x84a0,text_staging,(uint16_t)retained*32);
  /* B589 ownership: upload the dictionary once, before any effect uses it. */
  ff3_text_rom_copy(1,0x8000,bank,patterns,pool_bytes);
  return 1;
 }
-static uint8_t release(void){uint16_t at;if(!ff3_resident_effect_copy(0x8000,pool_bytes))return 0;
+static uint8_t release(void){if(!ff3_resident_effect_copy(0x8000,pool_bytes))return 0;
  magic_tall=0;memcpy(text_staging,old_palette,8);ff3_text_palette_range(0,3,1,text_staging);if(!ff3_effect_release())return 0;
- for(at=0;at<256;at+=128){if(!ff3_wram_copy(4,1152+at,text_staging,128,0))return 0;ff3_text_copy(0,0x84a0+at,text_staging,128);}
+ if(!ff3_wram_copy(4,1152,text_staging,256,0))return 0;ff3_text_copy(0,0x84a0,text_staging,256);
  return 1;
 }
 static uint8_t prepare_source(void){uint8_t decoded[2];
@@ -79,7 +82,9 @@ static uint8_t project(void){uint8_t i,j,pair=0,n=0,*out=prepared_page?party_oam
  memset(out,0,160);
  if(prepared_kind){
   dx=p->back?-16:-80;dy=-33-target*4;
-  for(i=0;i<36;i++){q=future_source+i*4;x=(p->back?(int8_t)q[3]:(int16_t)q[3])+dx;if(x<minx)minx=x;}
+  /* B765..B797 resets X after each six cells: every row has the same Xs,
+   * including transparent cells, horizontal flips and back attacks. */
+  for(i=0;i<6;i++){q=future_source+i*4;x=(p->back?(int8_t)q[3]:(int16_t)q[3])+dx;if(x<minx)minx=x;}
   /* Use the complete 48px extent, not the changing opaque silhouette. */
   miny=(int16_t)p->y-12-((props&32)?12:0)+dy;
   if(minx<0)dx-=minx;else if(minx>112)dx-=minx-112;
@@ -100,6 +105,9 @@ static uint8_t project(void){uint8_t i,j,pair=0,n=0,*out=prepared_page?party_oam
  prepared_objects=n;magic_prepare_stage=3;return 1;
 }
 static uint8_t capacity(void){uint8_t i,*out=prepared_page?party_oam1:party_oam0;int16_t x,y;
+ /* Empty source pictures contain only borrow()'s at most eight retained
+  * OBJs. Even full overlap cannot exceed the ten-per-line hardware limit. */
+ if(!prepared_kind){magic_prepare_stage=4;return 1;}
  /* Pattern transfers are complete, so reuse their scratch for line counts.
   * Count each OBJ's 16 rows once instead of 144 rows times every OBJ. */
  memset(packed,0,144);
@@ -122,6 +130,8 @@ uint8_t ff3_magic_video(void) BANKED {const MagicAsset*asset;
   if(!mask){sound(255);memset(animation_source,240,160);publish(party_page);phase=4;goto pending;}
   asset=magic_assets+animation_state.spell;bank=asset->bank;assets=asset->data;patterns=asset->patterns;pool_bytes=asset->bytes;
   ff3_party_copy(bank,assets,palette,8);ff3_party_copy(bank,assets+8,&props,1);ff3_party_copy(bank,assets+9,&frame_count,1);last_code=255;
+  /* B696..B6D1 loads/validates once; B6F5 only resets the target cursor. */
+  if(!ff3_magic_begin(&sequence,animation_state.spell,0)){magic_error=4;goto fault;}
   party_work=2;if(!borrow()){magic_error=1;goto fault;}
   picture.enemy=0;picture.back=party_state.battle_type==0x88;picture.properties=props;picture.magic=0;target=0;held=0;
   sound(255);memcpy(text_staging,palette,8);ff3_text_palette_range(0,3,1,text_staging);if(!clear()){magic_error=2;goto fault;}phase=1;goto pending;
@@ -140,9 +150,11 @@ uint8_t ff3_magic_video(void) BANKED {const MagicAsset*asset;
   complete();held--;goto pending;
  }
  if(phase==1){while(target<4&&!(mask&(128>>target)))target++;
-  if(target==4){if(!clear()){magic_error=3;goto fault;}phase=3;goto pending;}
+  /* B70B/B70E already committed the empty source picture. BB0F/BB12 has
+   * the identical OAM and still requires its own publication/wait. */
+  if(target==4){publish(party_page);phase=3;goto pending;}
   picture.x=party_state.x[target];picture.y=party_state.y[target];
-  if(!ff3_magic_begin(&sequence,animation_state.spell,0)){magic_error=4;goto fault;}
+  sequence.index=1;
   sound(animation_state.sound);phase=2;
  }
  if(phase==2){

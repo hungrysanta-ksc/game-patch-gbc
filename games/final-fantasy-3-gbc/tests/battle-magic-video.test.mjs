@@ -32,6 +32,18 @@ test('complete enemy ordinary owner preserves target iteration, sound requests a
   const r=magicSource(data,{profile,spell,mask});assert.equal(r.frames.length,count);
   const targets=[...new Set(r.frames.filter(f=>f.pc===0xb7ad).map(f=>f.target))];assert.deepEqual(targets,[0,1,2,3].filter(i=>mask&(128>>i)));
   assert.equal(r.sounds.length,1+targets.length);assert.equal(r.sounds[0],255);
+  // B70B/B70E and BB0F/BB12 must remain two waits even when their OAM is equal.
+  assert.deepEqual(r.frames.at(-1).raw,r.frames.at(-2).raw,'Final clear is already resident');
   for(const f of r.frames)assert.equal(magicSourcePixels(f,Buffer.alloc(160*144*3),profile>=2).length,160*144*3);
  }
+});
+test('original B765 grid repeats the same six X coordinates for every row',async()=>{
+ const {data}=await input();let cases=0;
+ for(let code=0;code<256;code++)for(const back of [0,1])for(const vertical of [0,1]){
+  if(code===255&&!vertical)continue;
+  const r=magicFrameReference(data,{code,back,vertical,enemy:0,x:back?8:240,y:80,properties:32,magic:0}).visible;
+  for(let i=6;i<36;i++)assert.equal(r[i*4+3],r[(i%6)*4+3],'Original grid '+[code,back,vertical,i]);
+  cases++;
+ }
+ assert.equal(cases,1022);
 });
