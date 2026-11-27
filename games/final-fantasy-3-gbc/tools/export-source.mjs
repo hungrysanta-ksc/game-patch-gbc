@@ -128,6 +128,7 @@ files.push('tools/battle-hp-font.mjs','docs/battle-hp-font.md');
 files.push('src/battle-magic-video.c','src/battle-magic-video.h','tools/battle-magic-assets.mjs','tools/battle-magic-source.mjs','tools/battle-screen.mjs','tools/verify-battle-magic.mjs','tests/battle-magic-video.test.mjs','docs/battle-magic-video.md');
 files.push('docs/battle-magic-residency.md');
 files.push('tools/battle-freeze-audit.mjs','docs/battle-freeze-resources.md');
+files.push('docs/battle-freeze-cell-cache.md');
 const entries=[];for(const path of files){const b=await fs.readFile(ROOT+'/'+path);entries.push({path,bytes:b.length,sha256:hash(b),basis:'Project-authored code, specification or documentation; no extracted assets'});}
 const manifest=JSON.stringify({schema:1,scope:'Source-only development package; generated ROM/audio/private inputs excluded',files:entries},null,2)+'\n',target=ROOT+'/export-manifest.json';
 if(process.argv.includes('--check'))check(await fs.readFile(target,'utf8')===manifest,'Export manifest is stale');else await fs.writeFile(target,manifest);

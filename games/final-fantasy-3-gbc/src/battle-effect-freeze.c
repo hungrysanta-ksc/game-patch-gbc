@@ -15,6 +15,8 @@ static uint8_t old_page,new_page,cells,retained,mixed;
  * bytes; entry/flash/terrain may leave the two resident pages different. */
 static uint8_t map_dirty[9];
 volatile uint16_t effect_map_saved,effect_map_written;
+volatile uint16_t effect_glyph_hits,effect_glyph_reads;
+static uint16_t map_group;
 uint16_t __at(0xd200) effect_pixels[64];
 uint8_t __at(0xd280) effect_glyph[16];
 uint8_t __at(0xd290) effect_encoded[16];
@@ -142,9 +144,28 @@ static uint8_t gather(void){uint8_t i,x,y,xx,yy,j,k;uint16_t key;const uint8_t*o
  return 1;
 }
 static uint8_t reverse_bits(uint8_t v){v=((v&0x55)<<1)|((v>>1)&0x55);v=((v&0x33)<<2)|((v>>2)&0x33);return(v<<4)|(v>>4);}
+/* Only the synchronous composition phase owns this scratch. Original B589
+ * keeps loaded patterns resident while B711 selects cells; do not reread the
+ * same live tile for each overlapping BG cell. No VRAM writer or transfer
+ * runs between this cache's initialization and the last compose(). Palette,
+ * map and pattern uploads reuse text_staging only after composition ends. */
+static void glyph(uint8_t bank,uint8_t tile){uint16_t key=((uint16_t)bank<<8)|tile,*tags=(uint16_t*)(text_staging+128);uint8_t slot=(tile^(tile>>3)^bank)&7,*p=text_staging+(uint16_t)slot*16;
+ if(tags[slot]!=key){read_vram(bank,0x8000+(uint16_t)tile*16,p,16);tags[slot]=key;effect_glyph_reads++;}else effect_glyph_hits++;
+ memcpy(effect_glyph,p,16);
+}
+/* The aligned, single-palette path needs only the intersecting rows. Keep
+ * original transparent pixels and earlier-OBJ priority, including both flips.
+ * A small row kernel avoids the general converter's per-pixel stack/index
+ * work; mixed-color and horizontally offset cells still use that converter. */
+static void overlay(uint8_t flags,int8_t dy){uint8_t row=dy<0?-dy:0,n=8-(dy<0?-dy:dy),lo,hi,mask;uint8_t *out=effect_encoded+(dy>0?dy*2:0),*in=effect_glyph+((flags&64)?7-row:row)*2;
+ do{lo=in[0];hi=in[1];if(flags&32){lo=reverse_bits(lo);hi=reverse_bits(hi);}mask=~(lo|hi);
+  *out=(*out&mask)|lo;out++;*out=(*out&mask)|hi;out++;if(n>1){if(flags&64)in-=2;else in+=2;}
+ }while(--n);
+}
 static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/32*8,xx,yy,i,j,p,found,v,bit,sy,sx,mask,member,count;uint16_t c;int16_t dx,dy;const uint8_t*o,*members=effect_members+(uint16_t)tile*4;
  count=members[3]==254?24:4;
- read_vram(0,(old_page?0x9c00:0x9800)+key,&t,1);read_vram(1,(old_page?0x9c00:0x9800)+key,&a,1);read_vram((a>>3)&1,0x8000+(uint16_t)t*16,effect_glyph,16);
+ c=key&0xfffc;if(c!=map_group){map_group=c;read_vram(0,(old_page?0x9c00:0x9800)+c,text_staging+144,4);read_vram(1,(old_page?0x9c00:0x9800)+c,text_staging+148,4);}
+ t=text_staging[144+(key&3)];a=text_staging[148+(key&3)];glyph((a>>3)&1,t);
  /* The normal field behind a settled party is black. With aligned X and
   * one source palette, native bitplanes can be combined directly. Only
   * the terrain boundary needs the general exact-color cell converter. */
@@ -154,15 +175,15 @@ static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/3
    if(dx||(p!=255&&p!=(o[3]&7))||(o[3]&7)>2){found=0;break;}p=o[3]&7;}
   if(found&&p!=255){memset(effect_encoded,0,16);
    for(i=count;i>0;){i--;member=count==24?8+i:members[i];if(member==255)continue;o=animation_base+member*4;if(!o[0]||!o[2]||keep(o)||o[1]-8!=x)continue;dy=(int16_t)o[0]-16-y;if(dy<=-8||dy>=8)continue;
-    read_vram((o[3]>>3)&1,0x8000+(uint16_t)o[2]*16,effect_glyph,16);
-    for(yy=0;yy<8;yy++){sy=yy-dy;if(sy>=8)continue;if(o[3]&64)sy=7-sy;t=effect_glyph[sy*2];a=effect_glyph[sy*2+1];if(o[3]&32){t=reverse_bits(t);a=reverse_bits(a);}mask=t|a;effect_encoded[yy*2]=(effect_encoded[yy*2]&~mask)|t;effect_encoded[yy*2+1]=(effect_encoded[yy*2+1]&~mask)|a;}ff3_native_service();}
+    glyph((o[3]>>3)&1,o[2]);
+    overlay(o[3],(int8_t)dy);ff3_native_service();}
    p+=4;goto encoded;
   }
  }
  for(yy=0;yy<8;yy++){ff3_native_service();for(xx=0;xx<8;xx++){sy=a&64?7-yy:yy;bit=a&32?xx:7-xx;v=((effect_glyph[sy*2]>>bit)&1)|(((effect_glyph[sy*2+1]>>bit)&1)<<1);effect_pixels[yy*8+xx]=color((a&7)*4+v);}}
  /* Reverse traversal retains the original earlier-OBJ priority. */
  for(i=count;i>0;){ff3_native_service();i--;member=count==24?8+i:members[i];if(member==255)continue;o=animation_base+member*4;if(!o[0]||!o[2]||keep(o))continue;dx=(int16_t)o[1]-8-x;dy=(int16_t)o[0]-16-y;if(dx<=-8||dx>=8||dy<=-8||dy>=8)continue;
-  read_vram((o[3]>>3)&1,0x8000+(uint16_t)o[2]*16,effect_glyph,16);
+  glyph((o[3]>>3)&1,o[2]);
   for(yy=0;yy<8;yy++){ff3_native_service();sy=yy-dy;if(sy>=8)continue;if(o[3]&64)sy=7-sy;
    for(xx=0;xx<8;xx++){sx=xx-dx;if(sx>=8)continue;bit=o[3]&32?sx:7-sx;v=((effect_glyph[sy*2]>>bit)&1)|(((effect_glyph[sy*2+1]>>bit)&1)<<1);if(v)effect_pixels[yy*8+xx]=color(32+(o[3]&7)*4+v);}}
  }
@@ -216,6 +237,7 @@ uint8_t ff3_effect_freeze(void) BANKED {uint8_t i;uint16_t at,size;effect_freeze
  /* OBJ color zero is transparent, not its stored RGB value. The borrowed
   * BG palette must encode the field's actual transparent backdrop. */
  for(i=0;i<3;i++){effect_palettes[32+i*8]=effect_palettes[0];effect_palettes[33+i*8]=effect_palettes[1];}
+ memset(text_staging+128,255,16);map_group=65535;effect_glyph_hits=effect_glyph_reads=0;
  effect_freeze_stage=4;for(i=0;i<cells;i++){if(!compose(effect_keys[i],i))return 0;ff3_native_service();}effect_freeze_stage=5;
  /* At most eight retained original objects beside 32 damage glyphs. The
  * two lower party feet remain OBJ so all live UI rows stay independently writable. */
