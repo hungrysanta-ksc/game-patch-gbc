@@ -6,6 +6,10 @@
 #include "memory.h"
 #include "platform.h"
 #include "battle-workspace.h"
+#ifdef FF3_EFFECTS
+#include "battle-effect-freeze.h"
+uint8_t resident_effect_clone_valid;
+#endif
 void ff3_native_service(void) NONBANKED;
 void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED;
 volatile uint8_t resident_scroll,resident_page,resident_error;
@@ -24,6 +28,9 @@ static void transfer(uint8_t bank,uint16_t address,const uint8_t*src,uint16_t n)
 }
 void ff3_resident_load(uint8_t profile) NONBANKED {uint8_t saved=CURRENT_BANK,bank;const ResidentBgAsset*a;
  if(profile>=RESIDENT_PROFILES){resident_error=1;return;}active_profile=profile;a=resident_bg_assets+profile;
+#ifdef FF3_EFFECTS
+ resident_effect_clone_valid=0;ff3_effect_cache_reset();
+#endif
  memset((void*)0xd4c0,0xa6,16);
  if(a->count>16||a->bytes>4096){resident_error=2;return;}
  memset(text_staging,0,256);ff3_party_palette(1,0,4,text_staging);
@@ -47,7 +54,11 @@ void ff3_resident_fix(void) NONBANKED {resident_fixed=1;cached[0]=cached[1]=255;
 uint8_t ff3_resident_effect_copy(uint16_t address,uint16_t count) NONBANKED {
  const ResidentBgAsset*a=resident_bg_assets+active_profile;
  if(!resident_fixed||(address!=0x8000&&address!=0x9000)||!count||(count&15)||count>2048||a->bytes<2048)return 0;
- ff3_text_rom_copy(1,address,a->bank,a->patterns,count);return 1;
+ /* Keep the signed bank-1 clone until scene reload or a transfer overlaps
+  * it. The unsigned borrowed prefix still restores on every release. */
+ if(address==0x9000&&count==2048&&resident_effect_clone_valid)return 1;
+ ff3_text_rom_copy(1,address,a->bank,a->patterns,count);
+ if(address==0x9000&&count==2048)resident_effect_clone_valid=1;return 1;
 }
 #endif
 #ifdef FF3_STONE

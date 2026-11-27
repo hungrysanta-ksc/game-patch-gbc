@@ -5,4 +5,5 @@ extern uint8_t effect_signed,effect_freeze_error;
 uint8_t ff3_effect_freeze(void) BANKED;
 uint8_t ff3_effect_release(void) BANKED;
 void ff3_effect_read(uint8_t bank,uint16_t address,uint8_t*out,uint16_t count) BANKED;
+void ff3_effect_cache_reset(void) BANKED;
 #endif
