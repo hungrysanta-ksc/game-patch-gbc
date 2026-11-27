@@ -7,6 +7,7 @@
  * Default boot/return re-arms 2. Battle consumes 1 once. */
 extern volatile uint8_t scene_formation,scene_background,scene_rng_seed,scene_rng_ready;
 extern uint8_t encounter_type,encounter_first,encounter_counts[4],encounter_error;
+uint8_t ff3_encounter_map(uint8_t world,uint8_t map) BANKED;
 uint8_t ff3_encounter_prepare(void) BANKED;
 void ff3_encounter_names(void) BANKED;
 #endif

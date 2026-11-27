@@ -69,7 +69,7 @@ BANKED
    if(ff3_field_render(0)){field.result=(uint8_t)field.steps;field.render_dirty=0;}
    ff3_field_flush();
   }
-  if(scene_mode==3&&scene_rng_ready&&field.error==4&&field.trigger==0x20&&!field.world&&field.map==FIELD_MAP&&!field.mode&&!field.speed&&!field.subx&&!field.suby&&!field.request&&!npc_active&&!text_visible){
+  if(scene_mode==3&&scene_rng_ready&&field.error==4&&field.trigger==0x20&&ff3_encounter_map(field.world,field.map)&&!field.mode&&!field.speed&&!field.subx&&!field.suby&&!field.request&&!npc_active&&!text_visible){
    scene_formation=field.battle;scene_background=field.battle_background;
    if(scene_rng_ready==2){scene_rng_seed=ff3_play_seed((const volatile uint8_t*)&field,ff3_state.ram);scene_rng_ready=1;}
    ff3_field_flush();if(ff3_field_video_suspend()){scene_request=0;return;}

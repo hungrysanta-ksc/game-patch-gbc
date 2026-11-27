@@ -160,7 +160,7 @@
     },
     {
       "path": "src/battle-encounter.c",
-      "sha256": "c28c7710f65921b6b1584ca2afa8cec435b8c964c15aac9ba45ca8b3db049608",
+      "sha256": "4fc010d0db7376c7950e17941421d12e55d81fe64d22c5866bd6572d11747d0e",
       "sites": []
     },
     {
@@ -585,7 +585,7 @@
     },
     {
       "path": "src/exploration-viewer.c",
-      "sha256": "2d345da0f8481d865b87bdfcae6887a7be55603090c408773b9cb11a9ccecfc7",
+      "sha256": "de4f5fd71f9db573cde3eaab5e97d6506a341f1345cd6082d5df27ae1771e6ef",
       "sites": [
         {
           "line": 42,
