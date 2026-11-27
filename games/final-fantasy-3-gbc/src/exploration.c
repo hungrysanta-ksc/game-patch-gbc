@@ -3,6 +3,7 @@
 #include "exploration.h"
 #include "game-state.h"
 #include "platform.h"
+#include "npc-dialogue.h"
 #include "exploration-config.h"
 volatile FF3Exploration __at(0xdb70) field;
 typedef char field_reservation[sizeof(FF3Exploration)<=80?1:-1];
@@ -58,8 +59,12 @@ void ff3_field_init(void) BANKED {
  field.reserved_x=FIELD_START_X;field.reserved_y=FIELD_START_Y;field.npc_rng=0x1b;
 }
 void ff3_field_tick(void) BANKED {
- uint8_t d,r;field.ticks++;
+ uint8_t d;field.ticks++;
  if(field.speed){ff3_field_pixel();if(field.speed)return;}
+ /* E20F..E21D: finish this step, then dispatch before polling another key.
+  * Real party/formation rendering is not attached yet. Retain the original
+  * request and stop explicitly; never substitute a diagnostic battle profile. */
+ if(field.trigger&0xe0){if((field.trigger&0xe0)==0x20){ff3_field_battle_background();field.error=4;}else field.error=2;return;}
  /* E32E checks the previously latched A before D219 polls directions. */
  if(field.pressed&0x80){field.pressed=0;ff3_field_front();
   if(ff3_field_talk()){field.face=field.slot;field.mode=1;field.talks++;return;}
@@ -73,7 +78,7 @@ void ff3_field_tick(void) BANKED {
  if(ff3_field_touch()){blocked();field.blocked++;return;}
  properties();if(field.error)return;
  if(field.next&128){field.error=2;return;}
- if(field.next&64){r=ff3_field_random((FF3FieldRng*)&field.rng_index);if(r<field.rate){field.error=4;return;}}
+ if(field.next&64)ff3_field_encounter(npc_active);
  if(!ff3_field_terrain()){field.blocked++;return;}
  /* Poison/floor damage and guest following are pending consumers. */
  if(((ff3_game_state[0x102]|ff3_game_state[0x142]|ff3_game_state[0x182]|ff3_game_state[0x1c2])&2)||((field.next&8)&&!field.property)){field.error=5;return;}

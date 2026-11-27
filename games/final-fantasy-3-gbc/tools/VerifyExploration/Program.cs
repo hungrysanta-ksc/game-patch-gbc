@@ -40,13 +40,15 @@ class Program {
     foreach(var job in fixtures.EnumerateArray()){
      Write("field",job.GetProperty("field").GetString()!);Write("object_part1",job.GetProperty("part1").GetString()!);Write("object_part2",job.GetProperty("part2").GetString()!);
      if(job.TryGetProperty("event",out var ev)){Write("npc_execution",ev.GetProperty("execution").GetString()!);Put("npc_pc",ev.GetProperty("pc").GetUInt32(),2);Put("npc_active",ev.GetProperty("active").GetByte());}else Put("npc_active",0);
-     var motion=job.TryGetProperty("motion",out var m)?Convert.FromHexString(m.GetString()!):new byte[7];SetF(73,motion[0]);SetF(74,motion[0]);SetF(32,motion[0]);SetF(33,motion[1]);for(uint j=0;j<5;j++)SetF(67+j,motion[j+2]);
+     if(job.GetProperty("op").GetByte()<14){var motion=job.TryGetProperty("motion",out var m)?Convert.FromHexString(m.GetString()!):new byte[7];SetF(73,motion[0]);SetF(74,motion[0]);SetF(32,motion[0]);SetF(33,motion[1]);for(uint j=0;j<5;j++)SetF(67+j,motion[j+2]);}
      if(job.TryGetProperty("mapProperty",out var prop)){for(uint j=0;j<1024;j++)Core.SetMemoryValue(7,0xd000+j,1);for(uint j=0;j<256;j++)Core.SetMemoryValue(7,0xd687+j,0);Core.SetMemoryValue(7,0xd687,0x24);Core.SetMemoryValue(7,0xd689,prop.GetByte());Core.SetMemoryValue(7,0xd78a,job.GetProperty("fill").GetByte());}
      SetF(20,job.GetProperty("op").GetByte());
      // A stopped CPU may be inside a storage-bank copy. Restore bank 1
      // before testing the request or reading/writing the next field fixture.
      for(int i=0;(Core.GetMemoryValue(7,0xff70)&7)!=1||F(20)!=0||F(47)!=0||F(65)!=0;i++){Assert(i<1000,"Fixture timeout "+units);Step(1000,0);}
      var e=job.GetProperty("expected");foreach(var name in new[]{"field","part1","part2"}){string key=name=="field"?name:"object_"+name;Assert(Bytes(key,name=="field"?28:192)==e.GetProperty(name).GetString(),"6502 comparison "+units+" op="+job.GetProperty("op")+" "+name+" expected="+e.GetProperty(name).GetString());}
+     if(e.TryGetProperty("encounter",out var encounter))Assert(Mem(7,Addr("field")+76,3)==encounter.GetString(),"Original encounter state "+units+" actual="+Mem(7,Addr("field")+76,3)+" expected="+encounter);
+     if(e.TryGetProperty("step",out var step))Assert(Mem(7,Addr("field")+28,2)==step.GetString()&&Mem(7,Addr("field")+32,2)==e.GetProperty("tick").GetString()&&Mem(7,Addr("field")+70,2)==e.GetProperty("reserved").GetString()&&F(37)==e.GetProperty("pressed").GetByte()&&F(38)==e.GetProperty("blocked").GetByte(),"Original encounter movement "+units);
      if(e.TryGetProperty("motion",out var expectedMotion))Assert(Mem(7,Addr("field")+32,2)+Mem(7,Addr("field")+67,5)==expectedMotion.GetString(),"NPC scheduler state "+units);
      if(e.TryGetProperty("oam",out var expectedOam))Assert(Mem(44,0,160)==expectedOam.GetString(),"Original player animation OAM "+units);
      if(e.TryGetProperty("event",out var ee))Assert(Bytes("npc_execution",5)==ee.GetProperty("execution").GetString()&&Num("npc_pc",2)==ee.GetProperty("pc").GetUInt32()&&Read("npc_active")==ee.GetProperty("active").GetByte(),"Original event execution "+units+" actual="+Bytes("npc_execution",5)+" pc="+Num("npc_pc",2)+" expected="+ee);
