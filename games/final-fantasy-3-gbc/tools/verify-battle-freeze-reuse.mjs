@@ -9,7 +9,7 @@ import {freezeReuseResult} from './battle-freeze-reuse-audit.mjs';
 // Explicit RAM intervention tests, separate from normal pixel/audio evidence.
 // Compare a cached attempt with a forced cold rebuild under identical changes.
 const {local}=await input(),run=promisify(execFile),kind=process.argv[2];
-check(['same','oam','palette','map','glyph','inactive'].includes(kind),'Probe kind');
+check(['same','oam','palette','map','glyph','inactive','inactive-ui','active-ui'].includes(kind),'Probe kind');
 const base=JSON.parse(await fs.readFile(ROOT+'/evidence/battle-magic/load-repeat-config.json'));
 check(hash(await fs.readFile(base.rom))===base.romSha256,'Current repeated-cast fixture');
 const earlyReady=process.argv.includes('--early-ready');
@@ -29,7 +29,7 @@ cfg.audit=`do
   local p=${s.animation_base}+${kind==='glyph'?14:8}*4
   local x=emu.read(p+1,mem)-8;local y=emu.read(p,mem)-16
   local page=emu.read(${s.resident_page},mem);local cell=(y//8)*32+x//8
-  ${kind==='oam'?`flip(p+3,32,mem)`:kind==='palette'?`flip(2,1,46)`:kind==='map'?`flip(8192+6144+page*1024+cell,32,43)`:kind==='glyph'?`local key=((emu.read(p+3,mem)>>3)&1)*8192+emu.read(p+2,mem)*16;flip(key,128,43)`:kind==='inactive'?`flip(6144+(page~1)*1024+1023,1,43)`:''}
+  ${kind==='oam'?`flip(p+3,32,mem)`:kind==='palette'?`flip(2,1,46)`:kind==='map'?`flip(8192+6144+page*1024+cell,32,43)`:kind==='glyph'?`local key=((emu.read(p+3,mem)>>3)&1)*8192+emu.read(p+2,mem)*16;flip(key,128,43)`:kind==='inactive'?`flip(6144+(page~1)*1024+1023,1,43)`:kind==='inactive-ui'?`flip(6144+(page~1)*1024+522,1,43)`:kind==='active-ui'?`flip(6144+page*1024+522,1,43)`:''}
  end,emu.callbackType.write,${s.effect_freeze_stage},${s.effect_freeze_stage},emu.cpuType.gameboy)
 end\n`+base.audit;
 await fs.writeFile(dir+'/config.json',JSON.stringify(cfg));
@@ -38,7 +38,7 @@ await fs.writeFile(dir+'/run.log',r.stdout+r.stderr);
 }
 const actual=JSON.parse(await fs.readFile(cfg.output)),audit=await fs.readFile(cfg.output+'.audit.log','utf8');
 if(earlyReady)check(actual.earlyReadyProbe&&actual.bootFrames>0,'Injected early marker must wait for initialized guard');
-const reuse=freezeReuseResult(audit,4,['same','inactive'].includes(kind)?1:0),maps=freezeResult(audit,4);
+const reuse=freezeReuseResult(audit,4,['same','inactive','inactive-ui','active-ui'].includes(kind)?1:0),maps=freezeResult(audit,4);
 const shots=(await fs.readdir(cfg.home+'/Screenshots')).filter(n=>n.endsWith('.png')).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
 check(shots.length===140&&actual.pictures.length===140&&actual.runs.length===4,'Complete paired casts');
 for(let i=0;i<140;i++)check(screenshotRgb(await fs.readFile(cfg.home+'/Screenshots/'+shots[i])).equals(screen(actual.pictures[i])),'Actual hardware screenshot '+i);

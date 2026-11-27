@@ -204,7 +204,20 @@ static void overlay(uint8_t flags,int8_t dy){uint8_t row=dy<0?-dy:0,n=8-(dy<0?-d
   *out=(*out&mask)|lo;out++;*out=(*out&mask)|hi;out++;if(n>1){if(flags&64)in-=2;else in+=2;}
  }while(--n);
 }
-static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/32*8,xx,yy,i,j,p,found,v,bit,sy,sx,mask,member,count;uint16_t c;int16_t dx,dy;const uint8_t*o,*members=effect_members+(uint16_t)tile*4;
+/* Once overlays settle, only the distinct RGB values need a palette search.
+ * Compact indices behind the consumed 16-bit pixels, preserving first-seen
+ * color order and the first matching palette/index of the old converter. */
+static uint8_t encode_colors(void){uint8_t i,j,n=0,p,found,mask,v,*indices=(uint8_t*)effect_pixels,*map=effect_glyph+8;uint16_t c,*colors=(uint16_t*)effect_glyph;
+ for(i=0;i<64;i++){if(!(i&7))ff3_native_service();c=effect_pixels[i];for(j=0;j<n&&colors[j]!=c;j++);
+  if(j==n){if(n==4){effect_freeze_error=4;return 255;}colors[n++]=c;}indices[i]=j;
+ }
+ for(p=0;p<(mixed?8:7);p++){ff3_native_service();found=1;for(i=0;i<n;i++){for(j=0;j<4&&color(p*4+j)!=colors[i];j++);if(j==4){found=0;break;}map[i]=j;}if(found)break;}
+ if(!found){if(mixed){effect_freeze_error=4;return 255;}p=7;for(i=0;i<n;i++){effect_palettes[56+i*2]=colors[i];effect_palettes[57+i*2]=colors[i]>>8;map[i]=i;}mixed=1;}
+ memset(effect_encoded,0,16);
+ for(i=0;i<64;i++){if(!(i&7))ff3_native_service();v=map[indices[i]];mask=128>>(i&7);if(v&1)effect_encoded[(i>>3)*2]|=mask;if(v&2)effect_encoded[(i>>3)*2+1]|=mask;}
+ return p;
+}
+static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/32*8,xx,yy,i,p,found,v,bit,sy,sx,member,count;int16_t dx,dy;const uint8_t*o,*members=effect_members+(uint16_t)tile*4;
  count=members[3]==254?24:4;
  map_cell(key);
  t=text_staging[144+(key&3)];a=text_staging[148+(key&3)];glyph((a>>3)&1,t);
@@ -231,10 +244,7 @@ static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/3
  }
  /* No color approximation. An unrepresentable mixed cell fails closed;
  * the caller must provide a residual plane before accepting that case. */
- for(p=0;p<(mixed?8:7);p++){found=1;for(i=0;i<64;i++){if(!(i&7))ff3_native_service();c=effect_pixels[i];for(j=0;j<4&&color(p*4+j)!=c;j++);if(j==4){found=0;break;}}if(found)break;}
- if(!found){if(mixed){effect_freeze_error=4;return 0;}p=7;v=0;for(i=0;i<64;i++){if(!(i&7))ff3_native_service();c=effect_pixels[i];for(j=0;j<v&&color(28+j)!=c;j++);if(j==v){if(v==4){effect_freeze_error=4;return 0;}effect_palettes[56+v*2]=c;effect_palettes[57+v*2]=c>>8;v++;}}mixed=1;}
- memset(effect_encoded,0,16);
- for(i=0;i<64;i++){if(!(i&7))ff3_native_service();c=effect_pixels[i];for(j=0;color(p*4+j)!=c;j++);mask=128>>(i&7);if(j&1)effect_encoded[(i>>3)*2]|=mask;if(j&2)effect_encoded[(i>>3)*2+1]|=mask;}
+ p=encode_colors();if(p==255)return 0;
  encoded:if(!store(2816+(uint16_t)tile*16,effect_encoded,16,1))return 0;
  /* Membership for this cell is dead now. Compact the two dependency bytes
   * behind the remaining four-byte entries, then save them in one transfer. */
@@ -243,13 +253,13 @@ static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/3
   * The composed patterns and the source maps keep separate lifetimes. */
  effect_keys[tile]=key|((uint16_t)p<<10);return 1;
 }
-static uint8_t prepare_map(void){uint8_t bank,i,j,first,last,block;uint16_t at,size,key;uint8_t *prior=(uint8_t*)effect_pixels;
+static uint8_t prepare_map(void){uint8_t bank,block;uint16_t at,size,key,i,first,last;uint8_t *prior=effect_members;
  memset(map_dirty,0,sizeof(map_dirty));effect_map_saved=effect_map_written=0;
  /* Composition no longer needs pixels/membership scratch. Compare the live
-  * source page plus its overlay against the real destination in 128B slices.
+  * source page plus its overlay against the real destination in 256B slices.
   * No full map work copy, full-page backup, or guessed restoration. */
- for(bank=0;bank<2;bank++)for(at=0;at<576;at+=128){
-  size=576-at;if(size>128)size=128;
+ for(bank=0;bank<2;bank++)for(at=0;at<576;at+=256){
+  size=576-at;if(size>256)size=256;
   read_vram(bank,(old_page?0x9c00:0x9800)+at,text_staging,size);
   read_vram(bank,(new_page?0x9c00:0x9800)+at,prior,size);
   if(bank)for(i=0;i<size;i++)if((text_staging[i]&7)>=4){effect_freeze_error=8;return 0;}
@@ -257,11 +267,11 @@ static uint8_t prepare_map(void){uint8_t bank,i,j,first,last,block;uint16_t at,s
   /* A VBlank handoff costs more than copying a short unchanged gap. Merge
    * the changed blocks inside this bounded slice; save those gaps too so
    * restoration still returns the exact inactive bytes. */
-  first=255;last=0;for(i=0;i<size;i+=16)if(memcmp(prior+i,text_staging+i,16)){if(first==255)first=i;last=i+16;}
-  if(first==255)continue;
+  first=65535;last=0;for(i=0;i<size;i+=16)if(memcmp(prior+i,text_staging+i,16)){if(first==65535)first=i;last=i+16;}
+  if(first==65535)continue;
   for(i=first;i<last;i+=16){block=bank*36+(at+i)/16;map_dirty[block>>3]|=1<<(block&7);}
-  j=last-first;if(!store((uint16_t)bank*576+at+first,prior+first,j,1))return 0;
-  effect_map_saved+=j;ff3_text_copy(bank,(new_page?0x9c00:0x9800)+at+first,text_staging+first,j);effect_map_written+=j;ff3_native_service();
+  size=last-first;if(!store((uint16_t)bank*576+at+first,prior+first,size,1))return 0;
+  effect_map_saved+=size;ff3_text_copy(bank,(new_page?0x9c00:0x9800)+at+first,text_staging+first,size);effect_map_written+=size;ff3_native_service();
  }
  return 1;
 }
@@ -302,7 +312,7 @@ uint8_t ff3_effect_freeze(void) BANKED {uint8_t i;uint16_t at,size;effect_freeze
  retained=0;for(i=8;i<40;i++)if((i>=32||keep(animation_base+i*4))&&animation_base[i*4]){if(retained==8){effect_freeze_error=6;return 0;}memmove(animation_base+retained*4,animation_base+i*4,4);retained++;}
  memmove(animation_base+128,animation_base,retained*4);memset(animation_base,0,128);memset(animation_base+128+retained*4,0,(8-retained)*4);
  effect_freeze_stage=6;if(!ff3_resident_effect_copy(0x9000,2048)){effect_freeze_error=9;return 0;}mirror(0,0x8700,0x9700,256);effect_freeze_stage=7;
- for(at=0;at<(uint16_t)cells*16;at+=128){size=(uint16_t)cells*16-at;if(size>128)size=128;if(!store(2816+at,text_staging,size,0))return 0;ff3_text_copy(0,0x9000+at,text_staging,size);ff3_native_service();}
+ for(at=0;at<(uint16_t)cells*16;at+=256){size=(uint16_t)cells*16-at;if(size>256)size=256;if(!store(2816+at,text_staging,size,0))return 0;ff3_text_copy(0,0x9000+at,text_staging,size);ff3_native_service();}
  memcpy(text_staging,effect_palettes+32,32);ff3_text_palette_range(1,4,4,text_staging);
  effect_freeze_stage=3;if(!prepare_map())return 0;
  resident_page=new_page;effect_signed=1;effect_freeze_stage=8;return 1;
