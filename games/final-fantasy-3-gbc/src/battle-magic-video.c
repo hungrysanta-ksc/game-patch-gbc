@@ -20,7 +20,7 @@ static Ff3MagicSequence sequence;
 static Ff3MagicFrame picture;
 static Ff3MagicSequence future_sequence;
 static Ff3MagicFrame future_picture;
-static uint8_t prepared_kind,prepared_page,prepared_objects;
+static uint8_t prepared_kind,prepared_page;
 volatile uint8_t magic_prepare_stage,magic_prepare_ahead;
 extern Ff3PartyOam party_state;
 extern uint8_t __at(0xd600) animation_source[160];
@@ -33,9 +33,11 @@ void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANK
 void ff3_native_service(void) NONBANKED;
 #define packed battle_workspace.map
 /* The current original OAM stays in animation_source through all four waits.
- * Future source OAM occupies unused scratch beside the 144 line counters;
+ * Future source OAM occupies unused scratch beside the retained line counts;
  * future native OAM lives only in the inactive hardware shadow. */
 #define future_source (battle_workspace.map+144)
+/* Three disjoint 16px grid rows: screen Y and populated OBJ count. */
+#define rows (battle_workspace.map+304)
 #define base (battle_workspace.map+576)
 #define glyph (battle_workspace.map+608)
 #define pairs (battle_workspace.map+608)
@@ -49,15 +51,19 @@ static void request(uint8_t page){next_page=page;party_pending=1;}
 static void complete(void){while(party_pending){ff3_native_service();__asm halt __endasm;}animation_video_frames++;if(animation_video_probe)animation_video_gate=1;}
 static void publish(uint8_t page){request(page);complete();}
 static void sound(uint8_t v){while(native_request){ff3_native_service();__asm halt __endasm;}native_argument=v&127;native_request=v==255?8:7;}
-static uint8_t borrow(void){uint16_t at;uint8_t i,ok,*q;
+static uint8_t borrow(void){uint16_t at;uint8_t i,ok,*q;int16_t y,end;
  for(i=0;i<8;i++){ok=0;while(!ok){while(STAT_REG&3);CRITICAL{if(!(STAT_REG&3)){OCPS_REG=24+i;old_palette[i]=OCPD_REG;ok=1;}}}}
  if(!ff3_effect_freeze())return 0;
  /* The signed BG clone now protects background pixels during OBJ borrowing. */
  for(at=0;at<256;at+=128){read_vram(0,0x84a0+at,text_staging,128);if(!ff3_wram_copy(4,1152+at,text_staging,128,1))return 0;}
- retained=0;memset(base,0,32);
+ retained=0;memset(base,0,32);memset(packed,0,144);
  for(i=32;i<40;i++){q=animation_base+i*4;if(!q[0])continue;
   if(retained==8||(!(q[3]&8)&&q[2]>=74&&q[2]<90))return 0;read_vram((q[3]>>3)&1,0x8000+(uint16_t)q[2]*16,glyph,16);orient(text_staging+(uint16_t)retained*32,q[3]);memset(text_staging+(uint16_t)retained*32+16,0,16);
-  memcpy(base+retained*4,q,4);base[retained*4+2]=74+retained*2;base[retained*4+3]=q[3]&7;retained++;ff3_native_service();
+  memcpy(base+retained*4,q,4);base[retained*4+2]=74+retained*2;base[retained*4+3]=q[3]&7;retained++;
+  /* These retained cells do not move until release(). Count their real
+   * clipped 16px hardware span once for the entire magic action. */
+  y=(int16_t)q[0]-16;end=q[0];if(y<0)y=0;if(end>144)end=144;
+  for(;y<end;y++)packed[y]++;ff3_native_service();
  }
  /* No consumer owns these pairs until clear() publishes tall OAM. Collect
   * all retained cells before the bounded transfer, not one wait per cell. */
@@ -91,28 +97,32 @@ static uint8_t project(void){uint8_t i,j,pair=0,n=0,*out=prepared_page?party_oam
   if(miny<0)dy-=miny;else if(miny>96)dy-=miny-96;
   code=p->code&127;
   if(code!=last_code){record=assets+10;for(i=0;i<frame_count;i++,record+=19){ff3_party_copy(bank,record,&a,1);if(a==code)break;}if(i==frame_count)return 0;ff3_party_copy(bank,record+1,pairs,18);last_code=code;}
-  for(i=0;i<3;i++)for(j=0;j<6;j++,pair++){
+  for(i=0;i<3;i++){
+   y=(int16_t)p->y-12-((props&32)?12:0)+(p->vertical?(2-i)*16:i*16)+dy;
+   if(y<0||y>128)return 0;rows[i*2]=y;rows[i*2+1]=0;
+   for(j=0;j<6;j++,pair++){
    if(pairs[pair]==255)continue;
    q=future_source+(i*12+j)*4;
    x=(p->back?(int8_t)q[3]:(int16_t)q[3])+dx;
-   y=(int16_t)p->y-12-((props&32)?12:0)+(p->vertical?(2-i)*16:i*16)+dy;
+   y=rows[i*2];
    if(x<0||x>152||y<0||y>128)return 0;
-   out[n*4]=y+16;out[n*4+1]=x+8;out[n*4+2]=pairs[pair]*2;out[n*4+3]=11|(((p->code>>7)^p->back)?32:0)|(p->vertical?64:0);n++;
+   out[n*4]=y+16;out[n*4+1]=x+8;out[n*4+2]=pairs[pair]*2;out[n*4+3]=11|(((p->code>>7)^p->back)?32:0)|(p->vertical?64:0);n++;rows[i*2+1]++;
    if(!(pair&3))ff3_native_service();
+  }
   }
  }
  memcpy(out+n*4,base,retained*4);n+=retained;if(n>40)return 0;
- prepared_objects=n;magic_prepare_stage=3;return 1;
+ magic_prepare_stage=3;return 1;
 }
-static uint8_t capacity(void){uint8_t i,*out=prepared_page?party_oam1:party_oam0;int16_t x,y;
+static uint8_t capacity(void){uint8_t i,y,end,n;
  /* Empty source pictures contain only borrow()'s at most eight retained
   * OBJs. Even full overlap cannot exceed the ten-per-line hardware limit. */
  if(!prepared_kind){magic_prepare_stage=4;return 1;}
- /* Pattern transfers are complete, so reuse their scratch for line counts.
-  * Count each OBJ's 16 rows once instead of 144 rows times every OBJ. */
- memset(packed,0,144);
- for(i=0;i<prepared_objects;i++){ff3_native_service();y=(int16_t)out[i*4]-16;x=y+16;
-  if(y<0)y=0;if(x>144)x=144;for(;y<x;y++)if(++packed[y]>10)return 0;
+ /* B765's fixed grid becomes three disjoint native 16px rows. Count all
+  * cells in each row together against the resident retained-OBJ census.
+  * No pixel or object is dropped, and the actual ten-per-line limit stays. */
+ for(i=0;i<3;i++){ff3_native_service();y=rows[i*2];n=rows[i*2+1];end=y+16;
+  for(;y<end;y++)if(packed[y]+n>10)return 0;
  }
  magic_prepare_stage=4;return 1;
 }

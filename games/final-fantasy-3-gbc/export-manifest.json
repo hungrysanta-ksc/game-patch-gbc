@@ -2374,8 +2374,8 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 82729,
-      "sha256": "51a0bbc99c23db5daed5308475aa75e9cd73f6211fdf1e77edc4e37db83539b2",
+      "bytes": 84231,
+      "sha256": "4c08a8ec7580d9556540a48d7cd929725b103a335d2fd4ae8341efcc2a50cc0f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2386,8 +2386,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 48995,
-      "sha256": "05676bfeb698a115c7f768116bc15fad33fda778233516e0a4625aaa3520b0dc",
+      "bytes": 49566,
+      "sha256": "af430f5ff4dc8d6cad89580369c9736640d726794aa0aa97258fe1fea3cfa4e7",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3208,8 +3208,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 19912,
-      "sha256": "40ed3bf9bb2064ef3078345897bb183e46761f705f83ed141a91323187dae3a5",
+      "bytes": 20031,
+      "sha256": "f253d284633881531dea188667fc6a43c1d9196ff5db5191893d1c239c126905",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3682,8 +3682,8 @@
     },
     {
       "path": "src/battle-magic-video.c",
-      "bytes": 10382,
-      "sha256": "67c60e0b6db142b3752a7796b25215f9983019c16e5cd64b39f7a83ae952b9a4",
+      "bytes": 10792,
+      "sha256": "70164fd0b6ce570acf8be6d6e13da20ea78c8dece1df90689dc55ebf729a9bd0",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3712,8 +3712,8 @@
     },
     {
       "path": "tools/verify-battle-magic.mjs",
-      "bytes": 10701,
-      "sha256": "af007d2389d72c24504f716032782c681e9dfb78faa285937e054cfaa445ac0c",
+      "bytes": 10939,
+      "sha256": "99add2538303c05c063d619c0fffb58baaf3c1881930f2872a7722ee669ace3c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3766,14 +3766,32 @@
     },
     {
       "path": "tools/battle-magic-boundary-audit.mjs",
-      "bytes": 2293,
-      "sha256": "f8a3c51aa5ec39231572b5f8e6f56560de44c66ea966b08651d4d7271ed75e1a",
+      "bytes": 4094,
+      "sha256": "f3f24608216c726a9301bd0facfda2da2494209aee4f3230bfdd5a00cff38804",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/battle-magic-boundaries.md",
       "bytes": 6379,
       "sha256": "488aaf1f1bf091940991980c46129bcf38b6aca2799e3a255781c534e8bd2e6e",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-magic-grid-audit.mjs",
+      "bytes": 1994,
+      "sha256": "039b28fb5c1e17a823558d01ae350ab4ebbe3574a83586a2f933141b5b13fe2d",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-battle-magic-grid.mjs",
+      "bytes": 3349,
+      "sha256": "b5d3d3ff517393c65bb9e820e8e8fca378fda8838ad27493d83abf4a95d83e70",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/battle-magic-scanlines.md",
+      "bytes": 7054,
+      "sha256": "c3e49f4a0c3208f795a5cec47d86930e5f55b9ce9ad40d5a44e64babb4aada36",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]
