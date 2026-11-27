@@ -41,6 +41,7 @@ if(effects){const e=effectsAssets(data,profiles);await fs.writeFile(gen+'/battle
 
 for(const [i,p]of profiles.entries()){
  const bg=resident?residentEnemy(p):null,ground=terrain?terrainAssets(p):null,groundFrames=terrain?terrainFrames(data,p,ground):null;
+ if(effects)check(bg.patterns.length>=2048&&bg.stats.tiles>=128,'Immutable effect prefix precedes mutable terrain');
  if(effects){const h=hitFlashAssets(data,p,bg);hitResources.push(h);const file=gen+'/hit'+i+'.c';await fs.writeFile(file,'#pragma bank '+(59+i)+'\n#include <stdint.h>\n'+(i===0?'const uint8_t hit_job_tiles[]={'+[...hitJobAssets(data)]+'};\n':'')+Object.entries(h).map(([k,b])=>'const uint8_t hit_'+k+i+'[]={'+[...b]+'};').join('\n'));videoSources.push(file);for(const k of Object.keys(h))hitDecl.push('extern const uint8_t hit_'+k+i+'[];');hitDescriptors.push('{hit_maps'+i+',hit_objects'+i+',hit_attributes'+i+',hit_normal'+i+','+(59+i)+'}');}
  const ba=boss?bossCells(data,p):null,bossState=new Map();let bossStep=0,bossPicture=null;
  if(ba){
