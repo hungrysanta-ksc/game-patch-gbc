@@ -59,10 +59,52 @@ static void read_batch(void) __naked {
 93000$:
  ld a,b
  cp #4
- jr c,93010$
+ jp c,93010$
  ldh a,(_KEY1_REG)
  and #128
- jr z,93010$
+ jp z,93010$
+ ; During early VBlank an entire tile fits with a much wider safety margin.
+ ; Recheck LY and mode after masking IE; a failed check returns to the
+ ; original four-byte path, never extending that path's mode-2 window.
+ ld a,b
+ cp #16
+ jr c,93001$
+ ldh a,(_LY_REG)
+ sub #144
+ cp #7
+ jr nc,93001$
+ ldh a,(_IE_REG)
+ push af
+ xor a
+ ldh (_IE_REG),a
+ ldh a,(_LY_REG)
+ sub #144
+ cp #7
+ jr nc,93025$
+ ldh a,(_STAT_REG)
+ and #3
+ cp #1
+ jr nz,93025$
+ ld a,c
+ ldh (_VBK_REG),a
+ .rept 16
+ ld a,(hl+)
+ ld (de),a
+ inc de
+ .endm
+ xor a
+ ldh (_VBK_REG),a
+ pop af
+ ldh (_IE_REG),a
+ ld a,b
+ sub #16
+ ld b,a
+ jp nz,93000$
+ pop bc
+ ret
+93025$:
+ pop af
+ ldh (_IE_REG),a
 93001$:
  ldh a,(_STAT_REG)
  and #2
@@ -96,7 +138,12 @@ static void read_batch(void) __naked {
  dec b
  dec b
  dec b
- jp nz,93000$
+ jr z,93030$
+ ld a,b
+ cp #4
+ jp nc,93001$
+ jp 93010$
+93030$:
  pop bc
  ret
 93010$:
@@ -204,20 +251,33 @@ static void overlay(uint8_t flags,int8_t dy){uint8_t row=dy<0?-dy:0,n=8-(dy<0?-d
   *out=(*out&mask)|lo;out++;*out=(*out&mask)|hi;out++;if(n>1){if(flags&64)in-=2;else in+=2;}
  }while(--n);
 }
-/* Once overlays settle, only the distinct RGB values need a palette search.
- * Compact indices behind the consumed 16-bit pixels, preserving first-seen
- * color order and the first matching palette/index of the old converter. */
-static uint8_t encode_colors(void){uint8_t i,j,n=0,p,found,mask,v,*indices=(uint8_t*)effect_pixels,*map=effect_glyph+8;uint16_t c,*colors=(uint16_t*)effect_glyph;
- for(i=0;i<64;i++){if(!(i&7))ff3_native_service();c=effect_pixels[i];for(j=0;j<n&&colors[j]!=c;j++);
-  if(j==n){if(n==4){effect_freeze_error=4;return 255;}colors[n++]=c;}indices[i]=j;
+/* Keep the resident source palette indices through overlay, as the original
+ * tile/attribute path does. Resolve each used index to RGB once, after OBJ
+ * priority has settled; distinct indices may still name the same color.
+ * The second half of the old RGB scratch memoizes all 64 source indices. */
+static uint8_t encode_colors(void){uint8_t i,j,n=0,p,found,lo,hi,v,*indices=(uint8_t*)effect_pixels,*resolved=indices+64,*map=effect_glyph+8,*out=effect_encoded;uint16_t c,*colors=(uint16_t*)effect_glyph;
+ memset(resolved,255,64);
+ for(i=0;i<64;i++){if(!(i&7))ff3_native_service();v=indices[i];j=resolved[v];if(j==255){c=color(v);for(j=0;j<n&&colors[j]!=c;j++);
+  if(j==n){if(n==4){effect_freeze_error=4;return 255;}colors[n++]=c;}resolved[v]=j;}indices[i]=j;
  }
  for(p=0;p<(mixed?8:7);p++){ff3_native_service();found=1;for(i=0;i<n;i++){for(j=0;j<4&&color(p*4+j)!=colors[i];j++);if(j==4){found=0;break;}map[i]=j;}if(found)break;}
  if(!found){if(mixed){effect_freeze_error=4;return 255;}p=7;for(i=0;i<n;i++){effect_palettes[56+i*2]=colors[i];effect_palettes[57+i*2]=colors[i]>>8;map[i]=i;}mixed=1;}
- memset(effect_encoded,0,16);
- for(i=0;i<64;i++){if(!(i&7))ff3_native_service();v=map[indices[i]];mask=128>>(i&7);if(v&1)effect_encoded[(i>>3)*2]|=mask;if(v&2)effect_encoded[(i>>3)*2+1]|=mask;}
+ for(i=0;i<8;i++){ff3_native_service();lo=hi=0;for(j=0;j<8;j++){v=map[*indices++];lo=(lo<<1)|(v&1);hi=(hi<<1)|(v>>1);}*out++=lo;*out++=hi;}
  return p;
 }
-static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/32*8,xx,yy,i,p,found,v,bit,sy,sx,member,count;int16_t dx,dy;const uint8_t*o,*members=effect_members+(uint16_t)tile*4;
+/* Decode each resident bitplane row once; constant one-bit shifts replace
+ * repeated per-pixel variable shifts and coordinate subtraction. */
+static void background_indices(uint8_t flags){uint8_t row,x,lo,hi,base=(flags&7)*4,*out=(uint8_t*)effect_pixels,*in=effect_glyph+((flags&64)?14:0);
+ for(row=0;row<8;row++){ff3_native_service();lo=in[0];hi=in[1];if(flags&32){lo=reverse_bits(lo);hi=reverse_bits(hi);}
+  for(x=0;x<8;x++){*out++=base+(lo>>7)+((hi>>6)&2);lo<<=1;hi<<=1;}if(row<7){if(flags&64)in-=2;else in+=2;}}
+}
+static void overlay_indices(uint8_t flags,int8_t dx,int8_t dy){uint8_t row=dy<0?-dy:0,n=8-(dy<0?-dy:dy),skip=dx<0?-dx:0,width=8-(dx<0?-dx:dx),x,lo,hi,v,base=32+(flags&7)*4;
+ uint8_t *out=(uint8_t*)effect_pixels+(dy>0?dy*8:0)+(dx>0?dx:0),*in=effect_glyph+((flags&64)?7-row:row)*2;
+ do{ff3_native_service();lo=in[0];hi=in[1];if(flags&32){lo=reverse_bits(lo);hi=reverse_bits(hi);}lo<<=skip;hi<<=skip;
+  for(x=0;x<width;x++){v=(lo>>7)|((hi>>6)&2);if(v)out[x]=base+v;lo<<=1;hi<<=1;}out+=8;if(n>1){if(flags&64)in-=2;else in+=2;}
+ }while(--n);
+}
+static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/32*8,i,p,found,v,member,count;int16_t dx,dy;const uint8_t*o,*members=effect_members+(uint16_t)tile*4;
  count=members[3]==254?24:4;
  map_cell(key);
  t=text_staging[144+(key&3)];a=text_staging[148+(key&3)];glyph((a>>3)&1,t);
@@ -235,12 +295,11 @@ static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/3
    p+=4;goto encoded;
   }
  }
- for(yy=0;yy<8;yy++){ff3_native_service();for(xx=0;xx<8;xx++){sy=a&64?7-yy:yy;bit=a&32?xx:7-xx;v=((effect_glyph[sy*2]>>bit)&1)|(((effect_glyph[sy*2+1]>>bit)&1)<<1);effect_pixels[yy*8+xx]=color((a&7)*4+v);}}
+ background_indices(a);
  /* Reverse traversal retains the original earlier-OBJ priority. */
  for(i=count;i>0;){ff3_native_service();i--;member=count==24?8+i:members[i];if(member==255)continue;o=animation_base+member*4;if(!o[0]||!o[2]||keep(o))continue;dx=(int16_t)o[1]-8-x;dy=(int16_t)o[0]-16-y;if(dx<=-8||dx>=8||dy<=-8||dy>=8)continue;
   glyph((o[3]>>3)&1,o[2]);
-  for(yy=0;yy<8;yy++){ff3_native_service();sy=yy-dy;if(sy>=8)continue;if(o[3]&64)sy=7-sy;
-   for(xx=0;xx<8;xx++){sx=xx-dx;if(sx>=8)continue;bit=o[3]&32?sx:7-sx;v=((effect_glyph[sy*2]>>bit)&1)|(((effect_glyph[sy*2+1]>>bit)&1)<<1);if(v)effect_pixels[yy*8+xx]=color(32+(o[3]&7)*4+v);}}
+  overlay_indices(o[3],(int8_t)dx,(int8_t)dy);
  }
  /* No color approximation. An unrepresentable mixed cell fails closed;
  * the caller must provide a residual plane before accepting that case. */
