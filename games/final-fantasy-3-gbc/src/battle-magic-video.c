@@ -73,8 +73,7 @@ static uint8_t borrow(void){uint16_t at;uint8_t i,ok,*q;int16_t y,end;
  return 1;
 }
 static uint8_t release(void){if(!ff3_resident_effect_copy(0x8000,pool_bytes))return 0;
- magic_tall=0;memcpy(text_staging,old_palette,8);ff3_text_palette_range(0,3,1,text_staging);if(!ff3_effect_release())return 0;
- if(!ff3_wram_copy(4,1152,text_staging,256,0))return 0;ff3_text_copy(0,0x84a0,text_staging,256);
+ magic_tall=0;memcpy(text_staging,old_palette,8);ff3_text_palette_range(0,3,1,text_staging);if(!ff3_effect_release(1))return 0;
  return 1;
 }
 static uint8_t prepare_source(void){uint8_t decoded[2];
