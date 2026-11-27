@@ -2,6 +2,21 @@
 #pragma bank 16
 #endif
 #include "battle-context.h"
+#include <stddef.h>
+#include "exploration.h"
+uint8_t ff3_play_seed(const volatile uint8_t *field,const uint8_t *audio) FF3_STATE_BANKED {
+ /* Only semantic values; exclude struct padding, addresses, renderer cost and
+  * diagnostics. Both owners run on the main thread, never in the audio ISR. */
+ #define F(n) offsetof(FF3Exploration,n)
+ static const uint8_t offsets[]={F(x),F(y),F(subx),F(suby),F(direction),F(speed),F(z),F(current),F(next),F(property),F(trigger),F(keys),F(previous),F(world),F(map),F(rate),F(rng_index),F(rng_direction),F(npc_cursor),F(npc_rng),F(reserved_x),F(reserved_y),F(formation_rng),F(battle),F(battle_background),F(frame),F(dialogue_frame),F(steps),F(steps)+1,F(ticks),F(ticks)+1};
+ #undef F
+ uint8_t i,a=0,carry=0;uint16_t sum;
+ /* FC29's ADC chain, with an explicitly different platform input stream.
+  * No service/re-entry during the fold; interrupts and APU output continue. */
+ for(i=0;i<sizeof(offsets);i++){sum=(uint16_t)a+field[offsets[i]]+carry;a=(uint8_t)sum;carry=sum>>8;}
+ for(i=0;i<192;i++){sum=(uint16_t)a+audio[i]+carry;a=(uint8_t)sum;carry=sum>>8;}
+ return a;
+}
 /* FA26 -> FB17/FB87 -> 2E/9E8E..9F28 -> FC27..FC2E.
  * Apply the 27 source DP writes without allocating a second 256-byte image.
  * 9F98 leaves A=0; carry comes from the vehicle/flags comparisons at 9EAF.

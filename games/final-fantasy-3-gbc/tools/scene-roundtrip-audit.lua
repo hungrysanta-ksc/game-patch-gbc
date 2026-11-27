@@ -3,6 +3,27 @@ local mem=emu.memType.gameboyDebug
 local writes,bad,dma,badDma,off,badOff,apu,apuHash,foreignApu=0,0,0,0,0,0,0,0,0
 local started=false
 local function read(a)return emu.read(a,mem)end
+local seedCaptures={}
+-- Capture the two immutable main-thread owners after the fold, before the
+-- ready publication. No state changes, no extra SRAM/WRAM reservation.
+if sym.scene_rng_ready then
+ emu.addMemoryCallback(function(_,v)
+  if v==1 and read(sym.scene_phase)==1 then
+   local f,s={},{}
+   for i=0,78 do f[#f+1]=string.format('%02x',read(sym.field+i)) end
+   for i=0,191 do s[#s+1]=string.format('%02x',read(sym.ff3_state+i)) end
+   seedCaptures[#seedCaptures+1]='encounter-entropy:'..read(sym.scene_rng_seed)..':'..table.concat(f)..':'..table.concat(s)
+  end
+ end,emu.callbackType.write,sym.scene_rng_ready,sym.scene_rng_ready,emu.cpuType.gameboy)
+end
+-- Mesen's script log is a bounded ring. Preserve early observations in Lua,
+-- then re-emit the complete bounded set at the final audio boundary.
+emu.addEventCallback(function()
+ if read(sym.native_done)~=0 then
+  for _,capture in ipairs(seedCaptures) do emu.log(capture) end
+  emu.log('encounter-entropy-count:'..#seedCaptures)
+ end
+end,emu.eventType.codeBreak)
 emu.addMemoryCallback(function(_,v)
  if not started and v==0 and read(sym.native_request)==255 and read(sym.native_irq_busy)==0 then started=true end
 end,emu.callbackType.write,sym.native_clock,sym.native_clock,emu.cpuType.gameboy)

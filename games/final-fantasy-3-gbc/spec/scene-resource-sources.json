@@ -160,7 +160,7 @@
     },
     {
       "path": "src/battle-encounter.c",
-      "sha256": "5cc6afc928b8687c7119f29939b3ff57cad4bed2a834e8a9a130b2411e92f3ce",
+      "sha256": "661d5ad43298d2626c6d1fa3bb15a26930638413145d694f37a0457400804602",
       "sites": []
     },
     {
@@ -585,10 +585,10 @@
     },
     {
       "path": "src/exploration-viewer.c",
-      "sha256": "786b95ddf0aa4aa0467e07fec67a482c2e8fb83f0c5aade7fd705db48058df4a",
+      "sha256": "630a7c6fa537321c9c26d573ec7190c738edf160fd0d8e5ed6c5c2433f383709",
       "sites": [
         {
-          "line": 40,
+          "line": 42,
           "text": "cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;"
         }
       ]
@@ -867,7 +867,7 @@
     },
     {
       "path": "src/scene-loop.c",
-      "sha256": "9a91b82cd65ec28d01242fea2da0fb807bfc918e5cdbac9398b3e23a4aa85473",
+      "sha256": "f378d44e4ff83855d5a701448b0bdf13124556186dc900082660f0bcf4f6b212",
       "sites": []
     },
     {

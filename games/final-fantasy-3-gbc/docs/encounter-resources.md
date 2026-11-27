@@ -37,10 +37,10 @@ profile is never substituted for an unknown key.
 
 This is a development integration, **not completed combat**. The field test
 changes the eligible-tile bit/rate and supplies the output seed of `3F/FC27`.
-The full virtual NES zero-page owner needed to derive that seed from normal
-gameplay is still absent. With no explicit seed, mode 6 leaves the selected
-encounter pending even if a diagnostic enter request is sent. It does not
-hash arbitrary GBC RAM or silently choose a seed/profile. Action scripts,
+This paragraph describes the original explicit-seed regression. The later
+[approved GBC play-state seed](play-seed.md) supplies ordinary mode-6 entry
+without an external seed; ready=0 still provides a deliberate diagnostic
+hold. It does not hash arbitrary GBC RAM or silently choose a profile. Action scripts,
 hit counts and damage values remain explicit consumer inputs, not a damage
 calculation or battle-AI implementation. Return request 2 is diagnostic
 completion, not victory/escape/reward processing.
@@ -150,7 +150,7 @@ their roundtrip durations are not normal-play animation benchmarks. Entry
 the controlled tile movement and pending-seed observation. The 0.5-second
 entry target remains a separate acceptance item.
 
-Remaining boundaries include natural field/ZP seeding, other maps/backgrounds,
+Remaining boundaries include natural field reachability, other maps/backgrounds,
 stone, source command and enemy-action selection, enemy-target spell and
 special-action owners, damage/status updates, and victory/defeat/escape commits.
 R2/product completion counters do not advance on this diagnostic evidence.

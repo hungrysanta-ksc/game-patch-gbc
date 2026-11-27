@@ -147,6 +147,7 @@ files.push('tools/field-battle-boundary.mjs','tools/scene-resource-contract.mjs'
 files.push('src/scene-video.c','src/scene-video-probe.c','src/battle-party-video.h','tools/verify-scene-video.mjs','tools/verify-scene-endpoints.mjs','tools/audit-scene-link.mjs','tools/VerifySceneVideo/Program.cs','tools/VerifySceneVideo/VerifySceneVideo.csproj','docs/scene-video-handoff.md');
 files.push('src/battle-encounter.c','src/battle-encounter.h','tools/encounter-screen-assets.mjs','tools/encounter-entry-source.mjs','tools/verify-encounter-roundtrip.mjs','tests/encounter-resources.test.mjs','docs/encounter-resources.md');
 files.push('tools/encounter-seed-source.mjs','tools/audit-encounter-seed.mjs','tests/encounter-seed.test.mjs','docs/encounter-seed-boundary.md');
+files.push('tools/play-seed-source.mjs','tools/seed-ownership.mjs','tools/audit-seed-ownership.mjs','tests/play-seed.test.mjs','docs/play-seed.md');
 const entries=[];for(const path of files){const b=await fs.readFile(ROOT+'/'+path);entries.push({path,bytes:b.length,sha256:hash(b),basis:'Project-authored code, specification or documentation; no extracted assets'});}
 const manifest=JSON.stringify({schema:1,scope:'Source-only development package; generated ROM/audio/private inputs excluded',files:entries},null,2)+'\n',target=ROOT+'/export-manifest.json';
 if(process.argv.includes('--check'))check(await fs.readFile(target,'utf8')===manifest,'Export manifest is stale');else await fs.writeFile(target,manifest);

@@ -12,6 +12,9 @@ void ff3_entry_rules(FF3BattleRng *rng,Ff3Entry *s) FF3_STATE_BANKED;
 /* Complete source field DP at FA26, before battle initialization. No GBC RAM
  * addresses or fabricated missing field/sound bytes are accepted here. */
 uint8_t ff3_encounter_seed(const uint8_t *field_dp,uint8_t flags) FF3_STATE_BANKED;
+/* Approved GBC entropy contract: logical field values, then live source audio
+ * RAM. This is not a fabricated NES DP image or a bit-identical NES seed. */
+uint8_t ff3_play_seed(const volatile uint8_t *field,const uint8_t *audio) FF3_STATE_BANKED;
 void ff3_status_view(Ff3StatusView *s) FF3_STATE_BANKED;
 void ff3_cannon_prepare(FF3BattleRng *rng,Ff3Cannon *s) FF3_STATE_BANKED;
 /* A300's exhausted marker is an output, not this function's return code.

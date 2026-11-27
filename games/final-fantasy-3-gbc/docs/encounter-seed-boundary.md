@@ -1,5 +1,9 @@
 # Original encounter seed boundary
 
+This document records the exact-NES-input milestone. The later approved
+[GBC play-state seed](play-seed.md) now supplies ordinary mode-6 entries;
+the complete NES-DP consumer below remains a separate fidelity diagnostic.
+
 This step implements and verifies the original **consumer** of the field
 zero page. It does not manufacture a complete source zero page from the
 current compact GBC field structure. Mode 6's explicit seed boundary remains
