@@ -3,6 +3,13 @@
 #endif
 #include "battle-motion-sprites.h"
 #include "battle-motion-sprites-assets.h"
+#include <string.h>
+/* FC27 has two immutable outputs. A bounded 64-byte read lets the entry
+ * owner refill audio between chunks instead of recomputing 256 products. */
+uint8_t ff3_motion_rng_copy(uint8_t variant,uint8_t offset,uint8_t*out) FF3_STATE_BANKED {
+ if(variant>1||(offset&63))return 0;
+ memcpy(out,motion_rng_tables+(uint16_t)variant*256+offset,64);return 1;
+}
 /* 33/A317..A347: fist jitter precedes the independent hit RNG consumer.
  * Frames 4/13 intentionally use the actor palette, not weapon palette 3. */
 uint8_t ff3_motion_fist(uint8_t x,uint8_t y,uint8_t hand,uint8_t back,uint8_t palette,Ff3BattleRngCursor*rng,uint8_t*out) FF3_STATE_BANKED {

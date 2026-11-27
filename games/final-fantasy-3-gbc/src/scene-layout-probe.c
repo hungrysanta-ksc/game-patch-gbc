@@ -28,7 +28,7 @@ static void run(void) BANKED {uint8_t cycle;
  ff3_text_video_init();text_idle=ff3_native_service;state_ready=0xa5;while(!state_start){}
  /* Cold entry alternatives for existing full picture/audio regressions on
   * this exact combined ROM. Separate boots, not a field/battle roundtrip. */
- if(state_start==4||state_start==5){scene_mode=state_start==5?2:1;ff3_scene_run();while(1){ff3_native_service();__asm halt __endasm;}}
+ if(state_start>=4&&state_start<=6){scene_mode=state_start-3;ff3_scene_run();while(1){ff3_native_service();__asm halt __endasm;}}
  if(state_start==2){ff3_scene_field_begin();field_legacy_main();}
  if(state_start==3){ff3_scene_field_begin();ff3_scene_battle_begin();battle_legacy_main();}
  ff3_native_begin();native_request=255;ff3_native_service();

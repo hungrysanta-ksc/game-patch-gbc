@@ -1,5 +1,10 @@
 #pragma bank 55
 #include <string.h>
+#ifdef FF3_SCENE_LAYOUT
+#include "scene-loop.h"
+#include "battle-live-party.h"
+extern uint8_t ff3_game_state[1024];
+#endif
 #include "battle-animation-video.h"
 #include "battle-strike-video.h"
 #include "battle-bow-video.h"
@@ -95,6 +100,9 @@ void ff3_strike_reset(void) BANKED {phase=strike_error=strike_picture=0;strike_p
  * remain pending before changing party/resource state, never successful no-ops. */
 uint8_t ff3_strike_video(void) BANKED {uint8_t i,w,s,page,*out;
  if(!phase){
+#ifdef FF3_SCENE_LAYOUT
+  if(scene_mode==3&&animation_state.actor<4){const uint8_t*e=ff3_game_state+512+(uint16_t)animation_state.actor*64;strike_weapons[0]=e[3];strike_weapons[1]=e[5];}
+#endif
   if(strike_critical||animation_state.actor>=4||!animation_state.target_enemy||animation_state.target>=8)return 2;
   for(i=0;i<2;i++){if(strike_weapons[i]>=88)return 2;ff3_party_copy(53,strike_props+strike_weapons[i]*3,kind+i,1);}
   bow_pair=(kind[0]==3&&kind[1]==8)||(kind[0]==8&&kind[1]==3);
@@ -114,7 +122,13 @@ uint8_t ff3_strike_video(void) BANKED {uint8_t i,w,s,page,*out;
  party_work=2;ff3_native_service();
  if(phase==1||phase==5){if(party_motion.x[actor]!=party_motion.destination[actor]){ff3_entry_motion_direction(&party_motion,phase==5);memcpy(party_state.x,party_motion.x,4);memcpy(party_state.y,party_motion.y,4);memcpy(party_state.pose,party_motion.pose,4);if(!publish(255,255))goto fault;goto pending;}
   memcpy(party_state.pose,saved,4);
-  if(phase==5){ff3_text_rom_copy(0,0x8390,54,strike_restore+(uint16_t)party_profile*512,512);ff3_party_copy(54,strike_restore_pal+(uint16_t)party_profile*8,text_staging,8);ff3_text_palette_range(0,3,1,text_staging);if(!publish(255,255))goto fault;phase=6;goto pending;}
+  if(phase==5){
+#ifdef FF3_SCENE_LAYOUT
+  ff3_text_rom_copy(0,0x8390,54,strike_restore+(uint16_t)FF3_PARTY_SHARED(party_profile)*512,512);if(scene_mode>=2)ff3_live_party_command();ff3_party_copy(54,strike_restore_pal+(uint16_t)FF3_PARTY_SHARED(party_profile)*8,text_staging,8);
+#else
+  ff3_text_rom_copy(0,0x8390,54,strike_restore+(uint16_t)party_profile*512,512);ff3_party_copy(54,strike_restore_pal+(uint16_t)party_profile*8,text_staging,8);
+#endif
+ff3_text_palette_range(0,3,1,text_staging);if(!publish(255,255))goto fault;phase=6;goto pending;}
   ff3_text_rom_copy(0,0x8390,54,strike_jobs+(uint16_t)status_tail.jobs[actor]*256,256);
   for(i=0;i<2;i++)ff3_text_rom_copy(0,0x8490+(uint16_t)i*128,53,strike_patterns+(uint16_t)strike_weapons[i]*128,128);
   phase=2;

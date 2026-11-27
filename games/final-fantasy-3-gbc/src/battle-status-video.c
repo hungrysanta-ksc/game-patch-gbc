@@ -43,7 +43,11 @@ static uint8_t refreshed;
 #endif
 static uint8_t work[8],native[32];
 void ff3_status_video_reset(uint8_t profile) BANKED {
- const StatusVideoAsset*a=status_assets+profile;profile_id=profile;status_stage=status_load=0;
+ const StatusVideoAsset*a=status_assets+profile;profile_id=profile;
+#ifdef FF3_SCENE_LAYOUT
+ profile_id=FF3_PARTY_SHARED(profile);
+#endif
+ status_stage=status_load=0;
  ff3_party_copy(a->bank,a->tail,(uint8_t*)&status_tail,75);
  ff3_party_copy(a->bank,a->status,(uint8_t*)&status_state,35);
  memset(status_source,240,64);
@@ -80,12 +84,12 @@ uint8_t ff3_status_video_advance(void) BANKED {
    if(!n||n>64||at+n>a->bytes||dest<0x8000||dest+n>0x9000)return 3;
 #ifdef FF3_SCENE_LAYOUT
    /* B52A uses the current status ID, not the diagnostic icon set. */
-   if(scene_mode==2&&dest<0x8590&&dest+n>0x8490){if(dest<0x8490||dest+n>0x8590)return 3;at+=n;continue;}
+   if(scene_mode>=2&&dest<0x8590&&dest+n>0x8490){if(dest<0x8490||dest+n>0x8590)return 3;at+=n;continue;}
 #endif
    ff3_party_copy(a->bank,a->blocks+at,text_staging,n);ff3_text_copy(0,dest,text_staging,n);ff3_native_service();at+=n;
   }
 #ifdef FF3_SCENE_LAYOUT
-  if(scene_mode==2)ff3_live_party_command();
+  if(scene_mode>=2)ff3_live_party_command();
 #endif
   status_load=254;ff3_party_copy(a->bank,a->palette+24,text_staging,8);
   ff3_party_palette(0,3,1,text_staging);status_load=0;status_stage=2;return 0;

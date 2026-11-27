@@ -3,7 +3,8 @@
 #endif
 #include "battle-context.h"
 static uint8_t random(FF3BattleRng *r,uint8_t upper){uint8_t n;ff3_battle_random(r,1,0,upper,&n);return n;}
-static uint8_t average(const uint8_t *p,uint8_t n){uint16_t sum=0;uint8_t count=0;while(n--){if(*p){sum+=*p;count++;}p++;}return count?(uint8_t)(sum/count):255;}
+/* FC92 returns a zero quotient when both sum and divisor are zero. */
+static uint8_t average(const uint8_t *p,uint8_t n){uint16_t sum=0;uint8_t count=0;while(n--){if(*p){sum+=*p;count++;}p++;}return count?(uint8_t)(sum/count):0;}
 /* 34/87BE..88E0: vehicle precedes surprise RNG; original zero levels are
  * excluded from the average, regardless of a member's alive/dead state. */
 void ff3_entry_rules(FF3BattleRng *rng,Ff3Entry *s) FF3_STATE_BANKED {

@@ -10,6 +10,7 @@
 #include "memory.h"
 #ifdef FF3_SCENE_LAYOUT
 #include "scene-loop.h"
+#include "battle-encounter.h"
 #endif
 void ff3_native_begin(void) NONBANKED;void ff3_native_service(void) NONBANKED;
 extern volatile uint8_t native_request,native_argument;
@@ -28,6 +29,8 @@ BANKED
 {uint8_t k,pressed,old=0,i,was,catchup;
 #ifdef FF3_SCENE_LAYOUT
  if(scene_mode&&scene_phase==4){
+  /* Diagnostic completion consumes this request, without a victory/result. */
+  if(scene_mode==3){field.trigger=0;field.error=0;}
   if(!ff3_field_restore_display()){scene_fault=4;return;}
   ff3_field_video_init();ff3_text_video_init();text_idle=ff3_native_service;
   old=joypad();field.previous=neskeys(old);field.pressed=0;
@@ -54,7 +57,19 @@ BANKED
  while(1){ff3_native_service();
 #ifdef FF3_SCENE_LAYOUT
   /* Finish the source tile step/event before exchanging owners. */
-  if(scene_mode&&scene_request==1&&!field.mode&&!field.error&&!field.trigger&&!field.speed&&!field.subx&&!field.suby&&!field.request&&!npc_active&&!text_visible){
+  /* 3F/FA2F disables the source PPU before FA34 preserves field context.
+   * GBC publication is asynchronous: drain/retry the final tile picture
+   * before suspending that owner. Never poll another game tick here. */
+  if(field.error==4&&field.trigger==0x20&&field.render_dirty){
+   ff3_field_flush();
+   if(ff3_field_render(0)){field.result=(uint8_t)field.steps;field.render_dirty=0;}
+   ff3_field_flush();
+  }
+  if(scene_mode==3&&scene_rng_ready&&field.error==4&&field.trigger==0x20&&!field.world&&field.map==29&&!field.mode&&!field.speed&&!field.subx&&!field.suby&&!field.request&&!npc_active&&!text_visible){
+   scene_formation=field.battle;scene_background=field.battle_background;
+   ff3_field_flush();if(ff3_field_video_suspend()){scene_request=0;return;}
+  }
+  if(scene_mode&&scene_mode!=3&&scene_request==1&&!field.mode&&!field.error&&!field.trigger&&!field.speed&&!field.subx&&!field.suby&&!field.request&&!npc_active&&!text_visible){
    ff3_field_flush();if(ff3_field_video_suspend()){scene_request=0;return;}
   }
 #endif

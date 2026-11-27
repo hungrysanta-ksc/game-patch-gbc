@@ -19,7 +19,7 @@ export function contextReference(rom){
 }
 export function contextCases(){const rows=[],add=(op,s,n=0)=>rows.push({op,state:s,counters:[17,n,239]});
  for(let flags=0;flags<256;flags++)for(const vehicle of [0,6,7])for(const world of [0,1]){const s=Buffer.alloc(26,77);s.set([flags,world,vehicle,255]);s.set([0,1,33,98,1,1,0,0,99,0,0,0],4);add(1,s,flags);}
- for(const levels of [[0,0],[1,99],[99,1],[255,255]])for(let n=0;n<256;n+=7){const s=Buffer.alloc(26);s.fill(levels[0],4,8);s.fill(levels[1],8,16);add(1,s,n);}
+ for(const levels of [[0,0],[0,1],[1,0],[1,99],[99,1],[255,255]])for(let n=0;n<256;n+=7){const s=Buffer.alloc(26);s.fill(levels[0],4,8);s.fill(levels[1],8,16);add(1,s,n);}
  for(let a=0;a<256;a++)for(let b=0;b<256;b+=32)for(const partial of [0,2,4,6]){const s=Buffer.alloc(8,0xaa);s[0]=a;s[1]=b|partial;add(2,s);}
  for(let mask=0;mask<256;mask++){const s=Buffer.alloc(578,0xaa);for(let i=0;i<8;i++){s[i*64+1]=(mask&(1<<i))?128:[0,64,32,8][i&3];s.writeUInt16LE([0,1,249,250,251,312,313,65535][i],i*64+3);}add(3,s,mask);}
  for(const limit of [3,7])for(let mask=0;mask<256;mask++){const s=Buffer.alloc(30);for(let i=0;i<8;i++){s[i*2]=(mask&(1<<i))?[128,64,0][i%3]:0;s[i*2+1]=(mask&(1<<i))&&i%3===2?1:0;s[16+i]=128|i;}s.set([limit,17,99,99,55,66],24);add(4,s,mask);}

@@ -2,6 +2,7 @@
 #include <gb/cgb.h>
 #ifdef FF3_SCENE_LAYOUT
 #include "scene-loop.h"
+#include "battle-encounter.h"
 #include "battle-live-party.h"
 #endif
 #include <string.h>
@@ -182,13 +183,17 @@ static void reset_motion(void){const PartyVideoAsset*a=party_assets+party_profil
  ff3_status_video_reset(party_profile);
 #endif
 #ifdef FF3_SCENE_LAYOUT
- if(scene_mode==2&&!ff3_live_party_prepare()){party_error=80+live_party_error;return;}
+ if(scene_mode>=2&&!ff3_live_party_prepare()){party_error=80+live_party_error;return;}
+ if(scene_mode==3){party_motion.battle_type=party_state.battle_type=encounter_type;ff3_encounter_names();}
  if(scene_mode)ff3_scene_song(0x20); /* 2E/9D84: after actual party resources. */
 #endif
  if(!ff3_entry_start(&party_motion)){party_error=2;return;}present();
 }
 static void load(void){const PartyVideoAsset*a;uint8_t page;
  if(party_profile>=PARTY_PROFILES){party_error=3;return;}a=party_assets+party_profile;
+#ifdef FF3_SCENE_LAYOUT
+ a=party_assets+FF3_PARTY_SHARED(party_profile);
+#endif
  /* A request may arrive after the main-loop work flag was sampled. Loading
   * owns the same cooperative two-tick refill contract as picture work. */
  party_work=1;
@@ -207,7 +212,7 @@ static void load(void){const PartyVideoAsset*a;uint8_t page;
 #endif
  party_load_stage=3;
 #ifdef FF3_SCENE_LAYOUT
- if(scene_mode==2){
+ if(scene_mode>=2){
   /* AA00 owns these 56 job tiles. Load shared resources around that range,
    * never upload a diagnostic party only to overwrite it with the live one. */
   ff3_text_rom_copy(0,0x8000,a->bank,a->tiles,16);

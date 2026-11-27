@@ -4,6 +4,8 @@
 #pragma bank 79
 #include <string.h>
 #include "battle-live-party.h"
+#include "battle-encounter.h"
+#include "scene-loop.h"
 #include "battle-equipment.h"
 #include "battle-entry-tail.h"
 #include "battle-party-oam.h"
@@ -45,9 +47,10 @@ uint8_t ff3_live_party_prepare(void) BANKED {
   flags=((s&7)|((s&16)>>1))<<1;icon=255;
   if(!(s&192)&&flags){icon=0;while(!(flags&128)){flags<<=1;icon++;}}
   status_state.status[i]=icon;status_state.targets[i]=0;
-  party_motion.rows[i]=e[15]&1;status_tail.jobs[i]=job;
+  party_motion.rows[i]=(e[15]&1)^(scene_mode==3&&encounter_type==0x88);status_tail.jobs[i]=job;
   ff3_party_copy(78,live_party_palettes+(job?4+job:i),party_state.palette+i,1);
-  ff3_equipment_update(c,e,record);ff3_native_service();
+  /* 34/88A4 toggles the battle's equipment copy, not the field save owner. */
+  j=e[15];e[15]=(j&254)|party_motion.rows[i];ff3_equipment_update(c,e,record);e[15]=(e[15]&254)|(j&1);ff3_native_service();
   if(!ff3_wram_copy(5,(uint16_t)i*64,record,64,1)){live_party_error=4;return 0;}
   s=party_motion.status[i];variant=job;status_tail.graphics[i]=0;
   if(s&4){variant=44;status_tail.graphics[i]=2;}

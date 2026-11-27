@@ -1,3 +1,6 @@
+#ifdef FF3_SCENE_LAYOUT
+#pragma bank 116
+#endif
 #include <gb/cgb.h>
 #include <string.h>
 #include "battle-resident-bg.h"
@@ -11,6 +14,7 @@
 uint8_t resident_effect_clone_valid;
 #endif
 void ff3_native_service(void) NONBANKED;
+void ff3_party_copy(uint8_t bank,const void*src,void*dst,uint16_t n) NONBANKED;
 void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED;
 volatile uint8_t resident_scroll,resident_page,resident_error;
 volatile uint16_t resident_map_bytes,resident_map_updates;
@@ -26,7 +30,7 @@ Ff3BattleWorkspace __at(0xd200) battle_workspace;
 static void transfer(uint8_t bank,uint16_t address,const uint8_t*src,uint16_t n){uint16_t offset=0,size;
  while(offset<n){size=n-offset;if(size>256)size=256;memcpy(text_staging,src+offset,size);ff3_text_copy(bank,address+offset,text_staging,size);offset+=size;service();}
 }
-void ff3_resident_load(uint8_t profile) NONBANKED {uint8_t saved=CURRENT_BANK,bank;const ResidentBgAsset*a;
+void ff3_resident_load(uint8_t profile) FF3_RESIDENT_BANKED {uint8_t saved=CURRENT_BANK,bank;const ResidentBgAsset*a;
  if(profile>=RESIDENT_PROFILES){resident_error=1;return;}active_profile=profile;a=resident_bg_assets+profile;
 #ifdef FF3_EFFECTS
  resident_effect_clone_valid=0;ff3_effect_cache_reset();
@@ -36,7 +40,7 @@ void ff3_resident_load(uint8_t profile) NONBANKED {uint8_t saved=CURRENT_BANK,ba
  memset(text_staging,0,256);ff3_party_palette(1,0,4,text_staging);
  for(bank=0;bank<2;bank++)ff3_text_clear_map(bank);
  ff3_text_rom_copy(1,0x8000,a->bank,a->patterns,a->bytes);
- SWITCH_ROM(a->bank);memcpy(text_staging,a->palette,32);SWITCH_ROM(saved);
+ ff3_party_copy(a->bank,a->palette,text_staging,32);
  // Four original BG palettes also supply the separate color-residual OBJ.
  ff3_party_palette(1,0,4,text_staging);ff3_party_palette(0,4,4,text_staging);
  cached[0]=cached[1]=255;resident_page=0;resident_fixed=0;
@@ -51,7 +55,7 @@ void ff3_resident_fix(void) NONBANKED {resident_fixed=1;cached[0]=cached[1]=255;
  * Magic borrows this prefix only while the signed clone is visible, and must
  * restore it before releasing ownership. Use the canonical ROM, not a second
  * VRAM->WRAM archive of the same data. Original B589/B175 keep BG resident. */
-uint8_t ff3_resident_effect_copy(uint16_t address,uint16_t count) NONBANKED {
+uint8_t ff3_resident_effect_copy(uint16_t address,uint16_t count) FF3_RESIDENT_BANKED {
  const ResidentBgAsset*a=resident_bg_assets+active_profile;
  if(!resident_fixed||(address!=0x8000&&address!=0x9000)||!count||(count&15)||count>2048||a->bytes<2048)return 0;
  /* Keep the signed bank-1 clone until scene reload or a transfer overlaps
@@ -77,17 +81,17 @@ void ff3_resident_base_row(uint8_t page,uint8_t row,uint8_t*out) NONBANKED {uint
 }
 #endif
 static uint8_t contains(uint8_t origin,uint8_t coarse){uint8_t delta;if(origin>=56)return 0;delta=coarse+56-origin;if(delta>=56)delta-=56;return delta<12;}
-void ff3_resident_prepare(const Ff3EntryDisplay*s,uint8_t page,uint8_t*oam) NONBANKED {
+void ff3_resident_prepare(const Ff3EntryDisplay*s,uint8_t page,uint8_t*oam) FF3_RESIDENT_BANKED {
  uint8_t saved=CURRENT_BANK,y,i,world,n=24,coarse,hidden=s->ticket==0,origin,delta,count;uint16_t scroll,base,from,to,x,begin,elapsed;const ResidentBgAsset*a=resident_bg_assets+active_profile;const uint8_t*r;
  if((s->enemy_scroll&15)||page>1){resident_error=3;return;}
  scroll=(uint16_t)(s->enemy_scroll>>4)*14+((s->enemy_table&1)?224:0);if(scroll>=448)scroll-=448;
  coarse=scroll>>3;
  memset(oam+96,0,64);
- if(!hidden){SWITCH_ROM(a->bank);r=a->objects;
+ if(!hidden){ff3_party_copy(a->bank,a->objects,text_staging,(uint16_t)a->count*5);r=text_staging;
   for(i=0;i<a->count;i++,r+=5){x=(uint16_t)r[0]|((uint16_t)r[1]<<8);x=x+448-scroll;if(x>=448)x-=448;
    if(x>=160&&x<=440)continue;if(n>=40){resident_error=4;break;}
    oam[n*4]=r[2]+16;oam[n*4+1]=(uint8_t)(x>440?x-440:x+8);oam[n*4+2]=r[3];oam[n*4+3]=r[4];n++;
-  }SWITCH_ROM(saved);
+  }
  }
  // Keep a 32-column neighborhood resident. The 21 visible columns may move
  // through it without any map upload. OAM and BG pages have separate owners.
@@ -105,10 +109,10 @@ void ff3_resident_prepare(const Ff3EntryDisplay*s,uint8_t page,uint8_t*oam) NONB
  }}
  begin=ff3_clock_now();service_ticks=0;measuring=1;memset(resident_map,0,704);
  if(!hidden)for(y=0;y<11;y++){
-  world=origin;from=(uint16_t)y*56;to=(uint16_t)y*32;count=56-world;if(count>32)count=32;SWITCH_ROM(a->bank);
-  memcpy(resident_map+to,a->maps+from+world,count);memcpy(resident_map+352+to,a->maps+616+from+world,count);
-  if(count<32){memcpy(resident_map+to+count,a->maps+from,32-count);memcpy(resident_map+352+to+count,a->maps+616+from,32-count);}
-  SWITCH_ROM(saved);service();
+  world=origin;from=(uint16_t)y*56;to=(uint16_t)y*32;count=56-world;if(count>32)count=32;
+  ff3_party_copy(a->bank,a->maps+from+world,resident_map+to,count);ff3_party_copy(a->bank,a->maps+616+from+world,resident_map+352+to,count);
+  if(count<32){ff3_party_copy(a->bank,a->maps+from,resident_map+to+count,32-count);ff3_party_copy(a->bank,a->maps+616+from,resident_map+352+to+count,32-count);}
+  service();
  }
  elapsed=ff3_clock_now()-begin;if(elapsed>resident_max_fill)resident_max_fill=elapsed;begin=ff3_clock_now();
  base=page?0x9c40:0x9840;transfer(0,base,resident_map,352);transfer(1,base,resident_map+352,352);

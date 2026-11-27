@@ -159,6 +159,11 @@
       ]
     },
     {
+      "path": "src/battle-encounter.c",
+      "sha256": "5cc6afc928b8687c7119f29939b3ff57cad4bed2a834e8a9a130b2411e92f3ce",
+      "sites": []
+    },
+    {
       "path": "src/battle-hit-video.c",
       "sha256": "eb9d96c45ae8f1961466dbab81554174de6039c5926c0aae0a2732bb4b4b6200",
       "sites": [
@@ -196,10 +201,10 @@
     },
     {
       "path": "src/battle-live-party.c",
-      "sha256": "a848b64907d8591430fca84750e9d100857fbd57164cfc9ed80cb497ac3d4211",
+      "sha256": "de8782ba599402141fdef4842b89c99f9e40585631c1c9964ba9af5784f0793f",
       "sites": [
         {
-          "line": 51,
+          "line": 54,
           "text": "if(!ff3_wram_copy(5,(uint16_t)i*64,record,64,1)){live_party_error=4;return 0;}"
         }
       ]
@@ -247,36 +252,36 @@
     },
     {
       "path": "src/battle-party-video.c",
-      "sha256": "3e8379d8b76e5fb2f11d837252a3875c724c4aa25c9ed77087ef8b96a50d72f1",
+      "sha256": "fdb6c48451f77238203f003f3d6f34cb83f5e192b3095b456e23c05d1bd286ed",
       "sites": [
         {
-          "line": 56,
+          "line": 57,
           "text": "uint8_t __at(0xdc00) party_oam0[160];"
         },
         {
-          "line": 57,
+          "line": 58,
           "text": "uint8_t __at(0xdd00) party_oam1[160];"
         },
         {
-          "line": 58,
+          "line": 59,
           "text": "Ff3EntryDisplay __at(0xd000) party_motion;"
         },
         {
-          "line": 59,
+          "line": 60,
           "text": "Ff3PartyOam __at(0xd040) party_state;"
         },
         {
-          "line": 60,
+          "line": 61,
           "text": "uint8_t __at(0xd060) party_source[96];"
         }
       ]
     },
     {
       "path": "src/battle-resident-bg.c",
-      "sha256": "2d08de0004d02fac6abd08bec03503c322a4e9b254866521cf8d74c425888c70",
+      "sha256": "1477d403eacddd394b8bacee7d3404140c3232eac2d0ab6e19b7be349837c456",
       "sites": [
         {
-          "line": 24,
+          "line": 28,
           "text": "Ff3BattleWorkspace __at(0xd200) battle_workspace;"
         }
       ]
@@ -307,26 +312,26 @@
     },
     {
       "path": "src/battle-strike-video.c",
-      "sha256": "325acea478fc7e01e73a4fbed0d314e8352e4ffd5a0347c18ccfc7ab6ba275b4",
+      "sha256": "636a9aa58ab01346284cddc36d261de614d107195eaf128750501b466a046840",
       "sites": [
         {
-          "line": 27,
+          "line": 32,
           "text": "extern uint8_t __at(0xd600) animation_source[160];"
         },
         {
-          "line": 28,
+          "line": 33,
           "text": "extern uint8_t __at(0xd6a0) animation_base[160];"
         },
         {
-          "line": 29,
+          "line": 34,
           "text": "extern uint8_t __at(0xd740) animation_lines[144];"
         },
         {
-          "line": 30,
+          "line": 35,
           "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
         },
         {
-          "line": 31,
+          "line": 36,
           "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
         }
       ]
@@ -580,10 +585,10 @@
     },
     {
       "path": "src/exploration-viewer.c",
-      "sha256": "b4879a5b5afa6923b7f141cfba2a4c7b879b940cefeaf19961ac340b80325934",
+      "sha256": "786b95ddf0aa4aa0467e07fec67a482c2e8fb83f0c5aade7fd705db48058df4a",
       "sites": [
         {
-          "line": 37,
+          "line": 40,
           "text": "cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;"
         }
       ]
@@ -852,7 +857,7 @@
     },
     {
       "path": "src/scene-layout-probe.c",
-      "sha256": "9d6b299f7e22ab4c43905d4268b337f333b4c8f5ac4d0ce712f5ef8da49271d0",
+      "sha256": "cb6dd276d8cebbe92f0193dd13251409f791af0f350e860a32069c87250400ac",
       "sites": [
         {
           "line": 47,
@@ -862,7 +867,7 @@
     },
     {
       "path": "src/scene-loop.c",
-      "sha256": "e13adafa5678addcbddc5cf9ee354b88712fcea7d655cf4cf31248135e40f323",
+      "sha256": "9a91b82cd65ec28d01242fea2da0fb807bfc918e5cdbac9398b3e23a4aa85473",
       "sites": []
     },
     {
