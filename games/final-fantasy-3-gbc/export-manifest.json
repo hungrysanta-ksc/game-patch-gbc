@@ -2344,14 +2344,14 @@
     },
     {
       "path": "AGENTS.md",
-      "bytes": 2782,
-      "sha256": "7f79792a89df48601aa71ccea1a1fa18378870ec7bf53f2630af55a017cee49d",
+      "bytes": 3223,
+      "sha256": "193bcc5762ed6970c14b4884b3cc77798bb28c6cd3ff2c12c5e2ba03c09c5172",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "README.md",
-      "bytes": 29020,
-      "sha256": "a8fa8370701e4b5f0990eb19ad74de118a24c1145daaa061cf5f25003a26ad3c",
+      "bytes": 29506,
+      "sha256": "67a9b5d6abc31e05cdd14e939f077defe2e022711497d81b2771e8b492fb4654",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2374,8 +2374,8 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 90543,
-      "sha256": "ed136e3689a2028f0fcb008ca37b20b9d6c277c9842c527eedd810dda910e065",
+      "bytes": 92454,
+      "sha256": "bf9319af475967a927673bdc7e0d7c6b80c42c07dc5c0eb47480c8d63df3e703",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2386,8 +2386,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 52841,
-      "sha256": "a30c0f5fa20defb5ecda0d762fc88a8adb0bf31429240cd88344c27e8f85c94d",
+      "bytes": 53467,
+      "sha256": "8d343f5fe90e197b5e6f190e9ddaab4109ed445a7f06e2c4153a3b147981e57e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3208,8 +3208,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 20615,
-      "sha256": "264744898eba40470d11ce1e1a56cec44aadf198ba8e6ee5c5675bd363123c34",
+      "bytes": 20668,
+      "sha256": "ecf70efdc2f8d9b4f932d3e56d6a44f6f0be22cb0b175cc3457bb5c269131912",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3870,6 +3870,12 @@
       "path": "docs/battle-freeze-row-kernel.md",
       "bytes": 7869,
       "sha256": "666fce910a452986e4a831f92b49986414fefa1dcefc891f06df9520e089fada",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/field-battle-lifecycle-review.md",
+      "bytes": 11085,
+      "sha256": "798091de9fc3083726d59ec7b138e448d5322846a53235c19f2673810982df3c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]
