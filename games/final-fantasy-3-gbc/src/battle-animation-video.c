@@ -10,6 +10,9 @@
 #include "effect-assets.h"
 #include "text-vblank.h"
 #include "platform.h"
+#ifdef FF3_SCENE_LAYOUT
+#include "battle-live-command.h"
+#endif
 Ff3Animation animation_state;
 volatile uint8_t animation_video_error,animation_video_owner;
 volatile uint16_t animation_video_frames;
@@ -73,7 +76,15 @@ uint8_t ff3_animation_video(uint8_t op,uint8_t effect,uint8_t result) BANKED {(v
  if(animation_video_error)return 3;
  if(animation_video_gate)return 0;
  /* 13/14 own status commit before death. Never replace it by effect 22. */
- if(op!=11&&op!=12)return 2;
+ if(op!=11&&op!=12){
+#ifdef FF3_SCENE_LAYOUT
+  if((op!=13&&op!=14)||!command_phase)return 2;
+  if(!active&&!ff3_live_command_commit(op==14)){animation_video_error=7;return 3;}
+  effect=22;
+#else
+  return 2;
+#endif
+ }
  if(!active){memset((uint8_t*)&animation_state+88,0,sizeof(animation_state)-88);animation_state.effect=op==12?23:effect;
   if(!ff3_animation_start(&animation_state)){animation_video_error=1;return 3;}active=1;capture();
  }

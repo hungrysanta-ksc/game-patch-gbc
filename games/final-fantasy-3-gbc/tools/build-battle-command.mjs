@@ -1,0 +1,23 @@
+import fs from 'node:fs/promises';import {execFile} from 'node:child_process';import {promisify} from 'node:util';
+import {ROOT,input,hash,check,checkGbc} from './source.mjs';import {commandCases,sourceCommand,sourceEnd,sourceDeath} from './battle-command-source.mjs';import {physicalRng} from './battle-physical-source.mjs';import {stateAssets} from './state-source.mjs';
+const {data,profile,local}=await input(),out=ROOT+'/build/battle-command',gen=out+'/generated';await fs.mkdir(gen,{recursive:true});
+const chunks=[physicalRng(data)],counts={};let cases=0;
+for(const row of commandCases(data)){const r=sourceCommand(data,row);chunks.push(Buffer.from([1]),row.s,row.f,Buffer.from(row.counters),Buffer.from([r.ok]),r.s,r.f,r.call,r.counters);counts[row.tag]=(counts[row.tag]||0)+1;cases++;}
+const endBytes=(battle,first,e,ticket,done=0)=>{const b=Buffer.alloc(11);b.writeUInt16LE(battle);b.set([e.result,first,e.request,e.message,e.song,e.waitA,done],2);b.writeUInt16LE(ticket,9);return b;};
+for(let battle=0;battle<512;battle++)for(const result of [2,64,128])for(const first of [0,8]){
+ const events=sourceEnd(data,battle,result,first),head=Buffer.alloc(6);head[0]=2;head.writeUInt16LE(battle,1);head[3]=result;head[4]=first;head[5]=events.length;chunks.push(head);
+ events.forEach((e,i)=>chunks.push(endBytes(battle,first,e,i+1)));chunks.push(endBytes(battle,first,{...events.at(-1),request:0},events.length,1));cases++;counts['end-routes']=(counts['end-routes']||0)+1;
+}
+for(const back of [false,true])for(const mask of [0,1,85,128,170,255])for(const reward of [0,1]){
+ const types=[0,1,2,3,0,1,255,255],credit=[255,2,3,254],r=sourceDeath(data,back,mask,reward,types,credit);chunks.push(Buffer.from([3,+back,mask,reward,...types,...credit,r.trace.length]),...r.trace,r.types,r.counts,Buffer.from([r.remaining]));cases++;counts['death-pictures']=(counts['death-pictures']||0)+75;
+}
+const fixture=Buffer.concat(chunks),negative=Buffer.from(fixture);negative[256+1+828+175+3+1]^=1;
+const pack=b=>{const a=[];for(let i=0;i<b.length;){let n=1;while(n<255&&i+n<b.length&&b[i+n]===b[i])n++;a.push(n,b[i]);i+=n;}return Buffer.from(a);};const packed=pack(fixture),bad=pack(negative);
+await fs.writeFile(gen+'/battle-select-fixture.h','#define SELECT_CASES '+cases+'UL\n');await fs.writeFile(gen+'/state-assets.h',stateAssets(data).header);await fs.writeFile(out+'/fixtures.bin',fixture);
+const sources=[],count=Math.ceil(Math.max(packed.length,bad.length)/16384);check(count+17<119,'Command fixture/code banks');for(let i=0;i<count;i++){const p=gen+'/fixture'+i+'.c';await fs.writeFile(p,'#pragma bank '+(17+i)+'\n#include <stdint.h>\nconst uint8_t fixture'+i+'[]={'+[...packed.subarray(i*16384,(i+1)*16384)]+'};\n');sources.push(p);}
+const rom=out+'/ff3-battle-command.gbc',compiler=local.gbdk+'/bin/lcc.exe',lock=JSON.parse(await fs.readFile(ROOT+'/spec/toolchain.json'));check(hash(await fs.readFile(compiler))===lock.gbdk.lccSha256,'Compiler identity');
+try{const r=await promisify(execFile)(compiler,['-msm83:gb','-Wm-yC','-Wm-yt0x1b','-Wm-ya4','-Wm-yo128','-Wm-ynFF3COMMAND','-Wl-m','-Wl-j','-I'+gen,'-o',rom,...['game-state','battle-physical','battle-fight','battle-result','battle-command','battle-end','battle-death','battle-command-test'].map(n=>ROOT+'/src/'+n+'.c'),...sources],{cwd:out,maxBuffer:8e6});await fs.writeFile(out+'/compiler.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(out+'/compiler.log',(e.stdout||'')+(e.stderr||''));throw e;}
+const bytes=await fs.readFile(rom);checkGbc(bytes,128,0x1b,3);check(bytes.subarray(17*16384,17*16384+packed.length).equals(packed),'Linked fixture bytes');check(!/overflow|Multiple write|undefined global/i.test(await fs.readFile(out+'/compiler.log','utf8')),'Clean link');
+const symbols={};for(const m of(await fs.readFile(rom.replace('.gbc','.noi'),'utf8')).matchAll(/DEF (\w+) (0x[0-9a-f]+)/gi))symbols[m[1]]=Number(m[2]);check(symbols.b_ff3_command_execute===119&&symbols.l__CODE_119<=16384&&symbols.l__CODE_15<=16384&&symbols.s__HEAP<0xd000,'Native capacity');
+const neg=Buffer.from(bytes);bad.copy(neg,17*16384);let sum=0;for(let i=0;i<neg.length;i++)if(i!==334&&i!==335)sum=(sum+neg[i])&65535;neg.writeUInt16BE(sum,334);await fs.writeFile(out+'/ff3-battle-command-negative.gbc',neg);
+const report={sourceSha256:profile.sha256,romSha256:hash(bytes),negativeRomSha256:hash(neg),cases,counts,fixtureSha256:hash(fixture),bank119Bytes:symbols.l__CODE_119,bank15Bytes:symbols.l__CODE_15,scope:'Actual resolved physical/defend/run command dispatch, death scheduling/bookkeeping and end-owner barriers. Native drawing/audio and normal-play completion are separate gates.'};await fs.writeFile(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));

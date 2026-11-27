@@ -7,6 +7,9 @@ const claim=(id,bank,begin,end,profiles,source)=>({id,bank,begin,end,bytes:end-b
 export const storageClaims=[
  claim('field-suspension',7,0,4096,['scene-layout'],'src/scene-memory.c'),
  claim('live-party-records',5,0,256,['scene-layout'],'src/battle-live-party.c'),
+ claim('live-battle-result',5,256,828,['scene-layout'],'src/battle-live-command.c'),
+ claim('live-battle-fight',5,832,1007,['scene-layout'],'src/battle-live-command.c'),
+ claim('live-battle-command',5,1008,1019,['scene-layout'],'src/battle-live-command.c'),
  claim('audio-snapshots',2,0,464,['common'],'src/audio-native.c'),
  claim('effect-map-backup',3,0,1152,['effects','scene-layout'],'src/battle-effect-freeze.c'),
  claim('effect-oam-backup',3,1152,1312,['effects','scene-layout'],'src/battle-effect-freeze.c'),
