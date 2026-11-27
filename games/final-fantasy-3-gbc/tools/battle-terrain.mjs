@@ -30,7 +30,7 @@ export function terrainAssets(p){
 export function terrainApply(a,canonical,row,source){check(row>=0&&row<4&&source.length===64,'Terrain binding input');
  for(let at=a.spans.readUInt16LE(row*2);at<a.spans.readUInt16LE(row*2+2);at+=5){const dest=a.bindings.readUInt16LE(at+1),mask=a.bindings[at+3],lut=a.bindings[at+4];canonical[dest]=(canonical[dest]&~mask)|a.luts[lut*256+source[a.bindings[at]]];}return canonical;
 }
-export function terrainFrames(rom,p,a){const r=entryReference(rom,{back:p.back,formation:p.formation,counts:p.counts,partyStatus:p.partyStatus}),masks=entryAssets(rom).tables.find(t=>t.name==='masks').bytes,canonical=Buffer.alloc(160),out=[];
+export function terrainFrames(rom,p,a){const r=entryReference(rom,{back:p.back,formation:p.formation,counts:p.counts,partyStatus:p.partyStatus,terrain:p.terrain??0}),masks=entryAssets(rom).tables.find(t=>t.name==='masks').bytes,canonical=Buffer.alloc(160),out=[];
  check(r.frames.length===p.frames.length&&r.terrain.equals(a.source),'Terrain source identity');
  for(let i=0;i<r.frames.length;i++){
   if(i&&r.frames[i-1].state[35]===2){const prev=r.frames[i-1],row=prev.state[37],mask=prev.state[36],bytes=Buffer.from(a.source.subarray(row*64,row*64+64).map((v,j)=>v&masks[mask*8+(j&7)]));check(bytes.equals(prev.upload),'Original 64-byte masked publication');terrainApply(a,canonical,row,bytes);}

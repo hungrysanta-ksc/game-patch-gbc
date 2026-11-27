@@ -47,7 +47,9 @@ BANKED
  memset((void*)0xd7f0,0xa7,16);memset((void*)0xd940,0xa7,16);memset((void*)0xdb60,0xa7,16);memset((void*)0xdca0,0xa7,16);
  ff3_state_init(ff3_game_state);memcpy(dialogue_name_state,dialogue_names,sizeof(dialogue_name_state));
  text_context.state=ff3_game_state;text_context.names=dialogue_name_state;text_context.item=0xa6;
+#ifndef FIELD_NATIVE_ENCOUNTERS
  ff3_npc_select(DIALOGUE_WORLD,DIALOGUE_NPC,ff3_game_state);
+#endif
  memset(shadow_OAM,0,160);memset(object_part2,0,192);
  if(!ff3_map_display(FIELD_WORLD,FIELD_MAP,DIALOGUE_X,DIALOGUE_Y)||!ff3_objects_init(FIELD_WORLD,map_workspace.properties[4],ff3_game_state+0x80)||!ff3_objects_display(FIELD_WORLD,FIELD_MAP,DIALOGUE_X,DIALOGUE_Y,0))asset_error=10;
  ff3_field_init();ff3_field_render(1);ff3_field_video_init();ff3_text_video_init();
@@ -67,7 +69,7 @@ BANKED
    if(ff3_field_render(0)){field.result=(uint8_t)field.steps;field.render_dirty=0;}
    ff3_field_flush();
   }
-  if(scene_mode==3&&scene_rng_ready&&field.error==4&&field.trigger==0x20&&!field.world&&field.map==29&&!field.mode&&!field.speed&&!field.subx&&!field.suby&&!field.request&&!npc_active&&!text_visible){
+  if(scene_mode==3&&scene_rng_ready&&field.error==4&&field.trigger==0x20&&!field.world&&field.map==FIELD_MAP&&!field.mode&&!field.speed&&!field.subx&&!field.suby&&!field.request&&!npc_active&&!text_visible){
    scene_formation=field.battle;scene_background=field.battle_background;
    if(scene_rng_ready==2){scene_rng_seed=ff3_play_seed((const volatile uint8_t*)&field,ff3_state.ram);scene_rng_ready=1;}
    ff3_field_flush();if(ff3_field_video_suspend()){scene_request=0;return;}

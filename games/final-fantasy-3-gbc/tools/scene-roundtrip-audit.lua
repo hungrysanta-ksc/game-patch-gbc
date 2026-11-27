@@ -1,7 +1,8 @@
 -- Read-only bus observer. Symbols are supplied by the exact linked ROM.
 local mem=emu.memType.gameboyDebug
 local writes,bad,dma,badDma,off,badOff,apu,apuHash,foreignApu=0,0,0,0,0,0,0,0,0
-local started=false
+local started=auditStartHash~=nil
+apuHash=auditStartHash or 0
 local function read(a)return emu.read(a,mem)end
 local seedCaptures={}
 -- Capture the two immutable main-thread owners after the fold, before the
@@ -19,7 +20,7 @@ end
 -- Mesen's script log is a bounded ring. Preserve early observations in Lua,
 -- then re-emit the complete bounded set at the final audio boundary.
 emu.addEventCallback(function()
- if read(sym.native_done)~=0 then
+ if read(sym.native_done)~=0 or (dungeonAudit and read(sym.scene_cycles)>=3) then
   for _,capture in ipairs(seedCaptures) do emu.log(capture) end
   emu.log('encounter-entropy-count:'..#seedCaptures)
  end

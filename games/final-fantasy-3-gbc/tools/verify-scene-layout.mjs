@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';import {execFile} from 'node:child_process';import {promisify} from 'node:util';
 import {ROOT,input,check,hash} from './source.mjs';import {parseSymbols,checkSceneLayout} from './scene-link-layout.mjs';import {nativeReference} from './native-reference.mjs';
-const {data,local}=await input(),dir=ROOT+'/build/scene-layout',out=ROOT+'/evidence/scene-layout';await fs.mkdir(out,{recursive:true});
+const dungeon=process.argv.includes('--dungeon');
+const {data,local}=await input(),dir=ROOT+'/build/'+(dungeon?'scene-dungeon':'scene-layout'),out=ROOT+'/evidence/'+(dungeon?'scene-dungeon-layout':'scene-layout');await fs.mkdir(out,{recursive:true});
 const report=JSON.parse(await fs.readFile(dir+'/report.json')),rom=dir+'/ff3-scene-layout.gbc',romSha256=hash(await fs.readFile(rom));check(report.romSha256===romSha256,'Combined artifact identity');
 const all=parseSymbols(await fs.readFile(rom.replace('.gbc','.noi'),'utf8')),symbols=Object.fromEntries(Object.entries(all).filter(([n])=>n.startsWith('_')).map(([n,v])=>[n.slice(1),v]));checkSceneLayout(all);
 const coreSha256=hash(await fs.readFile(local.mesenCore));check(coreSha256==='1ba99d2c848e007c60cbd7fceca058440758eb44837a93a6724d29d72723c994','Pinned core');
