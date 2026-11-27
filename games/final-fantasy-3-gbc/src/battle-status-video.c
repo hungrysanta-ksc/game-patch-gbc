@@ -7,6 +7,10 @@
 #include "battle-party-oam.h"
 #include "status-video-assets.h"
 #include "platform.h"
+#ifdef FF3_SCENE_LAYOUT
+#include "scene-loop.h"
+#include "battle-live-party.h"
+#endif
 void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANKED;
 void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED;
 #include "memory.h"
@@ -74,8 +78,15 @@ uint8_t ff3_status_video_advance(void) BANKED {
  if(status_tail.phase==FF3_TAIL_DONE){
   while(at<a->bytes){status_load++;ff3_party_copy(a->bank,a->blocks+at,work,3);dest=0x8000+work[0]+((uint16_t)work[1]<<8);n=work[2];at+=3;
    if(!n||n>64||at+n>a->bytes||dest<0x8000||dest+n>0x9000)return 3;
+#ifdef FF3_SCENE_LAYOUT
+   /* B52A uses the current status ID, not the diagnostic icon set. */
+   if(scene_mode==2&&dest<0x8590&&dest+n>0x8490){if(dest<0x8490||dest+n>0x8590)return 3;at+=n;continue;}
+#endif
    ff3_party_copy(a->bank,a->blocks+at,text_staging,n);ff3_text_copy(0,dest,text_staging,n);ff3_native_service();at+=n;
   }
+#ifdef FF3_SCENE_LAYOUT
+  if(scene_mode==2)ff3_live_party_command();
+#endif
   status_load=254;ff3_party_copy(a->bank,a->palette+24,text_staging,8);
   ff3_party_palette(0,3,1,text_staging);status_load=0;status_stage=2;return 0;
  }

@@ -6,6 +6,9 @@
 extern volatile uint8_t live_ui_request,live_ui_error,live_ui_ready;
 extern uint8_t live_ui_input[18];
 void ff3_live_ui_reset(void) BANKED;
+#ifdef FF3_SCENE_LAYOUT
+void ff3_live_ui_party_hp(void) BANKED;
+#endif
 void ff3_live_ui_prime(void) BANKED;
 void ff3_live_ui_update(void) BANKED;
 #endif

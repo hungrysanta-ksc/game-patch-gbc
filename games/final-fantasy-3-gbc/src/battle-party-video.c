@@ -2,6 +2,7 @@
 #include <gb/cgb.h>
 #ifdef FF3_SCENE_LAYOUT
 #include "scene-loop.h"
+#include "battle-live-party.h"
 #endif
 #include <string.h>
 #include "battle-party-oam.h"
@@ -180,6 +181,10 @@ static void reset_motion(void){const PartyVideoAsset*a=party_assets+party_profil
 #ifdef FF3_STATUS_VIDEO
  ff3_status_video_reset(party_profile);
 #endif
+#ifdef FF3_SCENE_LAYOUT
+ if(scene_mode==2&&!ff3_live_party_prepare()){party_error=80+live_party_error;return;}
+ if(scene_mode)ff3_scene_song(0x20); /* 2E/9D84: after actual party resources. */
+#endif
  if(!ff3_entry_start(&party_motion)){party_error=2;return;}present();
 }
 static void load(void){const PartyVideoAsset*a;uint8_t page;
@@ -200,11 +205,17 @@ static void load(void){const PartyVideoAsset*a;uint8_t page;
  party_load_stage=2;ff3_terrain_load(party_profile);if(terrain_fault){party_error=20+terrain_fault;return;}
 #endif
 #endif
- party_load_stage=3;ff3_text_rom_copy(0,0x8000,a->bank,a->tiles,4096);
- ff3_party_copy(a->bank,a->palette,text_staging,32);ff3_party_palette(0,0,4,text_staging);
+ party_load_stage=3;
 #ifdef FF3_SCENE_LAYOUT
- if(scene_mode)ff3_scene_song(0x20); /* 2E/9D84, after display resources. */
+ if(scene_mode==2){
+  /* AA00 owns these 56 job tiles. Load shared resources around that range,
+   * never upload a diagnostic party only to overwrite it with the live one. */
+  ff3_text_rom_copy(0,0x8000,a->bank,a->tiles,16);
+  ff3_text_rom_copy(0,0x8390,a->bank,a->tiles+0x390,0xc70);
+ }else
 #endif
+ ff3_text_rom_copy(0,0x8000,a->bank,a->tiles,4096);
+ ff3_party_copy(a->bank,a->palette,text_staging,32);ff3_party_palette(0,0,4,text_staging);
  loaded=1;party_work=1;party_load_stage=4;reset_motion();party_request=0;party_load_stage=0;
 }
 static uint8_t party_video_idle(void) NONBANKED {return !party_pending&&!party_work&&!party_request&&!party_step
@@ -275,6 +286,8 @@ BANKED
 #endif
    ;ff3_native_service();
 #ifdef FF3_SCENE_LAYOUT
+  /* Fixed-profile action resources are not a live-party action bridge. */
+  if(scene_mode==2&&(action_request||message_request||live_ui_request)){party_error=85;action_request=message_request=live_ui_request=0;}
   /* An outstanding action/transfer completes before ownership can leave. */
   if(scene_mode&&scene_request==2&&party_video_idle()){
    if(ff3_party_video_suspend()){scene_request=0;return;}

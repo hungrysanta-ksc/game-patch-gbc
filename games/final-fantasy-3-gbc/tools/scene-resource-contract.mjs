@@ -6,6 +6,7 @@ import {ROOT,check,hash} from './source.mjs';
 const claim=(id,bank,begin,end,profiles,source)=>({id,bank,begin,end,bytes:end-begin,profiles,source});
 export const storageClaims=[
  claim('field-suspension',7,0,4096,['scene-layout'],'src/scene-memory.c'),
+ claim('live-party-records',5,0,256,['scene-layout'],'src/battle-live-party.c'),
  claim('audio-snapshots',2,0,464,['common'],'src/audio-native.c'),
  claim('effect-map-backup',3,0,1152,['effects','scene-layout'],'src/battle-effect-freeze.c'),
  claim('effect-oam-backup',3,1152,1312,['effects','scene-layout'],'src/battle-effect-freeze.c'),
@@ -67,7 +68,7 @@ export function checkResourceSources(actual,reviewed){
 // Non-address ownership is just as important as free bytes. Each row states
 // the required transition and its current limitation, not an implemented API.
 export const lifecycleOwners=[
- {id:'game-state',lifetime:'boot/session',sources:['src/platform.c','src/game-state.c','src/inventory.c'],rule:'One canonical 1024-byte state. Commit battle changes; never restore the field entry snapshot over HP, inventory, equipment or event flags.',status:'Mode 4 initializes the canonical state in the first field entry and preserves it across controlled display returns. Live battle result updates remain pending.'},
+ {id:'game-state',lifetime:'boot/session',sources:['src/platform.c','src/game-state.c','src/inventory.c'],rule:'One canonical 1024-byte state. Commit battle changes; never restore the field entry snapshot over HP, inventory, equipment or event flags.',status:'Mode 4 preserves canonical state across controlled display returns; mode 5 additionally imports live party records and commits original equipment-derived stats. Battle result updates remain pending.'},
  {id:'audio',lifetime:'boot/session',sources:['src/audio-native.c'],rule:'Initialize once; preserve timer/queue/producer across display changes. Use original song, fade and SFX requests.',status:'Mode 4 initializes native audio once, then requests source battle/map music without resetting the queue, producer or timer; standalone cold diagnostics remain separate.'},
  {id:'field-context',lifetime:'suspended across battle',sources:['src/exploration.c','src/field-objects.c','src/scene-memory.c'],rule:'Keep field position/facing, NPC and event continuation separate from mutable GameState. Rebuild display; do not call fresh field init on return.',status:'Combined DATA overlay at CA80; entire field DATA plus WRAM1 D000..DBFF preserved in bank 7. Controlled overwrite/restore tested; natural encounter context still pending.'},
  {id:'field-workspace',lifetime:'field display',sources:['src/map-display.h','src/exploration-video.c'],rule:'WRAM1 D000..DBFF is suspended separately from display ownership; DC00 OAM requires old DMA drained before reuse. Rebuild VRAM and OAM before resuming field publication.',status:'Same-boot field display reconstruction retains map/NPC context and reloads overwritten VRAM in bounded audio-serviced chunks.'},
@@ -84,5 +85,5 @@ export function resourceReport(sources){
  return {schema:1,scope:'Storage claims and source ownership audit; executable combined layout is checked separately by build/verify-scene-layout. Not an executed gameplay scene switch.',sources,profiles,storage:diagnosticStorage(),lifecycleOwners,
   rejectedOldFieldReservation:checkSuspension(['effects'],[{id:'obsolete-field-snapshot',bank:3,begin:0,end:4096}]),
   rejectedLegacyCompositionMix:conflicts(claimsFor(['effects','composition-window','item-atlas'])),
-  roundtripReady:false,unresolved:['Natural original encounter/return trace including NPC and event context','Live party/formation bridge from canonical game state','Original victory/defeat/escape processing and field result commit','Integrate remaining battle variants under the same combined memory/stack/display lifecycle']};
+  roundtripReady:false,unresolved:['Natural original encounter/return trace including NPC and event context','Live selected formation and live-party action/stone resources','Original victory/defeat/escape processing and field result commit','Integrate remaining battle variants under the same combined memory/stack/display lifecycle']};
 }
