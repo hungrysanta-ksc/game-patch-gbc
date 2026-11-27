@@ -2,13 +2,14 @@ import {check} from './source.mjs';
 import fs from 'node:fs/promises';
 // Read-only observation on the pinned MesenCore. MemoryType 43 is GbVideoRam,
 // the same physical 16KiB view used by VerifyStrike's independent screenshots.
-export async function freezeAudit(s,dir){for(const k of ['effect_freeze_stage','effect_signed','effect_map_saved','effect_map_written','action_enabled','party_profile'])check(Number.isInteger(s[k]),'Freeze audit symbol '+k);
+export async function freezeAudit(s,dir){for(const k of ['effect_freeze_stage','effect_signed','effect_map_saved','effect_map_written','action_enabled','party_profile','effect_glyph_hits','effect_glyph_reads','text_staging'])check(Number.isInteger(s[k]),'Freeze audit symbol '+k);
  const prefixes=[];for(let i=0;s['resident_patterns'+i]!==undefined;i++){const b=await fs.readFile(dir+'/resident-patterns'+i+'.bin');check(b.length>=2048,'Complete resident prefix');prefixes.push(b.subarray(0,2048).toString('hex'));}check(prefixes.length>0,'Resident prefix profiles');
  return `\ndo
  local mem=emu.memType.gameboyDebug
  local before=nil
  local starts,ends,bad,saved,written,different=0,0,0,0,0,0
  local sourceBad,mirrorBad,profile=0,0,0
+ local cacheChecks,cacheBad,hits,reads=0,0,0,0
  local prefixes={${prefixes.map(h=>"'"+h+"'").join(',')}}
  local function prefix(at)
   local n=0;local h=prefixes[profile+1];if not h then error('Resident profile') end
@@ -19,6 +20,17 @@ export async function freezeAudit(s,dir){for(const k of ['effect_freeze_stage','
   local t={};for bank=0,1 do for i=0,2047 do t[#t+1]=emu.read(bank*8192+6144+i,43) end end;return t
  end
  emu.addMemoryCallback(function(_,v)
+  if v==5 then
+   hits=hits+word(${s.effect_glyph_hits});reads=reads+word(${s.effect_glyph_reads});cacheChecks=cacheChecks+1
+   for slot=0,7 do
+    local key=word(${s.text_staging}+128+slot*2)
+    if key~=65535 then
+     if key>511 then error('Invalid cached tile') end
+     for i=0,15 do if emu.read(${s.text_staging}+slot*16+i,mem)~=emu.read((key>>8)*8192+(key&255)*16+i,43) then cacheBad=cacheBad+1 end end
+    end
+   end
+   return
+  end
   if v==8 then mirrorBad=mirrorBad+prefix(12288);return end
   if v~=1 then return end
   if before then error('Unreleased freeze map') end
@@ -37,7 +49,8 @@ export async function freezeAudit(s,dir){for(const k of ['effect_freeze_stage','
    saved=saved+n;written=written+w;before=nil;ends=ends+1
   end
   emu.log(string.format('freeze-maps:%d,%d,%d,%d,%d,%d,%d,%d',starts,ends,bad,saved,written,different,sourceBad,mirrorBad))
+  emu.log(string.format('freeze-cache:%d,%d,%d,%d',cacheChecks,cacheBad,hits,reads))
  end,emu.eventType.codeBreak)
 end\n`;
 }
-export function freezeResult(log,expected){const a=[...log.matchAll(/freeze-maps:(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1)?.slice(1).map(Number);check(a&&a[0]===expected&&a[1]===expected&&a[2]===0&&a[4]===a[3]*2&&!a[6]&&!a[7],'Exact maps and canonical pattern ownership');return {freezes:a[0],restored:a[1],mismatchedBytes:a[2],savedBytes:a[3],writtenBytes:a[4],initialPageDifferences:a[5],canonicalMismatches:a[6],mirrorMismatches:a[7]};}
+export function freezeResult(log,expected){const a=[...log.matchAll(/freeze-maps:(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1)?.slice(1).map(Number),c=[...log.matchAll(/freeze-cache:(\d+),(\d+),(\d+),(\d+)/g)].at(-1)?.slice(1).map(Number);check(a&&a[0]===expected&&a[1]===expected&&a[2]===0&&a[4]===a[3]*2&&!a[6]&&!a[7],'Exact maps and canonical pattern ownership');check(c&&c[0]===expected&&!c[1]&&(!expected||(c[2]>0&&c[3]>0)),'Live cache bytes and bounded lifetime');return {freezes:a[0],restored:a[1],mismatchedBytes:a[2],savedBytes:a[3],writtenBytes:a[4],initialPageDifferences:a[5],canonicalMismatches:a[6],mirrorMismatches:a[7],cacheChecks:c[0],cacheMismatches:c[1],glyphHits:c[2],glyphReads:c[3]};}
