@@ -11,6 +11,10 @@
 #include "battle-terrain.h"
 #include "text-vblank.h"
 #include "hit-assets.h"
+#ifdef FF3_SCENE_LAYOUT
+#include "battle-death-video.h"
+#include "memory.h"
+#endif
 uint8_t hit_cover[2],hit_error;
 static uint8_t active,frame,actor,cover,protected_id,home_x,home_y,saved[4],push,old_page,flash_page,enemy;
 static int8_t fit_x;
@@ -52,6 +56,10 @@ uint8_t ff3_hit_video(uint8_t owner) BANKED {uint8_t i,page,*out,body,damaging;u
    old_page=resident_page;flash_page=old_page^1;party_work=2;
    /* Compile palette-bound cells once, then alternate immutable maps for the
     * eight original waits. UI occupies both pages; terrain owns its prefix. */
+#ifdef FF3_SCENE_LAYOUT
+   if(resident_dead){if(!ff3_enemy_build(flash_page,enemy+1,0,0)){hit_error=4;goto fault;}memcpy(animation_source,(void*)0xd740,64);if(!ff3_wram_copy(6,128,animation_source,64,1)){hit_error=4;goto fault;}}
+   else
+#endif
    for(at=0;at<704;at+=176){n=at<352?0:1;ff3_party_copy(a->bank,a->maps+(uint16_t)enemy*704+at,text_staging,176);ff3_text_copy(n,(flash_page?0x9c40:0x9840)+at%352,text_staging,176);ff3_native_service();}
    active=31;
   }else{actor=animation_state.actor;if(actor>3||status_tail.jobs[actor]>=22||(status_tail.motion.status[actor]&~0x17))return 2;
@@ -66,7 +74,12 @@ uint8_t ff3_hit_video(uint8_t owner) BANKED {uint8_t i,page,*out,body,damaging;u
  party_work=2;ff3_native_service();
  if(active==31){if(frame==8){active=0;ff3_resident_fix();party_work=0;return 1;}
   page=party_page^1;out=page?party_oam1:party_oam0;memcpy(out,animation_base,160);memset(animation_source,240,160);
-  if(!(frame&1)){ff3_party_copy(a->bank,a->objects+(uint16_t)enemy*64,animation_source,64);memcpy(out,animation_source,32);memcpy(out+128,animation_source+32,32);ff3_party_copy(a->bank,a->attributes+(uint16_t)enemy*64,animation_source,64);resident_page=flash_page;}
+  if(!(frame&1)){
+#ifdef FF3_SCENE_LAYOUT
+   if(resident_dead){if(!ff3_wram_copy(6,128,animation_source,64,0)){hit_error=4;goto fault;}}else
+#endif
+   ff3_party_copy(a->bank,a->objects+(uint16_t)enemy*64,animation_source,64);
+   memcpy(out,animation_source,32);memcpy(out+128,animation_source+32,32);ff3_party_copy(a->bank,a->attributes+(uint16_t)enemy*64,animation_source,64);resident_page=flash_page;}
   else{ff3_party_copy(a->bank,a->normal,animation_source,64);resident_page=old_page;}
   /* The whole page must fit, including residual colors and all four actors. */
   if(!ff3_action_oam_begin(out,0,40)||!ff3_action_oam_finish(out,0,40,0)){hit_error=2;goto fault;}

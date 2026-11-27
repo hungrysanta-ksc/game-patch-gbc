@@ -8,4 +8,5 @@ extern uint16_t command_serial;
 uint8_t ff3_live_command_init(void) BANKED;
 void ff3_live_command_update(void) BANKED;
 uint8_t ff3_live_command_commit(uint8_t cannon) BANKED;
+uint8_t ff3_live_command_remove(uint8_t mask,uint8_t reward) BANKED;
 #endif

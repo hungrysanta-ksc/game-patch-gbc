@@ -54,30 +54,30 @@
     },
     {
       "path": "src/battle-animation-video.c",
-      "sha256": "5d26462b1e3bb3028b4e5d58a2cd7b1a69557710d667cab588ed9a7fb3270081",
+      "sha256": "c5024f9e6fcc4e11c70ef657b5c6b1d47ab54a1797c8778c3e39e9d65156baac",
       "sites": [
         {
-          "line": 22,
+          "line": 23,
           "text": "uint8_t __at(0xd600) animation_source[160];"
         },
         {
-          "line": 23,
+          "line": 24,
           "text": "uint8_t __at(0xd6a0) animation_base[160];"
         },
         {
-          "line": 24,
+          "line": 25,
           "text": "uint8_t __at(0xd740) animation_lines[144];"
         },
         {
-          "line": 25,
+          "line": 26,
           "text": "uint8_t __at(0xd7d0) animation_linework[144];"
         },
         {
-          "line": 31,
+          "line": 32,
           "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
         },
         {
-          "line": 32,
+          "line": 33,
           "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
         }
       ]
@@ -109,8 +109,38 @@
       ]
     },
     {
+      "path": "src/battle-death-video.c",
+      "sha256": "26a1cf42ff1ae745e9a8cf4c674a5c8d7ce220f460c5edb90185286d912b3cb4",
+      "sites": [
+        {
+          "line": 32,
+          "text": "extern uint8_t __at(0xd6a0) animation_base[160];"
+        },
+        {
+          "line": 33,
+          "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
+        },
+        {
+          "line": 34,
+          "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
+        },
+        {
+          "line": 92,
+          "text": "if(!flash&&!d){if(n>8){death_video_error=4;return 0;}if(!ff3_wram_copy(6,(uint16_t)page*64,residual,64,1)){death_video_error=5;return 0;}}"
+        },
+        {
+          "line": 95,
+          "text": "void ff3_enemy_saved(uint8_t page,uint8_t*out) BANKED {if(!ff3_wram_copy(6,(uint16_t)page*64,out,64,0))death_video_error=5;}"
+        },
+        {
+          "line": 112,
+          "text": "if(!ff3_wram_copy(6,(uint16_t)resident_page*64,residual,64,1)){death_video_error=5;goto fault;}"
+        }
+      ]
+    },
+    {
       "path": "src/battle-effect-freeze.c",
-      "sha256": "6dfe53052cd57720e7d0315faa527d108ffd9ffc45e00e591bbb34b3b9453052",
+      "sha256": "2ed2d93d762bdfac72d4a9da280abee668a713e7f2c220096598a25a2d74dcf8",
       "sites": [
         {
           "line": 23,
@@ -165,23 +195,31 @@
     },
     {
       "path": "src/battle-hit-video.c",
-      "sha256": "eb9d96c45ae8f1961466dbab81554174de6039c5926c0aae0a2732bb4b4b6200",
+      "sha256": "fde269b1ae673e0833ccead5ae38d93afb558781a68462f6cec4c6ca0992dcea",
       "sites": [
         {
-          "line": 19,
+          "line": 23,
           "text": "extern uint8_t __at(0xd600) animation_source[160];"
         },
         {
-          "line": 20,
+          "line": 24,
           "text": "extern uint8_t __at(0xd6a0) animation_base[160];"
         },
         {
-          "line": 21,
+          "line": 25,
           "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
         },
         {
-          "line": 22,
+          "line": 26,
           "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
+        },
+        {
+          "line": 60,
+          "text": "if(resident_dead){if(!ff3_enemy_build(flash_page,enemy+1,0,0)){hit_error=4;goto fault;}memcpy(animation_source,(void*)0xd740,64);if(!ff3_wram_copy(6,128,animation_source,64,1)){hit_error=4;goto fault;}}"
+        },
+        {
+          "line": 79,
+          "text": "if(resident_dead){if(!ff3_wram_copy(6,128,animation_source,64,0)){hit_error=4;goto fault;}}else"
         }
       ]
     },
@@ -201,10 +239,10 @@
     },
     {
       "path": "src/battle-live-command.c",
-      "sha256": "c704f6006ac94cb4b2f718d9583c17c4578b356f168828363a27adef424a6616",
+      "sha256": "8ab128628cb60aa02452feb97cea6fe0f41b67778c155fea0972b921690f5ebf",
       "sites": [
         {
-          "line": 32,
+          "line": 33,
           "text": "while(n){size=n>64?64:n;if(!ff3_wram_copy(5,offset,b,size,write)){command_error=1;return 0;}offset+=size;b+=size;n-=size;ff3_native_service();}return 1;"
         }
       ]
@@ -226,7 +264,7 @@
     },
     {
       "path": "src/battle-magic-video.c",
-      "sha256": "35049b99119cbf3c17928b3316ff34f9a12613102ea26d532208b82b6364bc03",
+      "sha256": "e5732400ef507d25435feb935db93126795341d57d2565a88635ec0eb257da7a",
       "sites": [
         {
           "line": 26,
@@ -246,7 +284,7 @@
         },
         {
           "line": 58,
-          "text": "for(at=0;at<256;at+=128){read_vram(0,0x84a0+at,text_staging,128);if(!ff3_wram_copy(4,1152+at,text_staging,128,1))return 0;}"
+          "text": "for(at=0;at<576;at+=128){read_vram(0,0x84a0+at,text_staging,at==512?64:128);if(!ff3_wram_copy(4,3280+at,text_staging,at==512?64:128,1))return 0;}"
         }
       ]
     },
@@ -288,10 +326,10 @@
     },
     {
       "path": "src/battle-resident-bg.c",
-      "sha256": "1477d403eacddd394b8bacee7d3404140c3232eac2d0ab6e19b7be349837c456",
+      "sha256": "916d3c2e9efa24ea722c55a66f249d9d9a7afedf9fc655f6ceecd6aedee6b747",
       "sites": [
         {
-          "line": 28,
+          "line": 31,
           "text": "Ff3BattleWorkspace __at(0xd200) battle_workspace;"
         }
       ]
@@ -907,7 +945,7 @@
     },
     {
       "path": "src/text-vblank.c",
-      "sha256": "4480cbdf379114030659a03f3474420032ddd49bb5a57cfd5635fccb58eb6aee",
+      "sha256": "287cfc24034478bef37b4dc547de60b121db6cc837505a71b060155a2be74dfe",
       "sites": [
         {
           "line": 10,

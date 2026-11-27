@@ -12,6 +12,7 @@
 #include "platform.h"
 #ifdef FF3_SCENE_LAYOUT
 #include "battle-live-command.h"
+#include "battle-death-video.h"
 #endif
 Ff3Animation animation_state;
 volatile uint8_t animation_video_error,animation_video_owner;
@@ -90,6 +91,9 @@ uint8_t ff3_animation_video(uint8_t op,uint8_t effect,uint8_t result) BANKED {(v
  }
  if(animation_state.done){active=0;return 1;}
  animation_video_owner=animation_state.request;
+#ifdef FF3_SCENE_LAYOUT
+ if(animation_video_owner==10||animation_video_owner==13){uint8_t r=ff3_death_video(animation_video_owner);if(r==1){if(!ff3_animation_ack(&animation_state,animation_state.ticket)){animation_video_error=6;return 3;}capture();resources=0;return 0;}return r;}
+#endif
  if(animation_video_owner==18){uint8_t r=ff3_strike_video();if(r==1){if(!ff3_animation_ack(&animation_state,animation_state.ticket)){animation_video_error=6;return 3;}capture();resources=0;return 0;}return r;}
  if(animation_video_owner==20||animation_video_owner==31){uint8_t r=ff3_hit_video(animation_video_owner);if(r==1){if(!ff3_animation_ack(&animation_state,animation_state.ticket)){animation_video_error=6;return 3;}capture();resources=0;return 0;}return r;}
  if(animation_video_owner==29){uint8_t r=ff3_magic_video();if(r==1){if(!ff3_animation_ack(&animation_state,animation_state.ticket)){animation_video_error=6;return 3;}capture();resources=0;return 0;}return r;}

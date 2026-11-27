@@ -21,8 +21,11 @@ uint8_t ff3_death_ack(Ff3Death*s,uint16_t ticket) FF3_STATE_BANKED {
  }s->frame++;if(s->frame==37)s->done=1;else s->wait=2;s->ticket++;return 1;
 }
 uint8_t ff3_death_remove(Ff3BattleResult*s,uint8_t mask,uint8_t reward,uint8_t*counts) FF3_STATE_BANKED {
+ return ff3_death_slots(s->types,mask,reward,counts,&s->remaining);
+}
+uint8_t ff3_death_slots(uint8_t*types,uint8_t mask,uint8_t reward,uint8_t*counts,uint8_t*remaining) FF3_STATE_BANKED {
  uint8_t i,t,n=0;if(reward>1)return 0;
- for(i=0;i<8;i++)if(s->types[i]>3&&s->types[i]!=255)return 0;
- for(i=0;i<8;i++){t=s->types[i];if(mask&(128>>i)){if(reward&&t!=255)counts[t]++;s->types[i]=255;}else if(t!=255)n++;}
- s->remaining=n;return 1;
+ for(i=0;i<8;i++)if(types[i]>3&&types[i]!=255)return 0;
+ for(i=0;i<8;i++){t=types[i];if(mask&(128>>i)){if(reward&&t!=255)counts[t]++;types[i]=255;}else if(t!=255)n++;}
+ *remaining=n;return 1;
 }

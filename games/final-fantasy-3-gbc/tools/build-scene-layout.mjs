@@ -1,3 +1,4 @@
+import {deathAssets} from './death-assets.mjs';
 import {encounterScreenAssets} from './encounter-screen-assets.mjs';
 import {checkEncounterAssets} from './field-encounter-source.mjs';
 import {livePartyAssets} from './live-party-source.mjs';
@@ -38,6 +39,7 @@ const partyResources=livePartyAssets(data);
 await fs.writeFile(gen+'/live-party-assets.h','#include <stdint.h>\n'+Object.keys(partyResources).map(n=>'extern const uint8_t '+n+'[];').join('\n')+'\n');
 for(const bank of [15,78]){const file=gen+'/live-party'+bank+'.c';await fs.writeFile(file,'#pragma bank '+bank+'\n#include <stdint.h>\n'+Object.entries(partyResources).filter(([n])=>(n==='equipment_properties')===(bank===15)).map(([n,b])=>'const uint8_t '+n+'[]={'+[...b]+'};').join('\n'));generated.push(file);}
 generated.push(...await encounterScreenAssets(data,gen,battle,{map:dungeon?181:29,maps:dungeon?[181,111,115,112,22,113]:[29]}));
+generated.push(...await deathAssets(data,gen,JSON.parse(await fs.readFile(out+'/encounter-resources.json')).profiles));
 generated.push(...await liveCommandAssets(data,gen,JSON.parse(await fs.readFile(out+'/encounter-resources.json')).profiles));
 // Bind current reviewed strings, rather than inheriting the older standalone
 // diagnostic's small message dictionary. Source IDs remain runtime inputs.

@@ -9,6 +9,9 @@
 #include "memory.h"
 #include "platform.h"
 #include "battle-workspace.h"
+#ifdef FF3_SCENE_LAYOUT
+#include "battle-death-video.h"
+#endif
 #ifdef FF3_EFFECTS
 #include "battle-effect-freeze.h"
 uint8_t resident_effect_clone_valid;
@@ -44,8 +47,14 @@ void ff3_resident_load(uint8_t profile) FF3_RESIDENT_BANKED {uint8_t saved=CURRE
  // Four original BG palettes also supply the separate color-residual OBJ.
  ff3_party_palette(1,0,4,text_staging);ff3_party_palette(0,4,4,text_staging);
  cached[0]=cached[1]=255;resident_page=0;resident_fixed=0;
+#ifdef FF3_SCENE_LAYOUT
+ ff3_death_video_reset();
+#endif
 }
 void ff3_resident_fix(void) NONBANKED {resident_fixed=1;cached[0]=cached[1]=255;}
+#ifdef FF3_SCENE_LAYOUT
+void ff3_resident_retain(void) FF3_RESIDENT_BANKED {resident_fixed=1;cached[resident_page]=0;cached[resident_page^1]=255;}
+#endif
 #ifdef FF3_EFFECTS
 #if defined(FF3_STONE) || defined(FF3_BOSS)
 #error Mutable enemy patterns require a new effect resource ownership contract
@@ -86,6 +95,13 @@ void ff3_resident_prepare(const Ff3EntryDisplay*s,uint8_t page,uint8_t*oam) FF3_
  if((s->enemy_scroll&15)||page>1){resident_error=3;return;}
  scroll=(uint16_t)(s->enemy_scroll>>4)*14+((s->enemy_table&1)?224:0);if(scroll>=448)scroll-=448;
  coarse=scroll>>3;
+#ifdef FF3_SCENE_LAYOUT
+ if(resident_fixed&&resident_dead){
+  if(scroll){resident_error=5;return;}
+  if(cached[page]!=0){if(!ff3_enemy_build(page,0,0,0)){resident_error=6;return;}cached[page]=0;resident_map_bytes+=704;resident_map_updates++;}
+  ff3_enemy_saved(page,oam+96);resident_page=page;resident_scroll=0;return;
+ }
+#endif
  memset(oam+96,0,64);
  if(!hidden){ff3_party_copy(a->bank,a->objects,text_staging,(uint16_t)a->count*5);r=text_staging;
   for(i=0;i<a->count;i++,r+=5){x=(uint16_t)r[0]|((uint16_t)r[1]<<8);x=x+448-scroll;if(x>=448)x-=448;

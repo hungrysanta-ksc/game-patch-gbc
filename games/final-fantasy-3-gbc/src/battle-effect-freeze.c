@@ -8,11 +8,11 @@
 /* Numeral and settled ordinary-magic owners may lend frozen party pixels to BG. OBJ patterns
  * remain in blocks 0/1. Signed BG addressing lends block 2 without evicting
  * enemy, terrain, party, status or window resources from their original slots. */
-uint8_t effect_signed,effect_freeze_error;
+uint8_t effect_signed,effect_freeze_error,effect_keep_head,effect_retained;
 volatile uint8_t effect_freeze_stage;
 uint8_t effect_freeze_cache_valid;
 volatile uint8_t effect_freeze_reused;
-static uint8_t cached_cells,cached_glyphs;
+static uint8_t cached_cells,cached_glyphs,cached_keep_head;
 static uint8_t old_page,new_page,cells,retained,mixed;
 /* Only changed 16-byte map blocks are borrowed. Keep the actual inactive
  * bytes; entry/flash/terrain may leave the two resident pages different. */
@@ -186,7 +186,7 @@ static uint8_t store(uint16_t at,void*p,uint16_t n,uint8_t write){if(!ff3_wram_c
 /* One exact dependency cache, owned only by the effects scene:
  * WRAM4: OAM 0..159, BG0..3/OBJ palettes 160..255, output keys 256..415,
  * output palettes 416..447, input map cells 448..607, glyph records
- * 1408..3279 (104 * {bank/tile key, 16 bytes}). 1152..1407 remains magic's
+ * 1408..3279 (104 * {bank/tile key, 16 bytes}). 3280..3855 remains magic's
  * independent retained-pattern backup. WRAM3 2816..4095 keeps the output.
  * No hash, precomposed fixture, or cache lifetime across a scene reload. */
 #define seen ((uint8_t*)(effect_keys+80))
@@ -197,7 +197,7 @@ static uint8_t cache_equal(uint16_t at,const uint8_t*p,uint8_t n){
 }
 static void map_cell(uint16_t key){uint16_t c=key&0xfffc;if(c!=map_group){map_group=c;read_vram(0,(old_page?0x9c00:0x9800)+c,text_staging+144,4);read_vram(1,(old_page?0x9c00:0x9800)+c,text_staging+148,4);}}
 static uint8_t reuse(void){uint8_t i,j,n,*record;uint16_t key;
- if(!effect_freeze_cache_valid)return 0;
+ if(!effect_freeze_cache_valid||cached_keep_head!=effect_keep_head)return 0;
  /* Fail early for changed poses before reading map/glyph dependencies. */
  if(!cache_equal(0,animation_base,80)||!cache_equal(80,animation_base+80,80)||
     !cache_equal(160,effect_palettes,32)||!cache_equal(192,effect_palettes+64,64))return 0;
@@ -229,7 +229,7 @@ static void cache_glyph(uint16_t key){uint8_t bit=1<<(key&7);uint8_t *p=text_sta
  p[0]=key;p[1]=key>>8;memcpy(p+2,effect_glyph,16);
  cached_glyphs++;if(!(cached_glyphs&3))cache_flush(4);
 }
-static uint8_t keep(const uint8_t*o){return o[0]&&o[2]&&(o[0]>=112||o[0]<16);}
+static uint8_t keep(const uint8_t*o){uint8_t i=(uint8_t)(o-animation_base)>>2;return o[0]&&o[2]&&(o[0]>=112||o[0]<16||(effect_keep_head&&(o[0]<32||(i-8)%6>=4)));}
 static uint8_t gather(void){uint8_t i,x,y,xx,yy,j,k,p,*slot;uint16_t key,index;const uint8_t*o;cells=0;
  /* Exact 20 x 13 cell directory. The last four entries borrow seen[] before
   * its glyph-cache lifetime begins; no hash or new RAM reservation. */
@@ -438,13 +438,16 @@ uint8_t ff3_effect_freeze(void) BANKED {uint8_t i;effect_freeze_error=0;if(effec
  effect_freeze_stage=4;for(i=0;i<cells;i++){if(!compose(effect_keys[i]&1023,i)||effect_freeze_error)return 0;ff3_native_service();}
  cache_flush(cached_glyphs&3);if(effect_freeze_error)return 0;
  if(!cache_copy(448,effect_members,(uint16_t)cells*2,1)||!cache_copy(256,effect_keys,(uint16_t)cells*2,1)||!cache_copy(416,effect_palettes+32,32,1))return 0;
- cached_cells=cells;effect_freeze_cache_valid=1;
+ cached_cells=cells;cached_keep_head=effect_keep_head;effect_freeze_cache_valid=1;
  }
  effect_freeze_stage=5;
- /* At most eight retained original objects beside 32 damage glyphs. The
+ /* Damage retains at most eight objects beside 32 glyphs. Ordinary magic
+ * can retain eighteen beside its eighteen cells, including terrain-overlapping
+ * heads and all four feet. Without magic, the
  * two lower party feet remain OBJ so all live UI rows stay independently writable. */
- retained=0;for(i=8;i<40;i++)if((i>=32||keep(animation_base+i*4))&&animation_base[i*4]){if(retained==8){effect_freeze_error=6;return 0;}memmove(animation_base+retained*4,animation_base+i*4,4);retained++;}
- memmove(animation_base+128,animation_base,retained*4);memset(animation_base,0,128);memset(animation_base+128+retained*4,0,(8-retained)*4);
+ retained=0;for(i=8;i<40;i++)if((i>=32||keep(animation_base+i*4))&&animation_base[i*4]){if(retained==(effect_keep_head?18:8)){effect_freeze_error=6;return 0;}memmove(animation_base+retained*4,animation_base+i*4,4);retained++;}
+ effect_retained=effect_keep_head?retained:8;
+ memmove(animation_base+(40-effect_retained)*4,animation_base,retained*4);memset(animation_base,0,(40-effect_retained)*4);memset(animation_base+(40-effect_retained+retained)*4,0,(effect_retained-retained)*4);
  effect_freeze_stage=6;if(!ff3_resident_effect_copy(0x9000,2048)){effect_freeze_error=9;return 0;}read_vram(0,0x8700,text_staging,256);effect_freeze_stage=7;
  if(!ff3_text_frozen_patterns(cells))return 0;
  effect_freeze_stage=3;if(!prepare_map())return 0;

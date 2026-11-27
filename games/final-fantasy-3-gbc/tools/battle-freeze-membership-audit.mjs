@@ -1,16 +1,17 @@
 import {check} from './source.mjs';
 // Observe the actual gathered cell records before their composition lifetime.
 // Independently scan every screen cell against the original settled OAM.
-export function freezeMembershipAudit(s){for(const n of ['effect_freeze_stage','effect_keys','effect_members','animation_base'])check(Number.isInteger(s[n]),'Membership symbol '+n);
+export function freezeMembershipAudit(s){for(const n of ['effect_freeze_stage','effect_keys','effect_members','animation_base','effect_keep_head'])check(Number.isInteger(s[n]),'Membership symbol '+n);
  return `\ndo
  local mem=emu.memType.gameboyDebug;local checks,cells,fallback,tail,bad=0,0,0,0,0
  local function word(p)return emu.read(p,mem)+emu.read(p+1,mem)*256 end
  emu.addMemoryCallback(function(_,v)
+  ${Number.isInteger(s.scene_phase)?'if emu.read('+s.scene_phase+',mem)~=3 then return end;':''}
   if v~=4 then return end;local expected={};local n=0
   for y=0,12 do for x=0,19 do
    local members={};local pal=nil;local direct=true
    for i=8,31 do local p=${s.animation_base}+i*4;local oy=emu.read(p,mem);local tile=emu.read(p+2,mem)
-    if oy>=16 and oy<112 and tile~=0 then local ox=emu.read(p+1,mem)-8;oy=oy-16
+    if oy>=16 and oy<112 and tile~=0 and not(emu.read(${s.effect_keep_head},mem)~=0 and (oy<32 or (i-8)%6>=4)) then local ox=emu.read(p+1,mem)-8;oy=oy-16
      if ox<x*8+8 and ox+8>x*8 and oy<y*8+8 and oy+8>y*8 then
       members[#members+1]=i;local color=emu.read(p+3,mem)&7
       if pal==nil then pal=color end;if color~=pal or color>2 or ox~=x*8 then direct=false end
@@ -37,10 +38,11 @@ export function restoreDmaAudit(s){for(const k of ['ff3_text_wram_dma_begin','ff
  local mem=emu.memType.gameboyDebug;local active=false;local count,bad,maxTicks,rate=0,0,0,0;local start=0;local sp=0;local regs={}
  local expected,uploaded,patternChunks,patternBytes,uploads=0,0,0,0,0;local mirror={}
  emu.addMemoryCallback(function(_,v)
+  ${Number.isInteger(s.scene_phase)?'if emu.read('+s.scene_phase+',mem)~=3 then return end;':''}
   if v==1 then
    local keys={};expected=0;uploaded=0
    for i=8,31 do local p=${s.animation_base}+i*4;local y=emu.read(p,mem);local tile=emu.read(p+2,mem)
-    if y>=16 and y<112 and tile~=0 then local x=emu.read(p+1,mem)-8;y=y-16
+    if y>=16 and y<112 and tile~=0 and not(emu.read(${s.effect_keep_head},mem)~=0 and (y<32 or (i-8)%6>=4)) then local x=emu.read(p+1,mem)-8;y=y-16
      for yy=y//8,(y+7)//8 do for xx=x//8,(x+7)//8 do local k=yy*32+xx;if not keys[k]then keys[k]=true;expected=expected+16 end end end
     end
    end
@@ -57,7 +59,7 @@ export function restoreDmaAudit(s){for(const k of ['ff3_text_wram_dma_begin','ff
  emu.addMemoryCallback(function(p,v)regs[p]=v end,emu.callbackType.write,0xff51,0xff54,emu.cpuType.gameboy)
  emu.addMemoryCallback(function()if active or (emu.read(0xff70,mem)&7)~=1 then error('Resident DMA entry')end;active=true;local t=emu.getState();start=t.masterClock;rate=t.clockRate;sp=t['cpu.sp'];if t['cpu.ime'] then bad=bad+1 end end,emu.callbackType.exec,${s.ff3_text_wram_dma_begin},${s.ff3_text_wram_dma_begin},emu.cpuType.gameboy)
  emu.addMemoryCallback(function()if not active or (emu.read(0xff70,mem)&7)~=1 or emu.getState()['cpu.sp']~=sp or emu.getState()['cpu.ime'] then bad=bad+1 end;maxTicks=math.max(maxTicks,emu.getState().masterClock-start);active=false;count=count+1 end,emu.callbackType.exec,${s.ff3_text_wram_dma_end},${s.ff3_text_wram_dma_end},emu.cpuType.gameboy)
- emu.addMemoryCallback(function(_,v)if not active then return end;local bank=emu.read(0xff70,mem)&7;local src=regs[0xff51]*256+(regs[0xff52]&240);local dest=0x8000+(regs[0xff53]&31)*256+(regs[0xff54]&240);local n=(v+1)*16;local valid=(bank==3 and src>=0xd000 and src+n<=0xd480 and dest>=0x9800)or(bank==4 and src==0xd480 and n==256 and dest==0x84a0)
+ emu.addMemoryCallback(function(_,v)if not active then return end;local bank=emu.read(0xff70,mem)&7;local src=regs[0xff51]*256+(regs[0xff52]&240);local dest=0x8000+(regs[0xff53]&31)*256+(regs[0xff54]&240);local n=(v+1)*16;local valid=(bank==3 and src>=0xd000 and src+n<=0xd480 and dest>=0x9800)or(bank==4 and ((src==0xdcd0 and n==256 and dest==0x84a0)or(src==0xddd0 and n==256 and dest==0x85a0)or(src==0xded0 and n==64 and dest==0x86a0)))
   if bank==3 and src>=0xdb00 then
    valid=src==0xdb00+uploaded and dest==0x9000+uploaded and n==math.min(256,expected-uploaded) and emu.read(${s.effect_freeze_stage},mem)==7 and (emu.read(0xff4f,mem)&1)==0
    uploaded=uploaded+n;patternChunks=patternChunks+1;patternBytes=patternBytes+n

@@ -36,7 +36,7 @@ static volatile uint16_t transfer_source,transfer_address,transfer_count;
 static void restore_next(void){uint8_t first=effect_members[restore_block++],bank;
  if(first==255){transfer_count=0;return;}
  transfer_count=(uint16_t)effect_members[restore_block++]*16;
- if(first==72){transfer_source=0xd480u;transfer_address=0x84a0u;transfer_bank=0;transfer_rom_bank=4;pending=9;return;}
+ if(first==72){transfer_source=0xdcd0u;transfer_address=0x84a0u;transfer_bank=0;transfer_rom_bank=4;pending=9;return;}
  bank=first>=36;transfer_source=0xd000u+(uint16_t)first*16;transfer_address=restore_page+(uint16_t)(first-bank*36)*16;transfer_bank=bank;
 }
 
@@ -231,7 +231,7 @@ uint8_t ff3_text_restore_map(uint8_t page,const uint8_t *dirty,uint8_t pairs) NO
  while(i<72){if(!(dirty[i>>3]&(1<<(i&7)))){i++;continue;}first=i;
   do{i++;}while(i<72&&i!=36&&(dirty[i>>3]&(1<<(i&7))));effect_members[n++]=first;effect_members[n++]=i-first;
  }
- if(pairs){effect_members[n++]=72;effect_members[n++]=16;}effect_members[n]=255;
+ if(pairs){effect_members[n++]=72;effect_members[n++]=36;}effect_members[n]=255;
  restore_page=page?0x9c00u:0x9800u;restore_block=0;transfer_rom_bank=3;restore_next();if(!transfer_count)return 1;if(pending!=9)pending=8;finish();return 1;
 }
 
