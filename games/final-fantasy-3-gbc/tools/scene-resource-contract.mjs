@@ -44,7 +44,7 @@ export function diagnosticStorage(){return Array.from({length:6},(_,i)=>({bank:i
 // Sources touching absolute placement, banked storage, or scene ownership are
 // pinned for review. A new allocator or a changed indirect offset formula must
 // not silently inherit this contract. This is deliberately not a C parser.
-const ownerSources=['src/field-objects.c','src/platform.c','src/game-state.c','src/battle-live-ui.c','src/battle-workspace.h'];
+const ownerSources=['src/field-objects.c','src/platform.c','src/game-state.c','src/battle-live-ui.c','src/battle-workspace.h','src/scene-video.c'];
 const placement=/__at\s*\(|ff3_wram_copy\s*\(|SVBK_REG|add_VBL\s*\(|remove_VBL\s*\(/;
 export async function resourceSourceInventory(root=ROOT){
  const files=[],out=[];
@@ -71,9 +71,9 @@ export const lifecycleOwners=[
  {id:'field-context',lifetime:'suspended across battle',sources:['src/exploration.c','src/field-objects.c'],rule:'Keep field position/facing, NPC and event continuation separate from mutable GameState. Rebuild display; do not call fresh field init on return.',status:'Exact context, fixed-RAM coexistence and save location not assigned.'},
  {id:'field-workspace',lifetime:'field display',sources:['src/map-display.h','src/exploration-video.c'],rule:'WRAM1 D000..D7EE is rebuilt after battle; DC00 OAM requires old DMA drained before reuse.',status:'Overlaps battle scratch; no handoff yet.'},
  {id:'battle-workspace',lifetime:'battle/display or bounded action',sources:['src/battle-workspace.h','src/battle-party-video.c','src/battle-animation-video.c','src/battle-stone.c'],rule:'D200..D4BF union reuse is phase-bound; D600 animation versus stone and DC00/DD00 OAM are not independent allocations.',status:'Effects/stone/boss remain incompatible diagnostic variants.'},
- {id:'fixed-ram-stack',lifetime:'whole executable',sources:['src/memory.c','src/platform.c'],rule:'Require one combined linker map plus measured minimum SP. CFA0 effects end and field CF00 limit are separate build contracts.',status:'No combined link; never sum or waive existing limits.'},
+ {id:'fixed-ram-stack',lifetime:'whole executable',sources:['src/memory.c','src/platform.c'],rule:'Require one combined linker map plus measured minimum SP. Effects end and field CF00 limit are separate build contracts.',status:'Actual combined diagnostic link exposes fixed RAM/ROM overflows. No executable combined allocation; never waive existing limits.'},
  {id:'vram',lifetime:'scene; some borrowed per action',sources:['src/battle-resident-bg.c','src/battle-effect-freeze.c','src/battle-magic-video.c'],rule:'Rebuild map/pattern/palette ownership at scene switch. Invalidate frozen dependencies and signed clone. Do not retain cache validity after VRAM replacement.',status:'Current reuse is inside one loaded battle only.'},
- {id:'publication',lifetime:'descriptor until consumption',sources:['src/text-vblank.c','src/exploration-video.c','src/battle-party-video.c'],rule:'Drain text pending/owner, field.pending/upload_pending, party_pending, and memory_busy before changing buffers or callback owner; keep audio service running.',status:'VBlank owners registered by separate mains; no common dispatcher/drain API.'},
+ {id:'publication',lifetime:'descriptor until consumption',sources:['src/text-vblank.c','src/scene-video.c','src/exploration-video.c','src/battle-party-video.c','src/battle-terrain.c'],rule:'Drain text pending/owner, field.pending/upload_pending, party_pending, and memory_busy before changing buffers or callback owner; keep audio service running.',status:'Shared attach/detach and drain API with fixed IRQ callbacks, automatic OAM stop and terrain LCD cleanup. Separate mains remain; scene/resource/gameplay roundtrip still pending.'},
  {id:'rom-assets',lifetime:'build/ROM',sources:['tools/build-text.mjs','tools/build-battle-party-oam.mjs'],rule:'Reuse converted immutable assets in ROM. Field/battle bank assignments must be linked together, not concatenated.',status:'Separate generated assets/builds; combined bank assignment pending.'},
  {id:'destructive-probe',lifetime:'isolated diagnostic only',sources:['src/memory-probe.c'],rule:'Writes banks 2..7 and snapshots field/GameState into 3/4. Must never run while battle caches or persistent suspension are live.',status:'Probe success is not a gameplay suspension contract.'}
 ];
@@ -83,5 +83,5 @@ export function resourceReport(sources){
  return {schema:1,scope:'Storage claims and source ownership audit, not a combined linker allocation or executed scene switch',sources,profiles,storage:diagnosticStorage(),lifecycleOwners,
   rejectedOldFieldReservation:checkSuspension(['effects'],[{id:'obsolete-field-snapshot',bank:3,begin:0,end:4096}]),
   rejectedLegacyCompositionMix:conflicts(claimsFor(['effects','composition-window','item-atlas'])),
-  roundtripReady:false,unresolved:['Natural original encounter/return trace including NPC and event context','Combined fixed WRAM, stack, ROM banks and VRAM allocation','Single boot/audio owner and drained video dispatcher','Live party/formation/result bridge and same-boot second encounter']};
+  roundtripReady:false,unresolved:['Natural original encounter/return trace including NPC and event context','Combined fixed WRAM, stack, ROM banks and VRAM allocation','Single boot/audio and resource handoff using the verified drained video boundary','Live party/formation/result bridge and same-boot second encounter']};
 }

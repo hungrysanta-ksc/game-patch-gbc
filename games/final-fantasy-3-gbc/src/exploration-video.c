@@ -5,8 +5,9 @@
 typedef char video_fault_offset[offsetof(FF3Exploration,video_fault)==39?1:-1];
 uint8_t __at(0xdc00) field_oam[160];
 uint8_t __at(0xdbc0) field_staging[64];
-static volatile uint16_t strip_address;
-static volatile uint8_t strip_index,strip_stride;
+/* Named in the linker map for controlled tail-transfer verification. */
+volatile uint16_t strip_address;
+volatile uint8_t strip_index,strip_stride;
 #define strip_pending field.upload_pending
 static uint8_t ready(void){uint8_t ly=LY_REG;return ly>=144&&ly<=149&&(STAT_REG&3)==1;}
 static uint8_t column_ready(void){uint8_t ly=LY_REG;return ly>=144&&ly<=150&&(STAT_REG&3)==1;}
@@ -137,13 +138,17 @@ static void publish_irq(void) NONBANKED {
  /* Guarantee a bounded first transfer before a pending timer ISR. Admit it
   * before the remaining row bank/column batches; never mask a whole strip. */
  if(strip_pending){if(strip_stride==1)row_step();
-  else if(column_ready()){column_batch((IF_REG&TIM_IFLAG)?2:4);if((STAT_REG&3)!=1)field.video_fault=1;if(strip_index==32)strip_pending=0;}
+  /* A prior timer-priority batch can leave index 30. Do not send four
+   * pairs past 32: equality-based completion would then wait for wrap. */
+  else if(column_ready()){column_batch(((IF_REG&TIM_IFLAG)||strip_index>=30)?2:4);if((STAT_REG&3)!=1)field.video_fault=1;if(strip_index==32)strip_pending=0;}
  }
  __asm ei __endasm;
  strip_pump();
  __asm di __endasm;
 }
-void ff3_field_video_init(void) NONBANKED {CRITICAL{add_VBL(publish_irq);}}
+static uint8_t field_video_ready(void) NONBANKED {return !field.pending&&!strip_pending&&!field.render_busy&&!field.npc_busy&&!field.event_busy;}
+void ff3_field_video_init(void) NONBANKED {if(!ff3_scene_video_attach(FF3_VIDEO_FIELD,publish_irq,field_video_ready,0))field.video_fault=1;}
+uint8_t ff3_field_video_suspend(void) NONBANKED {ff3_field_flush();ff3_text_drain();return ff3_scene_video_detach(FF3_VIDEO_FIELD);}
 void ff3_field_publish(uint8_t page,uint8_t x,uint8_t y) NONBANKED {
  CRITICAL{field.scroll_x=x;field.scroll_y=y;_shadow_OAM_base=page;field.pending=1;}
 }

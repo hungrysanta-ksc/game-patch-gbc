@@ -25,7 +25,12 @@ class Program {
   var actual=new byte[1024];Core.GetMemoryValues(7,Addr("state_buffer"),Addr("state_buffer")+1023,actual);
   observations.Add(new{result=Read("state_result"),state=Convert.ToHexString(actual).ToLowerInvariant(),disabledRam=Core.GetMemoryValue(7,0xa000),failure=Read("state_failure")});
  }
- File.WriteAllText(Text("output"),JsonSerializer.Serialize(new{romSha256=Text("romSha256"),coreSha256=Text("coreSha256"),status=Read("state_status"),failure=Read("state_failure"),testCase=Number("state_case",4),index=Number("state_index",2),observations},new JsonSerializerOptions{WriteIndented=true}));
+ var readouts=new Dictionary<string,string>();
+ if(c.TryGetProperty("readouts",out var list))foreach(var item in list.EnumerateArray()){
+  string name=item.GetProperty("name").GetString()!;int size=item.GetProperty("bytes").GetInt32();if(size<1||size>1024)throw new Exception("Readout size");
+  var value=new byte[size];Core.GetMemoryValues(7,Addr(name),Addr(name)+(uint)size-1,value);readouts.Add(name,Convert.ToHexString(value).ToLowerInvariant());
+ }
+ File.WriteAllText(Text("output"),JsonSerializer.Serialize(new{romSha256=Text("romSha256"),coreSha256=Text("coreSha256"),status=Read("state_status"),failure=Read("state_failure"),testCase=Number("state_case",4),index=Number("state_index",2),observations,readouts},new JsonSerializerOptions{WriteIndented=true}));
  Console.WriteLine("STATE status="+Read("state_status")+" failure="+Read("state_failure")+" case="+Number("state_case",4));
  }finally{Core.Stop();Core.Release();}}
 }

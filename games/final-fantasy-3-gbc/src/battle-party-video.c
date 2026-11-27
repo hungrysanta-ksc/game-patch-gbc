@@ -2,6 +2,7 @@
 #include <gb/cgb.h>
 #include <string.h>
 #include "battle-party-oam.h"
+#include "battle-party-video.h"
 #include "battle-entry.h"
 #include "platform.h"
 #include "memory.h"
@@ -196,6 +197,27 @@ static void load(void){const PartyVideoAsset*a;uint8_t page;
  ff3_party_copy(a->bank,a->palette,text_staging,32);ff3_party_palette(0,0,4,text_staging);
  loaded=1;party_work=1;party_load_stage=4;reset_motion();party_request=0;party_load_stage=0;
 }
+static uint8_t party_video_idle(void) NONBANKED {return !party_pending&&!party_work&&!party_request&&!party_step
+#ifdef FF3_LIVE_UI
+ &&!action_request&&!action_enabled&&!message_request&&!live_ui_request
+#endif
+#ifdef FF3_EFFECTS
+ &&!effect_signed&&!magic_tall
+#endif
+ ;}
+static void party_video_leave(void) NONBANKED {
+#ifdef FF3_TERRAIN
+ ff3_terrain_shutdown();
+#endif
+#ifdef FF3_EFFECTS
+ effect_freeze_cache_valid=0;resident_effect_clone_valid=0;
+#endif
+ loaded=0;
+}
+uint8_t ff3_party_video_suspend(void) NONBANKED {
+ while(party_pending){ff3_native_service();__asm halt __endasm;}
+ ff3_text_drain();return ff3_scene_video_detach(FF3_VIDEO_BATTLE);
+}
 void main(void){uint8_t i;
  ff3_platform_init();ff3_memory_init();cpu_fast();DISPLAY_OFF;
  memset((void*)0xddf0,0xa7,16);
@@ -205,7 +227,8 @@ void main(void){uint8_t i;
  set_bkg_palette(0,1,(const palette_color_t*)text_staging);SCX_REG=SCY_REG=0;WX_REG=167;*(volatile uint8_t*)0xff6c=0;
  /* Explicit HRAM DMA publishes the selected immutable shadow in this
   * VBlank. Disable the default extra copy, preserving timer IRQ budget. */
- add_VBL(publish);ff3_text_video_init();text_idle=ff3_native_service;LCDC_REG=0x93;ff3_native_begin();
+ if(!ff3_scene_video_attach(FF3_VIDEO_BATTLE,publish,party_video_idle,party_video_leave))party_error=5;
+ ff3_text_video_init();text_idle=ff3_native_service;LCDC_REG=0x93;ff3_native_begin();
 #ifdef FF3_TERRAIN
  ff3_terrain_init();
 #endif
@@ -218,7 +241,14 @@ void main(void){uint8_t i;
    ||action_request||action_enabled
 #endif
    ;ff3_native_service();
-  if(party_request)load();
+  /* Diagnostic boundary requests; no victory/reward or field transition. */
+  if(party_request==2){party_request=0;party_work=0;if(!ff3_party_video_suspend())party_error=6;}
+  else if(party_request==3){party_request=0;party_work=0;if(!ff3_scene_video_attach(FF3_VIDEO_BATTLE,publish,party_video_idle,party_video_leave))party_error=7;
+#ifdef FF3_TERRAIN
+   if(!party_error)ff3_terrain_init();
+#endif
+  }
+  else if(party_request)load();
 #ifdef FF3_LIVE_UI
   else if((action_request|action_enabled|message_request|live_ui_request)&&live_ui_ready){ff3_script_video();}
 #endif

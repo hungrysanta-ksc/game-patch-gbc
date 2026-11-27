@@ -35,6 +35,7 @@ void ff3_npc_schedule(void) BANKED;
 uint8_t ff3_npc_command(uint8_t op) BANKED;
 uint8_t ff3_field_render(uint8_t boot) BANKED;
 void ff3_field_video_init(void) NONBANKED;
+uint8_t ff3_field_video_suspend(void) NONBANKED;
 void ff3_field_strip(uint16_t address,uint8_t stride) NONBANKED;
 void ff3_field_publish(uint8_t page,uint8_t x,uint8_t y) NONBANKED;
 void ff3_field_flush(void) NONBANKED;

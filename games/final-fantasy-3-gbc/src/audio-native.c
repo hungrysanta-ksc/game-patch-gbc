@@ -216,6 +216,15 @@ native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_pl
  &&!full()
 #endif
  ){
+#ifdef FF3_EXPLORATION
+ /* The original field loop services sound once around its frame work
+  * (3F/E1E1..E201), not until a future queue is full. Keep two source ticks
+  * ahead before yielding to a due or already-dirty picture. Test before
+  * prepare(): testing after it forced one more costly tick at every yield. */
+ if(field.ready&&!field.pause&&!field.mode&&
+    (field.render_dirty||(int16_t)(ff3_clock_now()-field.deadline)>=0)&&
+    (int16_t)(prepare_due-ff3_clock_now())>136)break;
+#endif
 #ifdef FF3_OPENING_VIDEO
  /* Keep the established three-tick budget and completed-wait-only yield.
   * One atomic clock sample serves both decisions. Check its lead before
@@ -247,12 +256,6 @@ native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_pl
  #endif
 #endif
  prepare();
-#ifdef FF3_EXPLORATION
- /* Preserve the three-tick queue target, but let a due exploration picture
-  * run after two ticks are already queued. Resume filling on the next call.
-  * Commands, event deadlines and the IRQ consumer are unchanged. */
- if(field.ready&&!field.pause&&!field.mode&&(int16_t)(prepare_due-ff3_clock_now())>136&&(int16_t)(ff3_clock_now()-field.deadline)>=0)break;
-#endif
  }
  /* Diagnostics must not extend the refill loop by consuming its queue lead.
   * Publish the latest completed event only after refill/yield. All consumed

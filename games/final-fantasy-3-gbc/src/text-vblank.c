@@ -1,11 +1,28 @@
 #include <gb/cgb.h>
 #include <string.h>
 #include "text-vblank.h"
+#ifdef FF3_TEXT_AUDIO
+#include "memory.h"
+#endif
 void (*text_idle)(void);
 volatile uint8_t text_transfer_busy,text_transfer_fault,text_transfer_max_ly;
 volatile uint16_t text_transfer_chunks,text_transfer_bytes,text_transfer_frames,text_transfer_max_frames;
 uint8_t __at(0xd950) text_staging[256];
 static volatile uint8_t pending,owner,transfer_bank,transfer_rom_bank;
+static uint8_t text_video_initialized;
+static void video_irq(void) NONBANKED;
+uint8_t ff3_text_transfer_idle(void) NONBANKED {return !pending&&!owner
+#ifdef FF3_TEXT_AUDIO
+ &&!memory_busy
+#endif
+ ;}
+void ff3_text_scene_hook(void (*publish)(void),uint8_t attach) NONBANKED {
+ /* Called only by scene-video's masked, checked ownership boundary. */
+ if(attach){
+   if(text_video_initialized)remove_VBL(video_irq);
+   add_VBL(publish);if(text_video_initialized)add_VBL(video_irq);
+ }else remove_VBL(publish);
+}
 #ifdef FF3_EFFECTS
 static volatile uint8_t transfer_dma_length,restore_block;
 static uint16_t restore_page,frozen_bytes;
@@ -155,8 +172,9 @@ static void video_irq(void) NONBANKED {
  pump();
  __asm di __endasm;
 }
-void ff3_text_video_init(void) NONBANKED {CRITICAL{add_VBL(video_irq);}}
+void ff3_text_video_init(void) NONBANKED {CRITICAL{if(!text_video_initialized){add_VBL(video_irq);text_video_initialized=1;}}}
 static void finish(void){while(pending){pump();if(pending){ff3_text_service();if(pending){__asm halt __endasm;}}}}
+void ff3_text_drain(void) NONBANKED {finish();}
 void ff3_text_copy(uint8_t bank,uint16_t address,const uint8_t *data,uint16_t count) NONBANKED {
  if(!count)return;
  if(pending||count>256||((uint16_t)data|address|count)&15||(uint16_t)data<0xd950||(uint16_t)data>0xda50-count){text_transfer_fault=1;return;}
