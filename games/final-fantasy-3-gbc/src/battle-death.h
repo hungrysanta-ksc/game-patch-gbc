@@ -11,4 +11,5 @@ uint8_t ff3_death_ack(Ff3Death*s,uint16_t ticket) FF3_STATE_BANKED;
  * does not grant experience. B909 counts the cleared slots before the wipe.
  * Caller must finish the wipe before running A458's outcome check. */
 uint8_t ff3_death_remove(Ff3BattleResult*s,uint8_t mask,uint8_t reward,uint8_t*counts) FF3_STATE_BANKED;
+uint8_t ff3_death_slots(uint8_t*types,uint8_t mask,uint8_t reward,uint8_t*counts,uint8_t*remaining) FF3_STATE_BANKED;
 #endif

@@ -2,6 +2,8 @@
 #define FF3_EFFECT_FREEZE_H
 #include <gb/gb.h>
 extern uint8_t effect_signed,effect_freeze_error;
+/* Ordinary magic preserves terrain-overlapping heads as original OBJ. */
+extern uint8_t effect_keep_head,effect_retained;
 /* Scene teardown invalidates this only after effect_signed has been released. */
 extern uint8_t effect_freeze_cache_valid;
 uint8_t ff3_effect_freeze(void) BANKED;

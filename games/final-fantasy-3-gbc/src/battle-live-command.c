@@ -2,6 +2,7 @@
 #include <string.h>
 #include "battle-live-command.h"
 #include "battle-command.h"
+#include "battle-death.h"
 #include "battle-animation-video.h"
 #include "battle-script-video.h"
 #include "battle-strike-video.h"
@@ -43,7 +44,7 @@ uint8_t ff3_live_command_init(void) BANKED {uint8_t i;const LiveCommandAsset*a;
  memcpy(battle_result->types,status_tail.types,8);for(i=0;i<8;i++)battle_result->remaining+=battle_result->types[i]!=255;
  for(i=0;i<4;i++)if(battle_result->records[i][1]&1)battle_result->near|=128>>i;
  battle_result->first=encounter_first;battle_result->flags=a->flags;battle_result->message=255;
- if(!transfer(0,battle_result,sizeof(*battle_result),1))return 0;memset(fight,0,sizeof(*fight));if(!transfer(832,fight,sizeof(*fight),1))return 0;command_ready=1;return 1;
+ if(!transfer(0,battle_result,sizeof(*battle_result),1))return 0;memset(fight,0,sizeof(*fight));if(!transfer(832,fight,sizeof(*fight),1)||!transfer(1020,fight,4,1))return 0;command_ready=1;return 1;
 }
 void ff3_live_command_update(void) BANKED {uint8_t i,a;const uint8_t*e;
  if(command_error)return;
@@ -82,4 +83,11 @@ uint8_t ff3_live_command_commit(uint8_t cannon) BANKED {
  if(!transfer(0,battle_result,sizeof(*battle_result),1))return 0;
  ff3_live_ui_records((const uint8_t*)battle_result->records);
  command_phase=2;return 1;
+}
+uint8_t ff3_live_command_remove(uint8_t mask,uint8_t reward) BANKED {uint8_t types[8],counts[4],remaining;
+ if(!command_ready||!command_phase)return 0;
+ if(!transfer(808,types,8,0)||!transfer(1020,counts,4,0))return 0;
+ if(!ff3_death_slots(types,mask,reward,counts,&remaining))return 0;
+ if(!transfer(808,types,8,1)||!transfer(1020,counts,4,1)||!transfer(822,&remaining,1,1))return 0;
+ memcpy(animation_state.types,types,8);memcpy(status_tail.types,types,8);return 1;
 }
