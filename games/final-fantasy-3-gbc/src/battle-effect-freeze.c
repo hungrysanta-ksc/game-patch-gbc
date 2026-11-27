@@ -196,7 +196,7 @@ static uint8_t cache_equal(uint16_t at,const uint8_t*p,uint8_t n){
  if(!cache_copy(at,text_staging+160,n,0))return 0;return !memcmp(p,text_staging+160,n);
 }
 static void map_cell(uint16_t key){uint16_t c=key&0xfffc;if(c!=map_group){map_group=c;read_vram(0,(old_page?0x9c00:0x9800)+c,text_staging+144,4);read_vram(1,(old_page?0x9c00:0x9800)+c,text_staging+148,4);}}
-static uint8_t reuse(void){uint8_t i;uint16_t key;
+static uint8_t reuse(void){uint8_t i,j,n,*record;uint16_t key;
  if(!effect_freeze_cache_valid)return 0;
  /* Fail early for changed poses before reading map/glyph dependencies. */
  if(!cache_equal(0,animation_base,80)||!cache_equal(80,animation_base+80,80)||
@@ -206,11 +206,18 @@ static uint8_t reuse(void){uint8_t i;uint16_t key;
  for(i=0;i<cached_cells;i++){key=effect_keys[i]&1023;map_cell(key);
   if(text_staging[144+(key&3)]!=effect_members[i*2]||text_staging[148+(key&3)]!=effect_members[i*2+1])return 0;
  }
- for(i=0;i<cached_glyphs;i++){
-  if(!cache_copy(1408+(uint16_t)i*18,text_staging+160,18,0))return 0;
-  key=text_staging[160]|((uint16_t)text_staging[161]<<8);
+ /* The source patterns remain resident throughout this check, as in B589
+  * through B711. Read four saved dependencies together, but compare every
+  * live VRAM byte; the final partial group has no padding dependencies. */
+ for(i=0;i<cached_glyphs;i+=n){
+  n=cached_glyphs-i;if(n>4)n=4;
+  if(!cache_copy(1408+(uint16_t)i*18,text_staging+160,(uint16_t)n*18,0))return 0;
+  record=text_staging+160;
+  for(j=0;j<n;j++,record+=18){
+  key=record[0]|((uint16_t)record[1]<<8);
   read_vram(key>>8,0x8000+(key&255)*16,effect_glyph,16);
-  if(memcmp(effect_glyph,text_staging+162,16))return 0;
+  if(memcmp(effect_glyph,record+2,16))return 0;
+  }
  }
  if(!cache_copy(416,effect_palettes+32,32,0))return 0;
  cells=cached_cells;effect_freeze_reused=1;return 1;
@@ -222,7 +229,6 @@ static void cache_glyph(uint16_t key){uint8_t bit=1<<(key&7);uint8_t *p=text_sta
  p[0]=key;p[1]=key>>8;memcpy(p+2,effect_glyph,16);
  cached_glyphs++;if(!(cached_glyphs&3))cache_flush(4);
 }
-static void mirror(uint8_t bank,uint16_t from,uint16_t to,uint16_t bytes){uint16_t at;for(at=0;at<bytes;at+=256){read_vram(bank,from+at,text_staging,256);ff3_text_copy(bank,to+at,text_staging,256);ff3_native_service();}}
 static uint8_t keep(const uint8_t*o){return o[0]&&o[2]&&(o[0]>=112||o[0]<16);}
 static uint8_t gather(void){uint8_t i,x,y,xx,yy,j,k,p,*slot;uint16_t key,index;const uint8_t*o;cells=0;
  /* Exact 20 x 13 cell directory. The last four entries borrow seen[] before
@@ -368,7 +374,7 @@ static uint8_t prepare_map(void){uint8_t bank,block;uint16_t at,size,i,first,las
 }
 /* Reuse the resident original backup directly; no bank-1 staging copy. */
 static uint8_t restore_map(uint8_t pairs){if(!ff3_text_restore_map(new_page,map_dirty,pairs))return 0;effect_map_written+=effect_map_saved;return 1;}
-uint8_t ff3_effect_freeze(void) BANKED {uint8_t i;uint16_t at,size;effect_freeze_error=0;if(effect_signed)return 1;
+uint8_t ff3_effect_freeze(void) BANKED {uint8_t i;effect_freeze_error=0;if(effect_signed)return 1;
  effect_freeze_reused=0;effect_freeze_stage=1;
  old_page=resident_page;new_page=old_page^1;if(resident_scroll){effect_freeze_error=5;return 0;}
  ff3_native_service();if(!store(1152,animation_base,160,1))return 0;ff3_native_service();
@@ -394,9 +400,8 @@ uint8_t ff3_effect_freeze(void) BANKED {uint8_t i;uint16_t at,size;effect_freeze
  * two lower party feet remain OBJ so all live UI rows stay independently writable. */
  retained=0;for(i=8;i<40;i++)if((i>=32||keep(animation_base+i*4))&&animation_base[i*4]){if(retained==8){effect_freeze_error=6;return 0;}memmove(animation_base+retained*4,animation_base+i*4,4);retained++;}
  memmove(animation_base+128,animation_base,retained*4);memset(animation_base,0,128);memset(animation_base+128+retained*4,0,(8-retained)*4);
- effect_freeze_stage=6;if(!ff3_resident_effect_copy(0x9000,2048)){effect_freeze_error=9;return 0;}mirror(0,0x8700,0x9700,256);effect_freeze_stage=7;
- for(at=0;at<(uint16_t)cells*16;at+=256){size=(uint16_t)cells*16-at;if(size>256)size=256;if(!store(2816+at,text_staging,size,0))return 0;ff3_text_copy(0,0x9000+at,text_staging,size);ff3_native_service();}
- memcpy(text_staging,effect_palettes+32,32);ff3_text_palette_range(1,4,4,text_staging);
+ effect_freeze_stage=6;if(!ff3_resident_effect_copy(0x9000,2048)){effect_freeze_error=9;return 0;}read_vram(0,0x8700,text_staging,256);effect_freeze_stage=7;
+ if(!ff3_text_frozen_patterns(cells))return 0;
  effect_freeze_stage=3;if(!prepare_map())return 0;
  resident_page=new_page;effect_signed=1;effect_freeze_stage=8;return 1;
 }

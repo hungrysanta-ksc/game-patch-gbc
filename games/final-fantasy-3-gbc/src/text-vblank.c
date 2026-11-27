@@ -8,9 +8,10 @@ uint8_t __at(0xd950) text_staging[256];
 static volatile uint8_t pending,owner,transfer_bank,transfer_rom_bank;
 #ifdef FF3_EFFECTS
 static volatile uint8_t transfer_dma_length,restore_block;
-static uint16_t restore_page;
+static uint16_t restore_page,frozen_bytes;
 /* Membership scratch has no live owner after OAM is restored. */
 extern uint8_t __at(0xd380) effect_members[320];
+extern uint8_t __at(0xd870) effect_palettes[128];
 
 #endif
 static volatile uint16_t transfer_source,transfer_address,transfer_count;
@@ -42,11 +43,15 @@ static void pump(void){uint8_t taken=0,i,saved;uint16_t n,limit;
  if(!taken)return;
  if(pending==1||pending==6||pending==7
 #ifdef FF3_EFFECTS
- ||pending==8||pending==9
+ ||pending==8||pending==9||pending==10||pending==11
 #endif
  ){
   while(transfer_count&&ready()){
-   limit=pending==1?128:256;n=transfer_count>limit?limit:transfer_count;taken=0;
+   limit=(pending==1
+#ifdef FF3_EFFECTS
+    ||pending==11
+#endif
+   )?128:256;n=transfer_count>limit?limit:transfer_count;taken=0;
    CRITICAL{if(ready()){
     __asm
      .globl _ff3_text_dma_begin
@@ -63,7 +68,7 @@ static void pump(void){uint8_t taken=0,i,saved;uint16_t n,limit;
     HDMA3_REG=transfer_address>>8;HDMA4_REG=(uint8_t)transfer_address;
 
 #ifdef FF3_EFFECTS
-    if(pending==8||pending==9){
+    if(pending==8||pending==9||pending==10){
      transfer_dma_length=(n>>4)-1;
      __asm
        .globl _ff3_text_wram_dma_begin
@@ -105,10 +110,21 @@ static void pump(void){uint8_t taken=0,i,saved;uint16_t n,limit;
 
 #ifdef FF3_EFFECTS
    if(pending==8&&!transfer_count)restore_next();
+   if(pending==11&&!transfer_count){transfer_source=0xdb00u;transfer_address=0x9000u;transfer_count=frozen_bytes;pending=10;}
 #endif
   }
-  if(!transfer_count)pending=0;
+  if(!transfer_count){
+#ifdef FF3_EFFECTS
+   /* Continue the prepared palette command in this VBlank when it fits.
+    * No foreground wakeup/audio production between these two commands. */
+   if(pending==10){transfer_source=(uint16_t)(effect_palettes+32);transfer_address=32;transfer_count=4;transfer_bank=1;pending=5;goto palette_transfer;}
+#endif
+   pending=0;
+  }
  }else if(pending==5){
+#ifdef FF3_EFFECTS
+palette_transfer:
+#endif
   /* One palette per bounded critical section; the timer can run between
    * palettes. Reuse the transfer descriptor and keep the source in WRAM. */
   while(transfer_count&&ready()){
@@ -174,6 +190,16 @@ void ff3_text_clear_map(uint8_t bank) NONBANKED {
 
 
 #ifdef FF3_EFFECTS
+/* One immutable source lifetime, like the original prepared pattern upload.
+ * Reuse the bounded resident DMA leaf; do not copy through bank-1 staging or
+ * wait for the foreground producer between chunks. Pending 11 copies the
+ * prepared retained-pattern mirror, 10 the frozen patterns, then 5 the four
+ * BG palettes. All three sources stay immutable until completion. */
+uint8_t ff3_text_frozen_patterns(uint8_t cells) NONBANKED {
+ if(pending||!(KEY1_REG&128)||(SVBK_REG&7)!=1||cells>80){text_transfer_fault=1;return 0;}
+ frozen_bytes=(uint16_t)cells*16;transfer_source=(uint16_t)text_staging;transfer_address=0x9700u;transfer_count=256;
+ transfer_bank=0;transfer_rom_bank=3;pending=11;finish();return 1;
+}
 /* One synchronous lifetime covers all dirty runs. VBlank consumes the next
  * resident span without waking the foreground producer between spans. */
 uint8_t ff3_text_restore_map(uint8_t page,const uint8_t *dirty,uint8_t pairs) NONBANKED {uint8_t i=0,n=0,first;

@@ -136,6 +136,7 @@ files.push('tools/battle-freeze-reuse-audit.mjs','tools/verify-battle-freeze-reu
 files.push('tools/verify-battle-freeze-colors.mjs','docs/battle-freeze-first-preparation.md');
 files.push('docs/battle-freeze-native-planes.md');
 files.push('tools/profile-battle-freeze-costs.mjs','tools/battle-freeze-membership-audit.mjs','tools/verify-battle-freeze-map-limit.mjs','docs/battle-freeze-transfer-costs.md');
+files.push('docs/battle-freeze-recast-preparation.md');
 const entries=[];for(const path of files){const b=await fs.readFile(ROOT+'/'+path);entries.push({path,bytes:b.length,sha256:hash(b),basis:'Project-authored code, specification or documentation; no extracted assets'});}
 const manifest=JSON.stringify({schema:1,scope:'Source-only development package; generated ROM/audio/private inputs excluded',files:entries},null,2)+'\n',target=ROOT+'/export-manifest.json';
 if(process.argv.includes('--check'))check(await fs.readFile(target,'utf8')===manifest,'Export manifest is stale');else await fs.writeFile(target,manifest);
