@@ -16,6 +16,32 @@ emu.addMemoryCallback(function(address,value)
  scrollwrites=scrollwrites+1
  if (emu.read(0xff41,fieldmem)&3)~=1 then badscroll=badscroll+1 end
 end,emu.callbackType.write,0xff42,0xff43,emu.cpuType.gameboy)
+-- Frame polling can observe a changed SCX up to one frame after the bus
+-- write (and debugger IRQ-yield steps can cross a frame). Measure display
+-- starvation at the actual SCY write that completes the scroll pair.
+local gapLast,gapX,gapY=nil,nil,nil
+local gapCount,gapMax=0,0
+local gapBins={}
+local function moving()
+ return emu.read(__FIELD_RENDER_BUSY__-59,fieldmem)~=0 and emu.read(__FIELD_RENDER_BUSY__-45,fieldmem)==0 and emu.read(__FIELD_RENDER_BUSY__-37,fieldmem)==0
+end
+emu.addMemoryCallback(function(address,value)
+ local x=emu.read(0xff43,fieldmem)
+ if not moving() then gapLast=nil;gapX=x;gapY=value;return end
+ if x~=gapX or value~=gapY then
+  local s=emu.getState()
+  if gapLast then
+   local us=math.floor(((s.masterClock-gapLast)&0xffffffff)*1000000/s.clockRate+0.5)
+   local bin=math.ceil(us/1000);gapBins[bin]=(gapBins[bin] or 0)+1;gapCount=gapCount+1;gapMax=math.max(gapMax,us)
+  end
+  gapLast=s.masterClock;gapX=x;gapY=value
+ end
+end,emu.callbackType.write,0xff42,0xff42,emu.cpuType.gameboy)
+emu.addEventCallback(function()
+ if not moving() then gapLast=nil end
+ local bins={};for i=1,1000 do if gapBins[i] then bins[#bins+1]=i..'='..gapBins[i] end end
+ emu.log(string.format('scroll-gap:%d,%d;%s',gapCount,gapMax,table.concat(bins,',')))
+end,emu.eventType.codeBreak)
 emu.addEventCallback(function() emu.log(string.format("field-audit:%d,%d,%d,%d,%d",oamdmas,badoam,scrollwrites,badscroll,peak)) end,emu.eventType.codeBreak)
 
 -- Wall-clock guest cycles from preparation entry to the actual SCX commit,

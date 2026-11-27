@@ -25,6 +25,7 @@ class Program {
    foreach(var line in log.ToString().Split('\n'))if(line.StartsWith("event-step:")){string clean=line.TrimEnd('\r');int id=int.Parse(clean.Split(':')[1]);if(eventRecords.TryGetValue(id,out var old))Assert(old==clean,"Event observation identity");else eventRecords.Add(id,clean);}
   }
   try{Core.InitDll();Core.InitializeEmu(Text("home"),IntPtr.Zero,IntPtr.Zero,true,true,true,true);Audit.ConfigureVideo();Core.SetEmulationConfig(new Core.Speed{speed=0,turbo=0,rewind=100});Assert(Core.LoadRom(Text("rom"),IntPtr.Zero),"ROM load");Core.InitializeDebugger();Core.Pause();Wait(()=>Core.IsExecutionStopped()&&Core.IsPaused());
+   if(c.TryGetProperty("sceneLayout",out var combined)&&combined.GetBoolean()){for(int i=0;Read("state_ready")!=0xa5;i++){Assert(i<600,"Combined boot gate");Step(1);}Put("state_start",2);}
    for(int i=0;i<600&&F(26)!=0xa5;i++)Step(1);Assert(F(26)==0xa5,"Boot ready");
    if(c.TryGetProperty("memoryProbe",out var probe)&&probe.GetBoolean()){
     SetF(27,1);Step(4);script=Audit.LoadScript("memory-audit",Text("auditPath"),Text("audit"),-1);Assert(script>=0,"Memory audit");
@@ -74,7 +75,10 @@ class Program {
      Audit.TakeScreenshot();shots.Add(new{label,controlledCheckpoint=true,field=Bytes("field",75),part1=Bytes("object_part1",192),part2=Bytes("object_part2",192),oam=Mem(44,0,160),vram=Mem(43,0,16384),palette=Mem(45,0,128),state=Bytes("ff3_game_state",1024),cells=Bytes("text_cells",320),visible=Read("text_visible"),more=Read("text_more"),textId=Num("npc_text_id",2),scroll=Mem(7,0xff42,2),frame=Core.GetTimingInfo(7).frame});
      uint due=(Num("native_clock",2)+68)&65535;SetF(50,(byte)due);SetF(51,(byte)(due>>8));SetF(27,0);
     }
-    void Walk(string key,int x,int y){Keys(key);Until(()=>Math.Abs((((F(0)+7)&63)*16+F(2))-x*16)+Math.Abs((((F(1)+7)&63)*16+F(3))-y*16)<=12,"approach "+key+" to "+x+","+y);Release();Until(()=>F(5)==0,"finish step");Assert(((F(0)+7)&63)==x&&((F(1)+7)&63)==y,"Walk endpoint");}
+    // ff3_field_pixel clears speed before storing the new tile coordinate.
+    // A frame boundary can stop between these instructions; wait for both
+    // stores instead of treating that transient as a completed wrong step.
+    void Walk(string key,int x,int y){Keys(key);Until(()=>Math.Abs((((F(0)+7)&63)*16+F(2))-x*16)+Math.Abs((((F(1)+7)&63)*16+F(3))-y*16)<=12,"approach "+key+" to "+x+","+y);Release();Until(()=>F(5)==0&&((F(0)+7)&63)==x&&((F(1)+7)&63)==y,"finish step at "+x+","+y);Assert(((F(0)+7)&63)==x&&((F(1)+7)&63)==y,"Walk endpoint");}
     if(c.TryGetProperty("eventRoute",out var eventRoute)&&eventRoute.GetBoolean()){
      Run(5);Shot("event-entry");
      for(int cycle=0;cycle<2;cycle++){

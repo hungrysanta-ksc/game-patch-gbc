@@ -4,8 +4,8 @@ import {freezeRowAudit,freezeRowResult} from './battle-freeze-row-audit.mjs';
 import fs from 'node:fs/promises';
 // Read-only observation on the pinned MesenCore. MemoryType 43 is GbVideoRam,
 // the same physical 16KiB view used by VerifyStrike's independent screenshots.
-export async function freezeAudit(s,dir){for(const k of ['effect_freeze_stage','effect_signed','effect_map_saved','effect_map_written','action_enabled','party_profile','effect_glyph_hits','effect_glyph_reads','text_staging','effect_freeze_reused'])check(Number.isInteger(s[k]),'Freeze audit symbol '+k);
- const rom=await fs.readFile(dir+'/ff3-battle-effects-video.gbc'),burst=Buffer.from(Array(16).fill([0x2a,0x12,0x13]).flat()),bank=rom.subarray(51*16384,52*16384),offset=bank.indexOf(burst);
+export async function freezeAudit(s,dir,romPath=dir+'/ff3-battle-effects-video.gbc'){for(const k of ['effect_freeze_stage','effect_signed','effect_map_saved','effect_map_written','action_enabled','party_profile','effect_glyph_hits','effect_glyph_reads','text_staging','effect_freeze_reused'])check(Number.isInteger(s[k]),'Freeze audit symbol '+k);
+ const rom=await fs.readFile(romPath),burst=Buffer.from(Array(16).fill([0x2a,0x12,0x13]).flat()),bank=rom.subarray(51*16384,52*16384),offset=bank.indexOf(burst);
  check(offset>=0&&bank.indexOf(burst,offset+1)<0&&bank.subarray(offset-3,offset).equals(Buffer.from([0x79,0xe0,0x4f]))&&bank.subarray(offset+48,offset+51).equals(Buffer.from([0xaf,0xe0,0x4f]))&&Number.isInteger(s._current_bank),'Linked 16-byte VRAM read kernel');
  const leaf=rom.subarray(s.ff3_text_wram_dma_begin,s.ff3_text_wram_dma_end);
  check(leaf.length===23&&leaf.subarray(0,6).equals(Buffer.from([0xf0,0xff,0xf5,0xaf,0xe0,0xff]))&&leaf[6]===0xfa&&leaf.subarray(9,12).equals(Buffer.from([0xe0,0x70,0xfa]))&&leaf.subarray(14).equals(Buffer.from([0xe0,0x55,0x3e,1,0xe0,0x70,0xf1,0xe0,0xff])), 'Resident DMA leaf: no call or stack access while banked');

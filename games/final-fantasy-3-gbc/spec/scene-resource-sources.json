@@ -4,22 +4,22 @@
   "sources": [
     {
       "path": "src/audio-native.c",
-      "sha256": "067c9aae2ec4974671f03916d85a387a6f2db5d07c4721067c5709115291f53e",
+      "sha256": "a3576c9b6481ff47f676abd4a1fe6833028fff7fea08530a382b8876e7367087",
       "sites": [
         {
-          "line": 131,
+          "line": 137,
           "text": "if(!ff3_wram_copy(FF3_WRAM_DIAGNOSTICS,offset,&ff3_state,216,1)||"
         },
         {
-          "line": 132,
+          "line": 138,
           "text": "!ff3_wram_copy(FF3_WRAM_DIAGNOSTICS,offset+216,slot+4,12,1)||"
         },
         {
-          "line": 133,
+          "line": 139,
           "text": "!ff3_wram_copy(FF3_WRAM_DIAGNOSTICS,offset+228,(void*)&native_pops,2,1)||"
         },
         {
-          "line": 134,
+          "line": 140,
           "text": "!ff3_wram_copy(FF3_WRAM_DIAGNOSTICS,offset+230,&zero,2,1)){memory_fault=1;ff3_error=27;return;}"
         }
       ]
@@ -237,7 +237,7 @@
     },
     {
       "path": "src/battle-party-video.c",
-      "sha256": "6c90fe261e2b5804dbcaf74b1ebcca4b4bf081af57da574ef83b858bb1336d53",
+      "sha256": "94ef66b5f3fbe3bc0984b907d1cb89591a07ad8c8363073950348c4a4d7997e4",
       "sites": [
         {
           "line": 52,
@@ -551,7 +551,7 @@
     },
     {
       "path": "src/exploration-video.c",
-      "sha256": "30e9ad12b1dc1e3df71e768699e4f012bc4d6873c39893c3433f18afcc92b521",
+      "sha256": "dd6f5a78183dc0322ee85ba902890ef8d5700dccb4fe03f4c8f61790659ff587",
       "sites": [
         {
           "line": 6,
@@ -565,11 +565,11 @@
     },
     {
       "path": "src/exploration-viewer.c",
-      "sha256": "f64b75f50f742de01cbbee5bcbae492adcc83262eb125417884cc25f191b19b6",
+      "sha256": "6237045c69de217a619430c0f1620852bb0e052e58ef86b354922270ddcac6f8",
       "sites": [
         {
-          "line": 22,
-          "text": "cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);"
+          "line": 26,
+          "text": "cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;"
         }
       ]
     },
@@ -673,74 +673,74 @@
     },
     {
       "path": "src/memory-probe.c",
-      "sha256": "a1d1779fc2998e0fb9c1b1fe1914322abdd374bf61bb6ee37d3b5d21ddffb764",
+      "sha256": "6cec6cfdb3233b146f0bd0cb45b94da787450c04e71decb3bad7e7511ece5cdc",
       "sites": [
         {
-          "line": 18,
+          "line": 23,
           "text": "result(ff3_wram_copy(bank,offset,b,32,1));memset(b,0,32);"
         },
         {
-          "line": 19,
+          "line": 24,
           "text": "result(ff3_wram_copy(bank,offset,b,32,0));"
         },
         {
-          "line": 25,
+          "line": 30,
           "text": "result(ff3_wram_copy(bank,4096-n,b,n,1));memset(b,0,32);"
         },
         {
-          "line": 26,
+          "line": 31,
           "text": "result(ff3_wram_copy(bank,4096-n,b,n,0));"
         },
         {
-          "line": 31,
+          "line": 36,
           "text": "result(!ff3_wram_copy(0,0,b,1,1));result(!ff3_wram_copy(1,0,b,1,1));"
         },
         {
-          "line": 32,
+          "line": 37,
           "text": "result(!ff3_wram_copy(8,0,b,1,1));result(!ff3_wram_copy(255,0,b,1,1));"
         },
         {
-          "line": 33,
+          "line": 38,
           "text": "result(!ff3_wram_copy(3,4096,b,1,1));result(!ff3_wram_copy(3,4097,b,0,1));"
         },
         {
-          "line": 34,
+          "line": 39,
           "text": "result(!ff3_wram_copy(3,4095,b,2,1));result(!ff3_wram_copy(3,0,b,65535,1));"
         },
         {
-          "line": 35,
+          "line": 40,
           "text": "result(!ff3_wram_copy(3,0,(void*)0xbfff,1,1));result(!ff3_wram_copy(3,0,(void*)0xdfff,2,0));"
         },
         {
-          "line": 36,
+          "line": 41,
           "text": "result(!ff3_wram_copy(3,0,b,1,2));memory_busy=1;result(!ff3_wram_copy(3,0,b,1,1));memory_busy=0;"
         },
         {
-          "line": 39,
+          "line": 44,
           "text": "result(ff3_wram_copy(6,0,b,16,1));result(IE_REG==bank);"
         },
         {
-          "line": 42,
+          "line": 47,
           "text": "CRITICAL{result(ff3_wram_copy(6,0,b,16,1));result(ff3_wram_copy(6,0,b,16,0));}"
         },
         {
-          "line": 46,
+          "line": 51,
           "text": "result(ff3_wram_copy(6,0x301,ff3_game_state,259,1));"
         },
         {
-          "line": 48,
+          "line": 53,
           "text": "result(ff3_wram_copy(6,0x301,ff3_game_state,259,0));"
         },
         {
-          "line": 56,
+          "line": 61,
           "text": "result(ff3_wram_copy(bank,offset,source+offset,n,1));"
         },
         {
-          "line": 57,
+          "line": 62,
           "text": "result(ff3_wram_copy(bank,offset,b,n,0));result(!memcmp(b,source+offset,n));"
         },
         {
-          "line": 61,
+          "line": 66,
           "text": "result((SVBK_REG&7)==1&&CURRENT_BANK==saved&&!memory_busy&&!memory_fault);"
         }
       ]
@@ -802,18 +802,23 @@
       ]
     },
     {
-      "path": "src/platform.c",
-      "sha256": "d82413ca6de8aa901a06078f5aa253dba2a019183297490acd0ee53830eea264",
+      "path": "src/platform-boot.inc",
+      "sha256": "283c42d197b339b53d68e5dca13d16472b3c0f66454c32531eccd77450cbd738",
       "sites": [
         {
-          "line": 26,
-          "text": "SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);platform_error=0;platform_checks=0;"
+          "line": 4,
+          "text": "SVBK_REG=1;rROMB1=0;"
         },
         {
-          "line": 32,
+          "line": 14,
           "text": "if((SVBK_REG&7)!=1)platform_error=2;"
         }
       ]
+    },
+    {
+      "path": "src/platform.c",
+      "sha256": "5cc22d5efaea061c9ae4b0e1c57d1bfda4cc63d29d2eef3cb674e90dbd07eeb2",
+      "sites": []
     },
     {
       "path": "src/render-budget-probe.c",
@@ -822,6 +827,26 @@
         {
           "line": 17,
           "text": "void main(void){uint8_t previous=0,k;cpu_fast();NR52_REG=0;SVBK_REG=1;DISPLAY_OFF;LCDC_REG=0x07;render_page=0;show();while(1){wait_vbl_done();k=joypad();if((k&J_A)&&!(previous&J_A)){render_page^=1;render_request=1;}previous=k;if(render_request){if(render_page>1)render_page=0;show();}}}"
+        }
+      ]
+    },
+    {
+      "path": "src/scene-layout-probe.c",
+      "sha256": "976035fd7456ac4d56800021e2ae2488259fa310e4e2869af37d6379e5b3aa07",
+      "sites": [
+        {
+          "line": 45,
+          "text": "require((SVBK_REG&7)==1);require(!scene_arena_fault&&!memory_fault);"
+        }
+      ]
+    },
+    {
+      "path": "src/scene-memory.c",
+      "sha256": "b04e2bba8b492f05987591345e7b884c9b99cfa501bd6d6533b27824c186bf18",
+      "sites": [
+        {
+          "line": 15,
+          "text": "while(count){n=count>64?64:count;if(!ff3_wram_copy(7,offset,(void*)address,n,write)){scene_arena_fault=1;return 0;}"
         }
       ]
     },
@@ -837,12 +862,12 @@
     },
     {
       "path": "src/scene-video.c",
-      "sha256": "46ca33356a104f1a96cb3344b972cfa01988f4cbb95822b22f2bee088e7a834e",
+      "sha256": "0514b55b1749984fb54f51622482f277b2aa270a731ec1c9933ac347f9e9c159",
       "sites": []
     },
     {
       "path": "src/text-vblank.c",
-      "sha256": "5ae9853ee9fa4a6a5faef1482dd791c08194c284b94b6580ea7e68e35f3e67dc",
+      "sha256": "4480cbdf379114030659a03f3474420032ddd49bb5a57cfd5635fccb58eb6aee",
       "sites": [
         {
           "line": 10,
@@ -869,23 +894,23 @@
           "text": "extern uint8_t __at(0xd870) effect_palettes[128];"
         },
         {
-          "line": 98,
-          "text": "ldh (_SVBK_REG),a"
-        },
-        {
           "line": 102,
           "text": "ldh (_SVBK_REG),a"
         },
         {
-          "line": 175,
+          "line": 106,
+          "text": "ldh (_SVBK_REG),a"
+        },
+        {
+          "line": 179,
           "text": "void ff3_text_video_init(void) NONBANKED {CRITICAL{if(!text_video_initialized){add_VBL(video_irq);text_video_initialized=1;}}}"
         },
         {
-          "line": 217,
+          "line": 221,
           "text": "if(pending||!(KEY1_REG&128)||(SVBK_REG&7)!=1||cells>80){text_transfer_fault=1;return 0;}"
         },
         {
-          "line": 224,
+          "line": 228,
           "text": "if(pending||!(KEY1_REG&128)||(SVBK_REG&7)!=1||page>1||pairs>1){text_transfer_fault=1;return 0;}"
         }
       ]

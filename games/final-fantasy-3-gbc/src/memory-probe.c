@@ -6,10 +6,15 @@
 void ff3_native_service(void) NONBANKED;
 volatile uint8_t memory_probe_request,memory_probe_done;
 volatile uint16_t memory_probe_cases,memory_probe_failures;
+#ifndef FF3_SCENE_LAYOUT
 static void result(uint8_t ok){memory_probe_cases++;if(!ok)memory_probe_failures++;}
-/* Explicit destructive storage test; banks 3..7 have no game owners yet.
- * Never touch bank 2's published diagnostic snapshots [0,464). */
+#endif
+/* Destructive probe belongs only to the isolated memory diagnostic. The
+ * combined executable owns storage banks; reject without touching them. */
 void ff3_memory_probe(void) BANKED {
+#ifdef FF3_SCENE_LAYOUT
+ memory_probe_cases=0;memory_probe_failures=1;memory_probe_done=0xff;
+#else
  uint8_t b[32],bank,i,ie,saved=CURRENT_BANK;uint16_t offset,n;
  memory_probe_done=memory_probe_failures=0;memory_probe_cases=0;
  for(bank=2;bank<=7;bank++){
@@ -60,4 +65,5 @@ void ff3_memory_probe(void) BANKED {
  }
  result((SVBK_REG&7)==1&&CURRENT_BANK==saved&&!memory_busy&&!memory_fault);
  memory_probe_done=0xa5;
+#endif
 }

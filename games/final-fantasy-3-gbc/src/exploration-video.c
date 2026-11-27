@@ -134,6 +134,13 @@ void ff3_field_strip(uint16_t address,uint8_t stride) NONBANKED {
 }
 static void publish_irq(void) NONBANKED {
  /* GBDK's default VBlank handler transfers the selected OAM page first. */
+ /* A timer edge may already be waiting behind OAM DMA. Service it before
+  * the first row/column batch: otherwise a previous audio dispatch plus DMA
+  * and this batch can coalesce two timer edges at an unlucky phase. The
+  * timer never touches field descriptors, ROM banks, scroll or VRAM. */
+ __asm ei
+ nop
+ di __endasm;
  if(field.pending){SCX_REG=field.scroll_x;SCY_REG=field.scroll_y;field.pending=0;}
  /* Guarantee a bounded first transfer before a pending timer ISR. Admit it
   * before the remaining row bank/column batches; never mask a whole strip. */

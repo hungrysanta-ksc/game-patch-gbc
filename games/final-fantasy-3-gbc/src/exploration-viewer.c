@@ -18,8 +18,15 @@ static void advance(void){field.frame++;field.deadline+=FF3_LOGIC_STEP;field.fra
  * for time spent inside the Korean window renderer without moving any NPC. */
 static void dialogue_clock(void){while((int16_t)(ff3_clock_now()-field.deadline)>=0)advance();}
 static void event_pixels(void){field.event_busy=2;ff3_npc_pixels();field.event_busy=0;}
-void main(void){uint8_t k,pressed,old=0,i,was,catchup;
- cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);
+void main(void)
+#ifdef FF3_SCENE_LAYOUT
+BANKED
+#endif
+{uint8_t k,pressed,old=0,i,was,catchup;
+ cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;
+#ifndef FF3_SCENE_LAYOUT
+ SWITCH_ROM(1);
+#endif
  ff3_memory_init();
  memset((void*)0xd7f0,0xa7,16);memset((void*)0xd940,0xa7,16);memset((void*)0xdb60,0xa7,16);memset((void*)0xdca0,0xa7,16);
  ff3_state_init(ff3_game_state);memcpy(dialogue_name_state,dialogue_names,sizeof(dialogue_name_state));
