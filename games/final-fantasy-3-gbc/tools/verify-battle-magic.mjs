@@ -1,5 +1,6 @@
 import {freezeAudit,freezeResult} from './battle-freeze-audit.mjs';
 import {magicAheadAudit,magicAheadResult} from './battle-magic-ahead-audit.mjs';
+import {magicBoundaryAudit,magicBoundaryResult} from './battle-magic-boundary-audit.mjs';
 import fs from 'node:fs/promises';import {execFile} from 'node:child_process';import {promisify} from 'node:util';
 import {ROOT,input,hash,check} from './source.mjs';import {animationSeed} from './battle-animation-source.mjs';import {scriptSeed} from './battle-script-source.mjs';
 import {motionRngTable} from './battle-motion-sprites.mjs';import {magicSource,magicSourcePixels} from './battle-magic-source.mjs';import {screen} from './battle-screen.mjs';
@@ -14,7 +15,7 @@ const caseIndex=process.argv.includes('--case')?Number(process.argv[process.argv
 if(automatic)cases.splice(0,cases.length,cases[caseIndex??0]);
 const output=out+'/'+(flips?'flips':smoke?'smoke':status?'status':'load')+(back?'-back':'')+(automatic?'-auto':'')+(caseIndex===null?'':'-'+caseIndex)+'.json',home=reuse?JSON.parse(await fs.readFile(output)).home:await fs.mkdtemp(ROOT+'/.local/mesen-magic-'),env={...process.env,APPDATA:ROOT+'/.local/config',DOTNET_CLI_HOME:ROOT+'/.local/dotnet',DOTNET_CLI_TELEMETRY_OPTOUT:'1'},run=promisify(execFile);
 if(!reuse){const config=output.replace('.json','-config.json');
- const timing=automatic?await publicationAudit(dir,symbols,await fs.readFile(rom),local)+'actionCostBuffered=true\nactionCostFrames='+symbols.animation_video_frames+'\nactionCostAddresses={active='+symbols.action_enabled+',audio='+symbols.native_busy+',irq='+symbols.native_irq_busy+',transfer='+symbols.text_transfer_busy+',publish='+symbols.party_pending+'}\n'+await fs.readFile(ROOT+'/tools/battle-action-cost-audit.lua','utf8')+'\n':'';
+ const timing=automatic?await publicationAudit(dir,symbols,await fs.readFile(rom),local)+'actionCostBuffered=true\nactionCostFrames='+symbols.animation_video_frames+'\nactionCostAddresses={active='+symbols.action_enabled+',audio='+symbols.native_busy+',irq='+symbols.native_irq_busy+',transfer='+symbols.text_transfer_busy+',publish='+symbols.party_pending+'}\n'+await fs.readFile(ROOT+'/tools/battle-action-cost-audit.lua','utf8')+'\n'+magicBoundaryAudit(symbols):'';
  const residency=`\nlocal poolWrites,poolChecks,poolBad=0,0,0
 emu.addMemoryCallback(function()if (emu.read(0xff4f,emu.memType.gameboyDebug)&1)~=0 then poolWrites=poolWrites+1 end end,emu.callbackType.write,0x8000,0x83ff,emu.cpuType.gameboy)
 emu.addMemoryCallback(function(_,v)
@@ -52,6 +53,6 @@ if(automatic){
  check(rows.length===actual.runs[0].frames&&rows.every((r,i)=>r.frame===i+1&&r.ready<=r.dma&&r.dma<r.ack&&r.ack<=r.done&&r.dmaLy>=144&&r.dmaLy<=150&&r.ackLy>=r.dmaLy&&r.ackLy<=153),'Every automatic publication');
  const costs=Object.fromEntries([...audit.matchAll(/action-cost:(\w+),(\d+),(\d+),(\d+)/g)].map(m=>[m[1],{ms:+m[2]*1000/+m[3],calls:+m[4]}]));
  const elapsed=actual.runs[0].elapsedMs,total=Object.values(costs).reduce((n,v)=>n+v.ms,0);check(total>elapsed*.98&&total<=elapsed+1,'Complete exclusive action costs');
- cadence={frames:rows.length,elapsedMs:elapsed,firstToLastMs:(rows.at(-1).dma-rows[0].dma)*1000/rows[0].rate,maxIntervalMs:Math.max(...rows.slice(1).map((r,i)=>(r.dma-rows[i].dma)*1000/r.rate)),maxReadyToDmaMs:Math.max(...rows.map(r=>(r.dma-r.ready)*1000/r.rate)),costs};
+ cadence={frames:rows.length,elapsedMs:elapsed,firstToLastMs:(rows.at(-1).dma-rows[0].dma)*1000/rows[0].rate,maxIntervalMs:Math.max(...rows.slice(1).map((r,i)=>(r.dma-rows[i].dma)*1000/r.rate)),maxReadyToDmaMs:Math.max(...rows.map(r=>(r.dma-r.ready)*1000/r.rate)),costs,boundaries:magicBoundaryResult(audit,rows.at(-1).done)};
 }
 const summary={romSha256,cases:cases.length,frames,allScreens:actual.pictures.length,maxObjects,peak,audioTicks:end.ticks,soundRequests:sounds.length,safety,residency,mapPreservation,ahead,cadence,scope:'Enemy ordinary magic against party, no reflection. Party precast/projectiles, enemy target projection, special bodies and summons remain separate.'};await fs.writeFile(output.replace('.json','-summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));

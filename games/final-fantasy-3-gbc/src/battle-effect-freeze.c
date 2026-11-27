@@ -222,7 +222,9 @@ static uint8_t prepare_map(void){uint8_t bank,i,j,first,last,block;uint16_t at,s
 }
 static uint8_t restore_map(void){uint8_t bank,i,first,block;uint16_t size;
  for(bank=0;bank<2;bank++)for(i=0;i<36;){block=bank*36+i;if(!(map_dirty[block>>3]&(1<<(block&7)))){i++;continue;}first=i;
-  do{i++;block=bank*36+i;}while(i<36&&i-first<8&&(map_dirty[block>>3]&(1<<(block&7))));size=(uint16_t)(i-first)*16;
+  /* The existing 256-byte staging buffer groups adjacent dirty blocks;
+   * text DMA still splits them into the same bounded 128-byte chunks. */
+  do{i++;block=bank*36+i;}while(i<36&&i-first<16&&(map_dirty[block>>3]&(1<<(block&7))));size=(uint16_t)(i-first)*16;
   if(!store((uint16_t)bank*576+(uint16_t)first*16,text_staging,size,0))return 0;
   ff3_text_copy(bank,(new_page?0x9c00:0x9800)+(uint16_t)first*16,text_staging,size);effect_map_written+=size;ff3_native_service();
  }
