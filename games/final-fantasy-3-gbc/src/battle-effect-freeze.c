@@ -224,12 +224,19 @@ static void cache_glyph(uint16_t key){uint8_t bit=1<<(key&7);uint8_t *p=text_sta
 }
 static void mirror(uint8_t bank,uint16_t from,uint16_t to,uint16_t bytes){uint16_t at;for(at=0;at<bytes;at+=256){read_vram(bank,from+at,text_staging,256);ff3_text_copy(bank,to+at,text_staging,256);ff3_native_service();}}
 static uint8_t keep(const uint8_t*o){return o[0]&&o[2]&&(o[0]>=112||o[0]<16);}
-static uint8_t gather(void){uint8_t i,x,y,xx,yy,j,k;uint16_t key;const uint8_t*o;cells=0;
+static uint8_t gather(void){uint8_t i,x,y,xx,yy,j,k,p,*slot;uint16_t key,index;const uint8_t*o;cells=0;
+ /* Exact 20 x 13 cell directory. The last four entries borrow seen[] before
+  * its glyph-cache lifetime begins; no hash or new RAM reservation. */
+ memset(text_staging,255,256);memset(seen,255,4);
  for(i=8;i<32;i++){ff3_native_service();o=animation_base+i*4;if(!o[0]||!o[2]||keep(o))continue;x=o[1]-8;y=o[0]-16;if(x>152||y>96){effect_freeze_error=2;return 0;}
-  for(yy=y/8;yy<=(y+7)/8;yy++)for(xx=x/8;xx<=(x+7)/8;xx++){key=(uint16_t)yy*32+xx;for(j=0;j<cells&&effect_keys[j]!=key;j++);if(j==cells){if(cells==80){effect_freeze_error=3;return 0;}effect_keys[cells++]=key;memset(effect_members+(uint16_t)j*4,255,4);}
+  for(yy=y/8;yy<=(y+7)/8;yy++)for(xx=x/8;xx<=(x+7)/8;xx++){key=(uint16_t)yy*32+xx;index=(uint16_t)yy*20+xx;slot=index<256?text_staging+index:seen+index-256;j=*slot;p=o[3]&7;if(j==255){j=cells;if(cells==80){effect_freeze_error=3;return 0;}*slot=j;effect_keys[cells++]=key|((uint16_t)p<<10);memset(effect_members+(uint16_t)j*4,255,4);}
+   /* Cache the aligned/single-palette predicate while gathering the exact
+    * immutable members. The original renderer also retains tile/attribute
+    * selection instead of rediscovering it for every pixel pass. */
+   if(x!=xx*8||p>2||((effect_keys[j]>>10)&7)!=p)effect_keys[j]|=0x8000;
    for(k=0;k<4&&effect_members[(uint16_t)j*4+k]!=255;k++);if(k<4)effect_members[(uint16_t)j*4+k]=i;else effect_members[(uint16_t)j*4+3]=254;
   }}
- for(i=32;i<40;i++){ff3_native_service();o=animation_base+i*4;if(!o[0])continue;x=o[1]-8;y=o[0]-16;for(j=0;j<cells;j++){if(!(j&7))ff3_native_service();xx=(effect_keys[j]&31)*8;yy=(effect_keys[j]>>5)*8;if((uint16_t)x+8>xx&&x<(uint16_t)xx+8&&(uint16_t)y+8>yy&&y<(uint16_t)yy+8){effect_freeze_error=7;return 0;}}}
+ for(i=32;i<40;i++){ff3_native_service();o=animation_base+i*4;if(!o[0])continue;x=o[1]-8;y=o[0]-16;for(j=0;j<cells;j++){if(!(j&7))ff3_native_service();xx=(effect_keys[j]&31)*8;yy=((effect_keys[j]&1023)>>5)*8;if((uint16_t)x+8>xx&&x<(uint16_t)xx+8&&(uint16_t)y+8>yy&&y<(uint16_t)yy+8){effect_freeze_error=7;return 0;}}}
  return 1;
 }
 static uint8_t reverse_bits(uint8_t v){v=((v&0x55)<<1)|((v>>1)&0x55);v=((v&0x33)<<2)|((v>>2)&0x33);return(v<<4)|(v>>4);}
@@ -277,7 +284,7 @@ static void overlay_indices(uint8_t flags,int8_t dx,int8_t dy){uint8_t row=dy<0?
   for(x=0;x<width;x++){v=(lo>>7)|((hi>>6)&2);if(v)out[x]=base+v;lo<<=1;hi<<=1;}out+=8;if(n>1){if(flags&64)in-=2;else in+=2;}
  }while(--n);
 }
-static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/32*8,i,p,found,v,member,count;int16_t dx,dy;const uint8_t*o,*members=effect_members+(uint16_t)tile*4;
+static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/32*8,i,p,v,member,count;int16_t dx,dy;const uint8_t*o,*members=effect_members+(uint16_t)tile*4;
  count=members[3]==254?24:4;
  map_cell(key);
  t=text_staging[144+(key&3)];a=text_staging[148+(key&3)];glyph((a>>3)&1,t);
@@ -285,11 +292,10 @@ static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/3
   * one source palette, native bitplanes can be combined directly. Only
   * the terrain boundary needs the general exact-color cell converter. */
  v=0;for(i=0;i<16;i++)v|=effect_glyph[i];p=255;
- if(!v&&color((a&7)*4)==color(0)){
-  found=1;for(i=0;i<count;i++){if(!(i&7))ff3_native_service();member=count==24?8+i:members[i];if(member==255)break;o=animation_base+member*4;if(!o[0]||!o[2]||keep(o))continue;dx=(int16_t)o[1]-8-x;dy=(int16_t)o[0]-16-y;if(dx<=-8||dx>=8||dy<=-8||dy>=8)continue;
-   if(dx||(p!=255&&p!=(o[3]&7))||(o[3]&7)>2){found=0;break;}p=o[3]&7;}
-  if(found&&p!=255){memset(effect_encoded,0,16);
-   for(i=count;i>0;){i--;member=count==24?8+i:members[i];if(member==255)continue;o=animation_base+member*4;if(!o[0]||!o[2]||keep(o)||o[1]-8!=x)continue;dy=(int16_t)o[0]-16-y;if(dy<=-8||dy>=8)continue;
+ if(!v&&!(effect_keys[tile]&0x8000)&&color((a&7)*4)==color(0)){
+  p=(effect_keys[tile]>>10)&7;
+  {memset(effect_encoded,0,16);
+   for(i=count;i>0;){i--;member=count==24?8+i:members[i];if(member==255)continue;o=animation_base+member*4;dy=(int16_t)o[0]-16-y;if(count==24&&(!o[0]||!o[2]||keep(o)||o[1]-8!=x||dy<=-8||dy>=8))continue;
     glyph((o[3]>>3)&1,o[2]);
     overlay(o[3],(int8_t)dy);ff3_native_service();}
    p+=4;goto encoded;
@@ -312,7 +318,33 @@ static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/3
   * The composed patterns and the source maps keep separate lifetimes. */
  effect_keys[tile]=key|((uint16_t)p<<10);return 1;
 }
-static uint8_t prepare_map(void){uint8_t bank,block;uint16_t at,size,key,i,first,last;uint8_t *prior=effect_members;
+/* A bounded slice contains 4 or 16 blocks. This exact bit test rejects the
+ * same BG palettes 4..7 as (attribute & 7) >= 4, without 16-bit pixel indices.
+ * No masking/bank change: timer and VBlank keep running during the scan. */
+static uint8_t invalid_map_palettes(uint8_t blocks) __naked {
+ blocks;
+ __asm
+ push bc
+ ld b,a
+ ld hl,#_text_staging
+93100$:
+ .rept 16
+ ld a,(hl+)
+ and #4
+ jr nz,93101$
+ .endm
+ dec b
+ jr nz,93100$
+ xor a
+93101$:
+ pop bc
+ ret
+ __endasm;
+}
+static void map_overlay(uint8_t bank,uint16_t at,uint16_t size){uint8_t i;uint16_t key,offset;
+ for(i=0;i<cells;i++){key=effect_keys[i];offset=(key&1023)-at;if(offset<size)text_staging[offset]=bank?key>>10:i;}
+}
+static uint8_t prepare_map(void){uint8_t bank,block;uint16_t at,size,i,first,last;uint8_t *prior=effect_members;
  memset(map_dirty,0,sizeof(map_dirty));effect_map_saved=effect_map_written=0;
  /* Composition no longer needs pixels/membership scratch. Compare the live
   * source page plus its overlay against the real destination in 256B slices.
@@ -321,8 +353,8 @@ static uint8_t prepare_map(void){uint8_t bank,block;uint16_t at,size,key,i,first
   size=576-at;if(size>256)size=256;
   read_vram(bank,(old_page?0x9c00:0x9800)+at,text_staging,size);
   read_vram(bank,(new_page?0x9c00:0x9800)+at,prior,size);
-  if(bank)for(i=0;i<size;i++)if((text_staging[i]&7)>=4){effect_freeze_error=8;return 0;}
-  for(i=0;i<cells;i++){key=effect_keys[i]&1023;if(key>=at&&key<at+size)text_staging[key-at]=bank?effect_keys[i]>>10:i;}
+  if(bank&&invalid_map_palettes(size>>4)){effect_freeze_error=8;return 0;}
+  map_overlay(bank,at,size);
   /* A VBlank handoff costs more than copying a short unchanged gap. Merge
    * the changed blocks inside this bounded slice; save those gaps too so
    * restoration still returns the exact inactive bytes. */
@@ -334,16 +366,8 @@ static uint8_t prepare_map(void){uint8_t bank,block;uint16_t at,size,key,i,first
  }
  return 1;
 }
-static uint8_t restore_map(void){uint8_t bank,i,first,block;uint16_t size;
- for(bank=0;bank<2;bank++)for(i=0;i<36;){block=bank*36+i;if(!(map_dirty[block>>3]&(1<<(block&7)))){i++;continue;}first=i;
-  /* The existing 256-byte staging buffer groups adjacent dirty blocks;
-   * text DMA still splits them into the same bounded 128-byte chunks. */
-  do{i++;block=bank*36+i;}while(i<36&&i-first<16&&(map_dirty[block>>3]&(1<<(block&7))));size=(uint16_t)(i-first)*16;
-  if(!store((uint16_t)bank*576+(uint16_t)first*16,text_staging,size,0))return 0;
-  ff3_text_copy(bank,(new_page?0x9c00:0x9800)+(uint16_t)first*16,text_staging,size);effect_map_written+=size;ff3_native_service();
- }
- return 1;
-}
+/* Reuse the resident original backup directly; no bank-1 staging copy. */
+static uint8_t restore_map(uint8_t pairs){if(!ff3_text_restore_map(new_page,map_dirty,pairs))return 0;effect_map_written+=effect_map_saved;return 1;}
 uint8_t ff3_effect_freeze(void) BANKED {uint8_t i;uint16_t at,size;effect_freeze_error=0;if(effect_signed)return 1;
  effect_freeze_reused=0;effect_freeze_stage=1;
  old_page=resident_page;new_page=old_page^1;if(resident_scroll){effect_freeze_error=5;return 0;}
@@ -360,7 +384,7 @@ uint8_t ff3_effect_freeze(void) BANKED {uint8_t i;uint16_t at,size;effect_freeze
   * BG palette must encode the field's actual transparent backdrop. */
  for(i=0;i<3;i++){effect_palettes[32+i*8]=effect_palettes[0];effect_palettes[33+i*8]=effect_palettes[1];}
  memset(text_staging+128,255,16);memset(seen,0,64);cached_glyphs=0;map_group=65535;
- effect_freeze_stage=4;for(i=0;i<cells;i++){if(!compose(effect_keys[i],i)||effect_freeze_error)return 0;ff3_native_service();}
+ effect_freeze_stage=4;for(i=0;i<cells;i++){if(!compose(effect_keys[i]&1023,i)||effect_freeze_error)return 0;ff3_native_service();}
  cache_flush(cached_glyphs&3);if(effect_freeze_error)return 0;
  if(!cache_copy(448,effect_members,(uint16_t)cells*2,1)||!cache_copy(256,effect_keys,(uint16_t)cells*2,1)||!cache_copy(416,effect_palettes+32,32,1))return 0;
  cached_cells=cells;effect_freeze_cache_valid=1;
@@ -376,9 +400,9 @@ uint8_t ff3_effect_freeze(void) BANKED {uint8_t i;uint16_t at,size;effect_freeze
  effect_freeze_stage=3;if(!prepare_map())return 0;
  resident_page=new_page;effect_signed=1;effect_freeze_stage=8;return 1;
 }
-uint8_t ff3_effect_release(void) BANKED {uint8_t page;if(!effect_signed)return 0;
+uint8_t ff3_effect_release(uint8_t pairs) BANKED {uint8_t page;if(!effect_signed)return 0;
  if(!store(1152,animation_base,160,0))return 0;page=party_page^1;if(page)memcpy(party_oam1,animation_base,160);else memcpy(party_oam0,animation_base,160);
  resident_page=old_page;effect_signed=0;next_page=page;party_pending=1;while(party_pending){ff3_native_service();__asm halt __endasm;}
- if(!restore_map())return 0;
+ if(!restore_map(pairs))return 0;
  if(!store(1312,text_staging,32,0))return 0;ff3_text_palette_range(1,4,4,text_staging);return 1;
 }

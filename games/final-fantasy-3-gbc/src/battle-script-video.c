@@ -28,7 +28,7 @@ void ff3_native_service(void) NONBANKED;
  * source BG, and party objects represent source 02A0..02FF: retain both. */
 static void cleanup(void){uint8_t page=party_page^1;
 #ifdef FF3_EFFECTS
- if(effect_signed){if(!ff3_effect_release())action_blocked=4;return;}
+ if(effect_signed){if(!ff3_effect_release(0))action_blocked=4;return;}
 #endif
  /* Explicit pairs avoid SDCC merging the high bytes of the selected source
   * and destination pointers. The inactive page must be the only write owner. */

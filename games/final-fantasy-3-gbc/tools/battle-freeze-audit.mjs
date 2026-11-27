@@ -1,3 +1,4 @@
+import {freezeMembershipAudit,freezeMembershipResult,restoreDmaAudit,restoreDmaResult} from './battle-freeze-membership-audit.mjs';
 import {check} from './source.mjs';
 import fs from 'node:fs/promises';
 // Read-only observation on the pinned MesenCore. MemoryType 43 is GbVideoRam,
@@ -5,6 +6,8 @@ import fs from 'node:fs/promises';
 export async function freezeAudit(s,dir){for(const k of ['effect_freeze_stage','effect_signed','effect_map_saved','effect_map_written','action_enabled','party_profile','effect_glyph_hits','effect_glyph_reads','text_staging','effect_freeze_reused'])check(Number.isInteger(s[k]),'Freeze audit symbol '+k);
  const rom=await fs.readFile(dir+'/ff3-battle-effects-video.gbc'),burst=Buffer.from(Array(16).fill([0x2a,0x12,0x13]).flat()),bank=rom.subarray(51*16384,52*16384),offset=bank.indexOf(burst);
  check(offset>=0&&bank.indexOf(burst,offset+1)<0&&bank.subarray(offset-3,offset).equals(Buffer.from([0x79,0xe0,0x4f]))&&bank.subarray(offset+48,offset+51).equals(Buffer.from([0xaf,0xe0,0x4f]))&&Number.isInteger(s._current_bank),'Linked 16-byte VRAM read kernel');
+ const leaf=rom.subarray(s.ff3_text_wram_dma_begin,s.ff3_text_wram_dma_end);
+ check(leaf.length===23&&leaf.subarray(0,6).equals(Buffer.from([0xf0,0xff,0xf5,0xaf,0xe0,0xff]))&&leaf[6]===0xfa&&leaf.subarray(9,12).equals(Buffer.from([0xe0,0x70,0xfa]))&&leaf.subarray(14).equals(Buffer.from([0xe0,0x55,0x3e,1,0xe0,0x70,0xf1,0xe0,0xff])), 'Resident DMA leaf: no call or stack access while banked');
  const site=0x4000+offset;
  const prefixes=[];for(let i=0;s['resident_patterns'+i]!==undefined;i++){const b=await fs.readFile(dir+'/resident-patterns'+i+'.bin');check(b.length>=2048,'Complete resident prefix');prefixes.push(b.subarray(0,2048).toString('hex'));}check(prefixes.length>0,'Resident prefix profiles');
  return `\ndo
@@ -68,6 +71,6 @@ export async function freezeAudit(s,dir){for(const k of ['effect_freeze_stage','
   emu.log(string.format('freeze-maps:%d,%d,%d,%d,%d,%d,%d,%d',starts,ends,bad,saved,written,different,sourceBad,mirrorBad))
   emu.log(string.format('freeze-cache:%d,%d,%d,%d,%d',cacheChecks,cacheBad,hits,reads,reuses))
  end,emu.eventType.codeBreak)
-end\n`;
+end\n`+freezeMembershipAudit(s)+restoreDmaAudit(s);
 }
-export function freezeResult(log,expected){const a=[...log.matchAll(/freeze-maps:(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1)?.slice(1).map(Number),c=[...log.matchAll(/freeze-cache:(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1)?.slice(1).map(Number);check(a&&a[0]===expected&&a[1]===expected&&a[2]===0&&a[4]===a[3]*2&&!a[6]&&!a[7],'Exact maps and canonical pattern ownership');check(c&&c[0]+c[4]===expected&&!c[1]&&(!c[0]||(c[2]>0&&c[3]>0)),'Live cache bytes and bounded lifetime');const fast=[...log.matchAll(/freeze-vblank-read:(\d+),(\d+),(\d+),(\d+)/g)].at(-1)?.slice(1).map(Number);check(fast&&!fast[1]&&(fast[0]>0?(fast[2]===384&&fast[3]===8388608):(fast[2]===0&&fast[3]===0)),'Conditional early-VBlank reads: exact timing when taken, zero trace otherwise');return {vblankReads:fast[0],vblankReadCycles:fast[2],freezes:a[0],restored:a[1],mismatchedBytes:a[2],savedBytes:a[3],writtenBytes:a[4],initialPageDifferences:a[5],canonicalMismatches:a[6],mirrorMismatches:a[7],reuseChecks:c[4],cacheChecks:c[0],cacheMismatches:c[1],glyphHits:c[2],glyphReads:c[3]};}
+export function freezeResult(log,expected){const a=[...log.matchAll(/freeze-maps:(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1)?.slice(1).map(Number),c=[...log.matchAll(/freeze-cache:(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1)?.slice(1).map(Number);check(a&&a[0]===expected&&a[1]===expected&&a[2]===0&&a[4]===a[3]*2&&!a[6]&&!a[7],'Exact maps and canonical pattern ownership');check(c&&c[0]+c[4]===expected&&!c[1]&&(!c[0]||(c[2]>0&&c[3]>0)),'Live cache bytes and bounded lifetime');const fast=[...log.matchAll(/freeze-vblank-read:(\d+),(\d+),(\d+),(\d+)/g)].at(-1)?.slice(1).map(Number);check(fast&&!fast[1]&&(fast[0]>0?(fast[2]===384&&fast[3]===8388608):(fast[2]===0&&fast[3]===0)),'Conditional early-VBlank reads: exact timing when taken, zero trace otherwise');return {membership:freezeMembershipResult(log),restoreDma:restoreDmaResult(log),vblankReads:fast[0],vblankReadCycles:fast[2],freezes:a[0],restored:a[1],mismatchedBytes:a[2],savedBytes:a[3],writtenBytes:a[4],initialPageDifferences:a[5],canonicalMismatches:a[6],mirrorMismatches:a[7],reuseChecks:c[4],cacheChecks:c[0],cacheMismatches:c[1],glyphHits:c[2],glyphReads:c[3]};}

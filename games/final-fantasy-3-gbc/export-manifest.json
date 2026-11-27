@@ -2350,8 +2350,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 27463,
-      "sha256": "c056e66ccf0e19767f6f9db748e616cf29553c1f9187dd797153ab5e8b5c54fe",
+      "bytes": 28067,
+      "sha256": "80eaec9b302e2f78e884f25ef536d0c1ae289d436bb9d2b095143fac3a7523b7",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2374,8 +2374,8 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 87633,
-      "sha256": "0581e5f4fb5886960b8b56a1d5c9d371ae80448ccc7a9824fa8e94210a74e55c",
+      "bytes": 88577,
+      "sha256": "078719d19b39b781d6b8a96862630921c8a89ae5740e9abfe4c21cd7307d08cc",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2386,8 +2386,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 51020,
-      "sha256": "33e3caed9664b842b3684b5b88157e2f0d1bc5f301de72d752984bdd6cd28d59",
+      "bytes": 51667,
+      "sha256": "749a46d2b322171ae812cc6e2a3550d26d3ccc17674b0d8e43013f5b92d3a5fa",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2848,14 +2848,14 @@
     },
     {
       "path": "src/text-vblank.h",
-      "bytes": 1123,
-      "sha256": "38fca01f31a70f13ba213c2c4e54c32afc90b9a80e706db7b0d5f12423fc3cfb",
+      "bytes": 1395,
+      "sha256": "4c7154b42e850a04c9b209588e1646a5467de8e468e138a6fffcae0a24911500",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/text-vblank.c",
-      "bytes": 6040,
-      "sha256": "df44b871efbfd0b353c34064b72025af403b130c50b489d8fdb5ff690349f9a8",
+      "bytes": 8343,
+      "sha256": "3e60243e50530e6f033f1b21d01ea11adeb9798670f4ed84f3a9d77be131773f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3208,8 +3208,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 20297,
-      "sha256": "0fd3e556ea1039177758610025cf6f4ce1199b64ee178e5c1fb4e1b174fed0fc",
+      "bytes": 20475,
+      "sha256": "7f3bd449b55b6db5272e533a5f8ffa099842301f70ab06cac59dc8ab63efc464",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3502,8 +3502,8 @@
     },
     {
       "path": "src/battle-script-video.c",
-      "bytes": 4711,
-      "sha256": "76efdbee21db96933bb8d9babcc8cc098312ceb25edb1028bb6f2648d3f86742",
+      "bytes": 4712,
+      "sha256": "0de598ceac461f48de0c3f969bf0e46a927b4202fb4bf6529a323eda32a93bd7",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3622,14 +3622,14 @@
     },
     {
       "path": "src/battle-effect-freeze.c",
-      "bytes": 20257,
-      "sha256": "5bbc8dcb8125f141dd46a0fa77ce537a18e499bbb81e9dfb088e47ced55c97d3",
+      "bytes": 20687,
+      "sha256": "c2113333fd3213140bf6343018dc60d8b71df6f14e59f8034146b1bcd50e7e55",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-effect-freeze.h",
-      "bytes": 342,
-      "sha256": "a826f4f93650f5ae77fc8c996f907f175ebbf919ec311881e01f1bb1805dbea8",
+      "bytes": 351,
+      "sha256": "24f02d24203bc9d3fbe61bf25f68dada32c0717010b45c9247fcde38952a8a86",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3682,8 +3682,8 @@
     },
     {
       "path": "src/battle-magic-video.c",
-      "bytes": 10792,
-      "sha256": "70164fd0b6ce570acf8be6d6e13da20ea78c8dece1df90689dc55ebf729a9bd0",
+      "bytes": 10696,
+      "sha256": "35049b99119cbf3c17928b3316ff34f9a12613102ea26d532208b82b6364bc03",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3736,8 +3736,8 @@
     },
     {
       "path": "tools/battle-freeze-audit.mjs",
-      "bytes": 5997,
-      "sha256": "c60487a420e3f5898ee1819bc76f7b8a4f3fd209b3739081cbf6ad816d5da0e4",
+      "bytes": 6639,
+      "sha256": "2ff16548fbec090ea044fdc05c91f838a8a25d5439d3c3e0a8a4ac87656b3138",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3802,8 +3802,8 @@
     },
     {
       "path": "tools/verify-battle-freeze-reuse.mjs",
-      "bytes": 6856,
-      "sha256": "46d93899aaa9cd7a954d196e28ea62a8d6a3b6a19a40d8e871b3d8b8a34f3a84",
+      "bytes": 7429,
+      "sha256": "4a4cfe754d8fc08f0bf05b25d91f1b4ef7415331bafc3bbd950a2b3025aff4af",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3828,6 +3828,30 @@
       "path": "docs/battle-freeze-native-planes.md",
       "bytes": 9556,
       "sha256": "3fd1a36b7539769800779a2dd70f1785032f111a07420fe77cfa0ada670aeac7",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/profile-battle-freeze-costs.mjs",
+      "bytes": 8592,
+      "sha256": "dc6690f05d388e5a66118d32293915570ff5327daf2dbc14fea0606891ec4268",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-freeze-membership-audit.mjs",
+      "bytes": 4551,
+      "sha256": "4bc2e741faa4e0b3bf300bfc5ada93217d85aafca98cb9364e9ae5f03118312e",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-battle-freeze-map-limit.mjs",
+      "bytes": 2800,
+      "sha256": "284109050e9f4271d918655832703fe3b6ddd957b6772a20f0194c52b1e463d6",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/battle-freeze-transfer-costs.md",
+      "bytes": 9927,
+      "sha256": "0988a9c01eec602a1bca7cd55b84349137fa5a0e1acb9ab36a68128fb3e57ec4",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]

@@ -6,8 +6,22 @@ volatile uint8_t text_transfer_busy,text_transfer_fault,text_transfer_max_ly;
 volatile uint16_t text_transfer_chunks,text_transfer_bytes,text_transfer_frames,text_transfer_max_frames;
 uint8_t __at(0xd950) text_staging[256];
 static volatile uint8_t pending,owner,transfer_bank,transfer_rom_bank;
+#ifdef FF3_EFFECTS
+static volatile uint8_t transfer_dma_length,restore_block;
+static uint16_t restore_page;
+/* Membership scratch has no live owner after OAM is restored. */
+extern uint8_t __at(0xd380) effect_members[320];
+
+#endif
 static volatile uint16_t transfer_source,transfer_address,transfer_count;
 #ifdef FF3_EFFECTS
+static void restore_next(void){uint8_t first=effect_members[restore_block++],bank;
+ if(first==255){transfer_count=0;return;}
+ transfer_count=(uint16_t)effect_members[restore_block++]*16;
+ if(first==72){transfer_source=0xd480u;transfer_address=0x84a0u;transfer_bank=0;transfer_rom_bank=4;pending=9;return;}
+ bank=first>=36;transfer_source=0xd000u+(uint16_t)first*16;transfer_address=restore_page+(uint16_t)(first-bank*36)*16;transfer_bank=bank;
+}
+
 extern uint8_t resident_effect_clone_valid;
 static void invalidate_clone(uint8_t bank,uint16_t address,uint16_t count){
  if(bank&&address<0x9800u&&(address>=0x9000u||count>0x9000u-address))resident_effect_clone_valid=0;
@@ -26,7 +40,11 @@ static void measured(void){uint8_t ly=LY_REG;if(ly>text_transfer_max_ly)text_tra
 static void pump(void){uint8_t taken=0,i,saved;uint16_t n,limit;
  CRITICAL{if(pending&&!owner&&ready()){owner=1;taken=1;}}
  if(!taken)return;
- if(pending==1||pending==6||pending==7){
+ if(pending==1||pending==6||pending==7
+#ifdef FF3_EFFECTS
+ ||pending==8||pending==9
+#endif
+ ){
   while(transfer_count&&ready()){
    limit=pending==1?128:256;n=transfer_count>limit?limit:transfer_count;taken=0;
    CRITICAL{if(ready()){
@@ -42,7 +60,32 @@ static void pump(void){uint8_t taken=0,i,saved;uint16_t n,limit;
      SWITCH_ROM(transfer_rom_bank);
     }
     VBK_REG=transfer_bank;HDMA1_REG=transfer_source>>8;HDMA2_REG=(uint8_t)transfer_source;
-    HDMA3_REG=transfer_address>>8;HDMA4_REG=(uint8_t)transfer_address;HDMA5_REG=(n>>4)-1;
+    HDMA3_REG=transfer_address>>8;HDMA4_REG=(uint8_t)transfer_address;
+
+#ifdef FF3_EFFECTS
+    if(pending==8||pending==9){
+     transfer_dma_length=(n>>4)-1;
+     __asm
+       .globl _ff3_text_wram_dma_begin
+      _ff3_text_wram_dma_begin = .
+      ldh a,(_IE_REG)
+      push af
+      xor a
+      ldh (_IE_REG),a
+      ld a,(_transfer_rom_bank)
+      ldh (_SVBK_REG),a
+      ld a,(_transfer_dma_length)
+      ldh (_HDMA5_REG),a
+      ld a,#1
+      ldh (_SVBK_REG),a
+      pop af
+      ldh (_IE_REG),a
+      .globl _ff3_text_wram_dma_end
+      _ff3_text_wram_dma_end = .
+     __endasm;
+    }else
+#endif
+    HDMA5_REG=(n>>4)-1;
     VBK_REG=0;if(pending==6){
      SWITCH_ROM(saved);
      __asm
@@ -59,6 +102,10 @@ static void pump(void){uint8_t taken=0,i,saved;uint16_t n,limit;
    if(!taken)break;
    if(pending!=7)transfer_source+=n;
    transfer_address+=n;transfer_count-=n;text_transfer_chunks++;text_transfer_bytes+=n;
+
+#ifdef FF3_EFFECTS
+   if(pending==8&&!transfer_count)restore_next();
+#endif
   }
   if(!transfer_count)pending=0;
  }else if(pending==5){
@@ -124,3 +171,20 @@ void ff3_text_clear_map(uint8_t bank) NONBANKED {
  if(pending||!(KEY1_REG&128)||bank>1){text_transfer_fault=1;return;}
  memset(text_staging,0,256);transfer_source=(uint16_t)text_staging;transfer_address=0x9800;transfer_count=2048;transfer_bank=bank;pending=7;finish();
 }
+
+
+#ifdef FF3_EFFECTS
+/* One synchronous lifetime covers all dirty runs. VBlank consumes the next
+ * resident span without waking the foreground producer between spans. */
+uint8_t ff3_text_restore_map(uint8_t page,const uint8_t *dirty,uint8_t pairs) NONBANKED {uint8_t i=0,n=0,first;
+ if(pending||!(KEY1_REG&128)||(SVBK_REG&7)!=1||page>1||pairs>1){text_transfer_fault=1;return 0;}
+ /* Prepare all spans in foreground, as the original NMI consumes prepared
+  * descriptors. No dirty-bit scanning belongs inside the VBlank budget. */
+ while(i<72){if(!(dirty[i>>3]&(1<<(i&7)))){i++;continue;}first=i;
+  do{i++;}while(i<72&&i!=36&&(dirty[i>>3]&(1<<(i&7))));effect_members[n++]=first;effect_members[n++]=i-first;
+ }
+ if(pairs){effect_members[n++]=72;effect_members[n++]=16;}effect_members[n]=255;
+ restore_page=page?0x9c00u:0x9800u;restore_block=0;transfer_rom_bank=3;restore_next();if(!transfer_count)return 1;if(pending!=9)pending=8;finish();return 1;
+}
+
+#endif
