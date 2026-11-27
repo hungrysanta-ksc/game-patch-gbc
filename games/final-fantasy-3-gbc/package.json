@@ -156,7 +156,8 @@
     "verify:battle-effects-scene-layout": "node tools/verify-battle-effects.mjs --scene-layout",
     "verify:battle-magic-scene-layout": "node tools/verify-battle-magic.mjs --scene-layout --smoke",
     "verify:scene-roundtrip": "node tools/verify-scene-roundtrip.mjs",
-    "verify:field-encounters": "node tools/verify-exploration.mjs --encounters --scene-layout"
+    "verify:field-encounters": "node tools/verify-exploration.mjs --encounters --scene-layout",
+    "verify:live-party": "node tools/verify-scene-roundtrip.mjs --live-party"
   },
   "engines": {
     "node": ">=20"

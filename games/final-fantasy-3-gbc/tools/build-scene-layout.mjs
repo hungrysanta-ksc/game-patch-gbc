@@ -1,4 +1,5 @@
 import {checkEncounterAssets} from './field-encounter-source.mjs';
+import {livePartyAssets} from './live-party-source.mjs';
 import fs from 'node:fs/promises';import {execFile} from 'node:child_process';import {promisify} from 'node:util';
 import {ROOT,input,hash,check,checkGbc} from './source.mjs';
 import {commonModules,fieldModules,battleModules,overlayBase,relocateField,parseSymbols,checkSceneLayout} from './scene-link-layout.mjs';
@@ -16,6 +17,9 @@ for(const [bank,bytes]of relocated.banks){const file=gen+'/field-bank'+bank+'.c'
 const presentBits=Array.from({length:16},(_,i)=>Array.from({length:8},(_,b)=>+relocated.banks.has(i*8+b)<<b).reduce((a,b)=>a|b,0));
 await fs.writeFile(gen+'/asset-directory.h',directory.replace(/#define ASSET_BANKS \d+u/,'#define ASSET_BANKS 128u').replace(/asset_present\[\]=\{[0-9,]+\}/,'asset_present_bits[]={'+presentBits+'}'));
 const mr=JSON.parse(await fs.readFile(battle+'/magic-residency.json'));
+const partyResources=livePartyAssets(data);
+await fs.writeFile(gen+'/live-party-assets.h','#include <stdint.h>\n'+Object.keys(partyResources).map(n=>'extern const uint8_t '+n+'[];').join('\n')+'\n');
+for(const bank of [15,78]){const file=gen+'/live-party'+bank+'.c';await fs.writeFile(file,'#pragma bank '+bank+'\n#include <stdint.h>\n'+Object.entries(partyResources).filter(([n])=>(n==='equipment_properties')===(bank===15)).map(([n,b])=>'const uint8_t '+n+'[]={'+[...b]+'};').join('\n'));generated.push(file);}
 for(const name of [...[1,2,3,4,5,6,8].map(i=>'audio-bank'+i),'live-ui','effects','strike53','strike54',...Array.from({length:4},(_,i)=>['party','resident','terrain','hit'].map(k=>k+i)).flat(),...mr.banks.map((_,i)=>'magic'+i)])generated.push(battle+'/generated/'+name+'.c');
 const flags=['-msm83:gb','-DFF3_SCENE_LAYOUT','-DFF3_SINGLE_ENGINE','-DFF3_BANKED_RUNTIME','-DFF3_TEXT_AUDIO','-DFF3_EXPLORATION','-DFF3_EFFECTS','-DFF3_AUDIO_FAST','-DFF3_LIVE_UI','-DFF3_STATUS_VIDEO','-DFF3_TERRAIN','-DFF3_RESIDENT_BG','-DFF3_COMPOSITION_CACHE','-Dcache_request=party_work','-I'+gen,'-I'+ROOT+'/src'];
 async function compile(args,name){try{const r=await run(compiler,args,{cwd:out,maxBuffer:8e6,timeout:600000});await fs.writeFile(out+'/'+name+'.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(out+'/'+name+'.log',(e.stdout||'')+(e.stderr||''));throw e;}}
@@ -39,5 +43,5 @@ checkEncounterAssets(bytes,s,data);
 // Every generated battle/audio array remains intact at its linked symbol.
 let arrays=0;for(const file of generated.filter(p=>!p.startsWith(gen+'/field-'))){const source=await fs.readFile(file,'utf8');for(const m of source.matchAll(/const uint8_t (\w+)\[\]=\{([0-9,]*)\}/g)){const data=Buffer.from(m[2].split(',').filter(Boolean).map(Number)),at=s['_'+m[1]],offset=(at>>>16)*16384+(at&0x3fff);check(Number.isInteger(at)&&bytes.subarray(offset,offset+data.length).equals(data),'Linked original asset '+m[1]);arrays++;}}
 for(const i of inputs)check(hash(await fs.readFile(ROOT+'/'+i.path))===i.sha256,'Source changed during build '+i.path);
-const report={scope:'Combined real field/effects modules with cold diagnostics and mode 4 single-boot controlled display roundtrip. Natural encounter/result bridge remains pending.',romSha256:hash(bytes),evidence,layout,relocation:{entries:relocated.entries,changedBytes:relocated.changedBytes,payloads:relocated.payloads},linkedBattleArrays:arrays,inputs,roundtripReady:false,controlledRoundtripMode:4};
+const report={scope:'Combined real field/effects modules with cold diagnostics and mode 4 controlled display / mode 5 canonical-party roundtrips. Natural formation/action/result bridge remains pending.',romSha256:hash(bytes),evidence,layout,relocation:{entries:relocated.entries,changedBytes:relocated.changedBytes,payloads:relocated.payloads},linkedBattleArrays:arrays,inputs,roundtripReady:false,controlledRoundtripMode:4,controlledLivePartyMode:5};
 await fs.writeFile(out+'/report.json',JSON.stringify(report,null,2));await fs.copyFile(battle+'/conversion.bin',out+'/conversion.bin');await fs.writeFile(out+'/audio.json',JSON.stringify(JSON.parse(await fs.readFile(battle+'/report.json')).audio));console.log(JSON.stringify({...report,inputs:inputs.length,relocation:{entries:relocated.entries,payloadBanks:relocated.payloads.length}},null,2));

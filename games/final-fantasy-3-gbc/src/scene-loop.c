@@ -16,7 +16,7 @@ void ff3_scene_song(uint8_t song) BANKED {
  while(native_request){ff3_native_service();__asm halt __endasm;}
 }
 void ff3_scene_run(void) BANKED {
- scene_mode=1;
+ if(!scene_mode)scene_mode=1;
  if(!ff3_scene_field_begin()){scene_fault=1;return;}
  while(!scene_fault){
   field_legacy_main();if(scene_fault)return;

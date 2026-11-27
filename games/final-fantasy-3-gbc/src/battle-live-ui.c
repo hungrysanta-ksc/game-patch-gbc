@@ -51,6 +51,20 @@ static void render(uint8_t dirty){uint8_t row,l,r[6],yy,x,top,bottom,i;uint16_t 
  live_ui_updates++;
 }
 void ff3_live_ui_reset(void) BANKED {live_ui_ready=live_ui_request=mask=primed=0;memset(lengths,0,5);ff3_party_copy(43,live_ui_seed,hp,60);}
+#ifdef FF3_SCENE_LAYOUT
+extern uint8_t ff3_game_state[1024];
+/* 32/95E1: four displayed decimal positions (low four of the original
+ * five-digit conversion), blank leading zeroes, visible units zero. */
+void ff3_live_ui_party_hp(void) BANKED {
+ uint8_t i,k,j,d,seen,*out,*c;uint16_t n,div;
+ for(i=0;i<4;i++)for(k=0;k<2;k++){
+  c=ff3_game_state+256+(uint16_t)i*64+12+k*2;n=c[0]|((uint16_t)c[1]<<8);
+  while(n>=10000)n-=10000;out=hp+i*15+6+k*5;seen=0;div=1000;
+  for(j=0;j<4;j++){d=0;while(n>=div){n-=div;d++;}if(d||j==3)seen=1;out[j]=seen?d+1:0;div/=10;}
+  hp[i*15+10]=11;
+ }
+}
+#endif
 /* Original entry owns the initial menu resources already. Prepare one row
  * beside each of its first five pictures; do not expose the menu early. */
 void ff3_live_ui_prime(void) BANKED {if(primed<5){render(1<<primed);primed++;}}

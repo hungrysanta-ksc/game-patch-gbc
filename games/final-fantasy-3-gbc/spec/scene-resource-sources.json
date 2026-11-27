@@ -195,8 +195,18 @@
       ]
     },
     {
+      "path": "src/battle-live-party.c",
+      "sha256": "a848b64907d8591430fca84750e9d100857fbd57164cfc9ed80cb497ac3d4211",
+      "sites": [
+        {
+          "line": 51,
+          "text": "if(!ff3_wram_copy(5,(uint16_t)i*64,record,64,1)){live_party_error=4;return 0;}"
+        }
+      ]
+    },
+    {
       "path": "src/battle-live-ui.c",
-      "sha256": "ba648b85c3ea1b3f53819cc6e3ced9de028400d98b590783761c659b70b39bd2",
+      "sha256": "b80d9c580b0f987e8a3c5fc524dd6b165c330c9c238c6419552d3efefbb1e969",
       "sites": []
     },
     {
@@ -237,26 +247,26 @@
     },
     {
       "path": "src/battle-party-video.c",
-      "sha256": "9bdc4b9b02c4a88a1f7025b0ff3e7f5016bc0f181971b30b5273b57f07f6db2f",
+      "sha256": "3e8379d8b76e5fb2f11d837252a3875c724c4aa25c9ed77087ef8b96a50d72f1",
       "sites": [
         {
-          "line": 55,
+          "line": 56,
           "text": "uint8_t __at(0xdc00) party_oam0[160];"
         },
         {
-          "line": 56,
+          "line": 57,
           "text": "uint8_t __at(0xdd00) party_oam1[160];"
         },
         {
-          "line": 57,
+          "line": 58,
           "text": "Ff3EntryDisplay __at(0xd000) party_motion;"
         },
         {
-          "line": 58,
+          "line": 59,
           "text": "Ff3PartyOam __at(0xd040) party_state;"
         },
         {
-          "line": 59,
+          "line": 60,
           "text": "uint8_t __at(0xd060) party_source[96];"
         }
       ]
@@ -842,7 +852,7 @@
     },
     {
       "path": "src/scene-layout-probe.c",
-      "sha256": "de6236f302bebaa2e6409ce52d1967a2f46f6378f21c1f7a9169fe090d8c26d7",
+      "sha256": "9d6b299f7e22ab4c43905d4268b337f333b4c8f5ac4d0ce712f5ef8da49271d0",
       "sites": [
         {
           "line": 47,
@@ -852,7 +862,7 @@
     },
     {
       "path": "src/scene-loop.c",
-      "sha256": "8e992a6e625de13e734cca95751ff14af9abb8a9132b584088565f6793d3a86e",
+      "sha256": "e13adafa5678addcbddc5cf9ee354b88712fcea7d655cf4cf31248135e40f323",
       "sites": []
     },
     {
