@@ -2350,8 +2350,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 26360,
-      "sha256": "e490cd229ffc7e3eccd70e677b0914dc91f2a7bbedd7c63f2baa175d760b1aad",
+      "bytes": 26961,
+      "sha256": "da630f921ced4dfbf8f8d386ee743a543ab53cc3a715155054127864d5320a20",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2374,8 +2374,8 @@
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 85541,
-      "sha256": "a1351f0894aac0defb627f34ff8ad450032d19e6adffac1b0d159097fb9491a8",
+      "bytes": 86684,
+      "sha256": "ba70ce58f12b40065e47a532b26cbccabec6b10e4ef19ad4321fc26d018073af",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2386,8 +2386,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 50076,
-      "sha256": "3c47cfeae4fc79977db490e105452818b8dab03c94ef86aa82544fb121a6658c",
+      "bytes": 50558,
+      "sha256": "2223502c9b5a569fa6ce92b116b2e97f0a360a739ea228fe951ad5163c5e4b39",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3208,8 +3208,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 20151,
-      "sha256": "9dd5a568a52dcecd2dd48160bd2db48ef8a21d104b14385204f417fdf2703b16",
+      "bytes": 20246,
+      "sha256": "a8fc7ac2300be2c9d80f2a7300f86e4a009e456c8c8200fa8d6a8ea2453bc3f0",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3622,8 +3622,8 @@
     },
     {
       "path": "src/battle-effect-freeze.c",
-      "bytes": 18339,
-      "sha256": "184961935de565c650fa9f4746448e61cbf95f8b0c1f72df8a16f8fb1ebd67be",
+      "bytes": 18804,
+      "sha256": "550dfad39955439b52c5ca099e860362f7d61760a4d9084fe9e2931bad04d839",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3802,14 +3802,26 @@
     },
     {
       "path": "tools/verify-battle-freeze-reuse.mjs",
-      "bytes": 4734,
-      "sha256": "6fd02031aecc388cdbf5abb29a52ff148843975012c4ef1d7bc23b41ec9f0743",
+      "bytes": 4894,
+      "sha256": "edff98dada66ce71ea5348b3d961d3cfafd8690daf4311dcd0b2ee2b0d83bd9f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/battle-freeze-reuse.md",
       "bytes": 8964,
       "sha256": "f0817f8cdd8e90edff767c6f97209761f91c1a88a97ddb68184e6791d68b23a6",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-battle-freeze-colors.mjs",
+      "bytes": 3876,
+      "sha256": "4b0ee6c25c553d3a70ce3d9a8b0e0fac23df00012e5d55e962c3e9c4edc6a02e",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/battle-freeze-first-preparation.md",
+      "bytes": 7723,
+      "sha256": "da04844cfc618b70a698b2778d821a6bbfe3adf0c3b1280a5351c6e68bc854e5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]
