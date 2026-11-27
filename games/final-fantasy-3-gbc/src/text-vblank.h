@@ -20,5 +20,8 @@ void ff3_text_clear_map(uint8_t bank) NONBANKED;
  * pairs=1 additionally restores the magic owner's WRAM 4 retained OBJ pairs. */
 #ifdef FF3_EFFECTS
 uint8_t ff3_text_restore_map(uint8_t page,const uint8_t *dirty,uint8_t pairs) NONBANKED;
+/* Prepared mirror (text_staging), frozen patterns (WRAM 3, 2816..4095),
+ * then BG4..7 (effect_palettes). Caller owns all sources until completion. */
+uint8_t ff3_text_frozen_patterns(uint8_t cells) NONBANKED;
 #endif
 #endif
