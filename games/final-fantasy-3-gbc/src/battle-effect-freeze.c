@@ -259,7 +259,49 @@ static void glyph(uint8_t bank,uint8_t tile){uint16_t key=((uint16_t)bank<<8)|ti
  * original transparent pixels and earlier-OBJ priority, including both flips.
  * A small row kernel avoids the general converter's per-pixel stack/index
  * work; mixed-color and horizontally offset cells still use that converter. */
+static uint16_t row_source,row_target;
+/* Native bitplanes keep transparency and earlier-OBJ priority. The ordinary
+ * non-flipped row needs no pixel expansion or stack-indexed byte loop.
+ * Only compose owns these pointers; no VRAM/bank/interrupt state changes. */
+static void overlay_plain(uint8_t n) __naked {
+ n;
+ __asm
+ push bc
+ ld b,a
+ ld a,(_row_source)
+ ld l,a
+ ld a,(_row_source+1)
+ ld h,a
+ ld a,(_row_target)
+ ld e,a
+ ld a,(_row_target+1)
+ ld d,a
+93200$:
+ ld a,(hl+)
+ or (hl)
+ cpl
+ ld c,a
+ dec hl
+ ld a,(de)
+ and c
+ or (hl)
+ ld (de),a
+ inc de
+ inc hl
+ ld a,(de)
+ and c
+ or (hl)
+ ld (de),a
+ inc de
+ inc hl
+ dec b
+ jr nz,93200$
+ pop bc
+ ret
+ __endasm;
+}
 static void overlay(uint8_t flags,int8_t dy){uint8_t row=dy<0?-dy:0,n=8-(dy<0?-dy:dy),lo,hi,mask;uint8_t *out=effect_encoded+(dy>0?dy*2:0),*in=effect_glyph+((flags&64)?7-row:row)*2;
+ if(!(flags&96)){row_source=(uint16_t)in;row_target=(uint16_t)out;overlay_plain(n);return;}
  do{lo=in[0];hi=in[1];if(flags&32){lo=reverse_bits(lo);hi=reverse_bits(hi);}mask=~(lo|hi);
   *out=(*out&mask)|lo;out++;*out=(*out&mask)|hi;out++;if(n>1){if(flags&64)in-=2;else in+=2;}
  }while(--n);
@@ -347,8 +389,11 @@ static uint8_t invalid_map_palettes(uint8_t blocks) __naked {
  ret
  __endasm;
 }
-static void map_overlay(uint8_t bank,uint16_t at,uint16_t size){uint8_t i;uint16_t key,offset;
- for(i=0;i<cells;i++){key=effect_keys[i];offset=(key&1023)-at;if(offset<size)text_staging[offset]=bank?key>>10:i;}
+static void map_overlay(uint8_t bank,uint8_t page,uint8_t tail){uint8_t i,lo,hi,*key=(uint8_t*)effect_keys;
+ /* The caller's three slices are exactly [0,256), [256,512), [512,576).
+  * Decode the resident tile/attribute key once, without wide subtraction,
+  * comparison and shifts for every cell of every slice. */
+ for(i=0;i<cells;i++){lo=*key++;hi=*key++;if((hi&3)==page&&(!tail||lo<64))text_staging[lo]=bank?hi>>2:i;}
 }
 static uint8_t prepare_map(void){uint8_t bank,block;uint16_t at,size,i,first,last;uint8_t *prior=effect_members;
  memset(map_dirty,0,sizeof(map_dirty));effect_map_saved=effect_map_written=0;
@@ -360,7 +405,7 @@ static uint8_t prepare_map(void){uint8_t bank,block;uint16_t at,size,i,first,las
   read_vram(bank,(old_page?0x9c00:0x9800)+at,text_staging,size);
   read_vram(bank,(new_page?0x9c00:0x9800)+at,prior,size);
   if(bank&&invalid_map_palettes(size>>4)){effect_freeze_error=8;return 0;}
-  map_overlay(bank,at,size);
+  map_overlay(bank,at>>8,size!=256);
   /* A VBlank handoff costs more than copying a short unchanged gap. Merge
    * the changed blocks inside this bounded slice; save those gaps too so
    * restoration still returns the exact inactive bytes. */

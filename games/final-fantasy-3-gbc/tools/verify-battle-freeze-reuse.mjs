@@ -9,7 +9,7 @@ import {freezeReuseResult} from './battle-freeze-reuse-audit.mjs';
 // Explicit RAM intervention tests, separate from normal pixel/audio evidence.
 // Compare a cached attempt with a forced cold rebuild under identical changes.
 const {local}=await input(),run=promisify(execFile),kind=process.argv[2];
-check(['same','oam','palette','map','glyph','glyph-fourth','glyph-fifth','glyph-tail','inactive','inactive-ui','active-ui','map-span','offset-left','offset-right','overlap','directory-tail'].includes(kind),'Probe kind');
+check(['same','oam','palette','map','glyph','glyph-fourth','glyph-fifth','glyph-tail','inactive','inactive-ui','active-ui','map-span','offset-left','offset-right','overlap','directory-tail',...Array.from({length:7},(_,i)=>'row-offset-'+(i+1))].includes(kind),'Probe kind');
 const base=JSON.parse(await fs.readFile(ROOT+'/evidence/battle-magic/load-repeat-config.json'));
 check(hash(await fs.readFile(base.rom))===base.romSha256,'Current repeated-cast fixture');
 const earlyReady=process.argv.includes('--early-ready');
@@ -41,12 +41,12 @@ cfg.audit=`do
   local index=${kind==='glyph-fourth'?'3':kind==='glyph-fifth'?'4':'n-1'};local at=4*4096+1408+index*18;local key=emu.read(at,39)+emu.read(at+1,39)*256
   if not have[key]then error('Injected glyph is not a live dependency')end
   flip((key>>8)*8192+(key&255)*16+15,128,43);glyphProbes[#glyphProbes+1]='glyph-batch-probe:'..n..','..index` : ''}
-  ${kind==='oam'?`flip(p+3,32,mem)`:kind==='palette'?`flip(2,1,46)`:kind==='map'?`flip(8192+6144+page*1024+cell,32,43)`:kind==='glyph'?`local key=((emu.read(p+3,mem)>>3)&1)*8192+emu.read(p+2,mem)*16;flip(key,128,43)`:kind==='inactive'?`flip(6144+(page~1)*1024+1023,1,43)`:kind==='inactive-ui'?`flip(6144+(page~1)*1024+522,1,43)`:kind==='active-ui'?`flip(6144+page*1024+522,1,43)`:kind==='map-span'?`for i=0,575 do emu.write(6144+(page~1)*1024+i,emu.read(6144+page*1024+i,43)~128,43)end`:kind==='directory-tail'?`for i=28,29 do emu.write(${s.animation_base}+i*4,105,mem)end;for i=30,31 do emu.write(${s.animation_base}+i*4,0,mem)end`:kind==='overlap'?`for i=8,13 do local q=${s.animation_base}+i*4;emu.write(q,y+32,mem);emu.write(q+1,x+8,mem)end`:kind.startsWith('offset-')?`for i=${kind==='offset-left'?'20,25':'26,28,2'} do local p=${s.animation_base}+i*4+1;emu.write(p,emu.read(p,mem)+${kind==='offset-left'?-1:1},mem);${kind==='offset-right'?'flip(p+2,96,mem)':''}end`:''}
+  ${kind.startsWith('row-offset-')?`for i=8,13 do local q=${s.animation_base}+i*4;emu.write(q,emu.read(q,mem)+${Number(kind.slice(11))},mem)end`:kind==='oam'?`flip(p+3,32,mem)`:kind==='palette'?`flip(2,1,46)`:kind==='map'?`flip(8192+6144+page*1024+cell,32,43)`:kind==='glyph'?`local key=((emu.read(p+3,mem)>>3)&1)*8192+emu.read(p+2,mem)*16;flip(key,128,43)`:kind==='inactive'?`flip(6144+(page~1)*1024+1023,1,43)`:kind==='inactive-ui'?`flip(6144+(page~1)*1024+522,1,43)`:kind==='active-ui'?`flip(6144+page*1024+522,1,43)`:kind==='map-span'?`for i=0,575 do emu.write(6144+(page~1)*1024+i,emu.read(6144+page*1024+i,43)~128,43)end`:kind==='directory-tail'?`for i=28,29 do emu.write(${s.animation_base}+i*4,105,mem)end;for i=30,31 do emu.write(${s.animation_base}+i*4,0,mem)end`:kind==='overlap'?`for i=8,13 do local q=${s.animation_base}+i*4;emu.write(q,y+32,mem);emu.write(q+1,x+8,mem)end`:kind.startsWith('offset-')?`for i=${kind==='offset-left'?'20,25':'26,28,2'} do local p=${s.animation_base}+i*4+1;emu.write(p,emu.read(p,mem)+${kind==='offset-left'?-1:1},mem);${kind==='offset-right'?'flip(p+2,96,mem)':''}end`:''}
  end,emu.callbackType.write,${s.effect_freeze_stage},${s.effect_freeze_stage},emu.cpuType.gameboy)
  -- Retain the boundary records across the emulator's bounded log window.
  emu.addEventCallback(function()if #glyphProbes>0 then emu.log(table.concat(glyphProbes,'|'))end end,emu.eventType.codeBreak)
 end\n`+base.audit;
-if(kind.startsWith('offset-')||kind==='overlap'||kind==='directory-tail')cfg.audit+=`\ndo
+if(kind.startsWith('offset-')||kind.startsWith('row-offset-')||kind==='overlap'||kind==='directory-tail')cfg.audit+=`\ndo
  local mem=emu.memType.gameboyDebug;local records={};local printed=false
  local function hex(at,n,kind)local t={};for i=0,n-1 do t[#t+1]=string.format('%02x',emu.read(at+i,kind))end;return table.concat(t)end
  emu.addMemoryCallback(function(_,v)
@@ -76,7 +76,7 @@ for(let i=0;i<2;i++){const a=actual.runs[i].final,b=actual.runs[i+2].final;check
 const safety=[...audit.matchAll(/effects-safety:(\d+),(\d+),(\d+),(\d+)/g)].at(-1)?.slice(1).map(Number);
 check(safety&&safety.slice(0,3).every(v=>!v),'Bus safety');
 for(const f of actual.audio)check(!f.error&&!f.videoError&&!f.memoryFault&&!f.platformError&&!f.transferFault&&!f.late&&!f.underruns&&f.guard==='a7'.repeat(16),'Runtime safety');
-let frozenScreens=0;if(kind.startsWith('offset-')||kind==='overlap'||kind==='directory-tail'){
+let frozenScreens=0;if(kind.startsWith('offset-')||kind.startsWith('row-offset-')||kind==='overlap'||kind==='directory-tail'){
  const raw=[...audit.matchAll(/freeze-offset-pixels:([^\r\n]*)/g)].at(-1)?.[1];check(raw,'Independent frozen pixel snapshots');
  const pairs=raw.split('|').map(r=>{const [stage,lcdc,oam,vram,bgPalette,objPalette]=r.split(';');return {stage:+stage,lcdc:+lcdc,oam,vram,bgPalette,objPalette}});
  check(pairs.length===8,'All four input/output snapshots');
