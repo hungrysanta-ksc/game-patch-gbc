@@ -66,7 +66,9 @@ static void apply_batch(void) __naked {__asm
  __endasm;
 }
 static void raster(void) NONBANKED {SCX_REG=terrain_scroll;}
-void ff3_terrain_init(void) NONBANKED {CRITICAL{add_LCD(raster);add_LCD(nowait_int_handler);LYC_REG=11;STAT_REG=0x40;IE_REG|=LCD_IFLAG;}}
+static uint8_t terrain_registered;
+void ff3_terrain_init(void) NONBANKED {CRITICAL{if(!terrain_registered){add_LCD(raster);add_LCD(nowait_int_handler);terrain_registered=1;}LYC_REG=11;STAT_REG=0x40;IE_REG|=LCD_IFLAG;}}
+void ff3_terrain_shutdown(void) NONBANKED {CRITICAL{if(terrain_registered){IE_REG&=~LCD_IFLAG;STAT_REG=0;IF_REG&=~LCD_IFLAG;remove_LCD(raster);remove_LCD(nowait_int_handler);terrain_registered=0;}}}
 void ff3_terrain_reset(void) NONBANKED {memset(terrain_pixels,0,160);dirty[0]=dirty[1]=3;}
 void ff3_terrain_load(uint8_t profile) NONBANKED {uint8_t saved=CURRENT_BANK,page,bank,i,row,offset;const TerrainAsset*a;
  if(profile>=TERRAIN_PROFILES){terrain_fault=1;return;}active_profile=profile;a=terrain_assets+profile;base_tile=a->base;

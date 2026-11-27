@@ -1,0 +1,24 @@
+import fs from 'node:fs/promises';import {execFile} from 'node:child_process';import {promisify} from 'node:util';
+import {ROOT,input,check,hash,checkGbc} from './source.mjs';
+import {textAudioAssets} from './text-audio-assets.mjs';import {stateAssets} from './state-source.mjs';import {nativeReference} from './native-reference.mjs';
+const {data,local}=await input(),out=ROOT+'/build/scene-video-probe',gen=out+'/generated';await fs.mkdir(gen,{recursive:true});
+const run=promisify(execFile),env={...process.env,APPDATA:ROOT+'/.local/config',DOTNET_CLI_HOME:ROOT+'/.local/dotnet',DOTNET_CLI_TELEMETRY_OPTOUT:'1'};
+async function logged(file,args,log){try{const r=await run(file,args,{cwd:out,env,maxBuffer:8e6,timeout:600000});await fs.writeFile(out+'/'+log,r.stdout+r.stderr);}catch(e){await fs.writeFile(out+'/'+log,(e.stdout||'')+(e.stderr||''));throw e;}}
+const compiler=local.gbdk+'/bin/lcc.exe',lock=JSON.parse(await fs.readFile(ROOT+'/spec/toolchain.json'));check(hash(await fs.readFile(compiler))===lock.gbdk.lccSha256,'Pinned compiler');
+const audio=await textAudioAssets(data,gen,out,0);await fs.writeFile(gen+'/state-assets.h',stateAssets(data).header);
+const names=['scene-video-probe','text-vblank','scene-video','platform','platform-probe','game-state','memory','audio-control','audio-channel','audio-music','audio-engine','audio-output','audio-native'];
+const rom=out+'/scene-video-probe.gbc';await logged(compiler,['-msm83:gb','-DFF3_SINGLE_ENGINE','-DFF3_BANKED_RUNTIME','-DFF3_TEXT_AUDIO','-Wm-yC','-Wm-yt0x1b','-Wm-ya4','-Wm-yo32','-Wl-m','-Wl-j','-I'+gen,'-o',rom,...names.map(n=>ROOT+'/src/'+n+'.c'),...audio.sources],'compile.log');
+const bytes=await fs.readFile(rom);checkGbc(bytes,32,0x1b,3);check(!/overflow|Multiple write/i.test(await fs.readFile(out+'/compile.log','utf8')),'Link capacity');
+const symbols={};for(const m of(await fs.readFile(rom.replace('.gbc','.noi'),'utf8')).matchAll(/DEF _(\w+) (0x[0-9a-f]+)/gi))symbols[m[1]]=Number(m[2]);
+for(const name of ['ff3_text_scene_hook','ff3_text_transfer_idle','ff3_text_drain'])check(symbols[name]<0x4000,'Fixed owner API '+name);
+const coreSha256=hash(await fs.readFile(local.mesenCore));check(coreSha256==='1ba99d2c848e007c60cbd7fceca058440758eb44837a93a6724d29d72723c994','Pinned core');
+await fs.writeFile(out+'/config.json',JSON.stringify({dll:local.mesenCore,home:await fs.mkdtemp(ROOT+'/.local/mesen-handoff-'),rom,romSha256:hash(bytes),coreSha256,symbols,resume:false,commands:[],readouts:[['native_consumed',12],['native_underruns',2],['native_max_late',2],['handoff_leaves',2],['handoff_pending_rejected',2],['scene_video_owner',1],['ff3_error',1]].map(([name,bytes])=>({name,bytes})),output:out+'/result.json'}));
+await logged(local.dotnet,['build',ROOT+'/tools/VerifyState/VerifyState.csproj','-c','Release','--configfile',ROOT+'/tools/Capture/NuGet.Config'],'verifier-build.log');
+await logged(local.dotnet,[ROOT+'/tools/VerifyState/bin/Release/net8.0/VerifyState.dll',out+'/config.json'],'runtime.log');
+const r=JSON.parse(await fs.readFile(out+'/result.json'));check(r.status===1&&!r.failure&&r.testCase===1481,'Scene handoff checks '+JSON.stringify(r));
+const consumed=Buffer.from(r.readouts.native_consumed,'hex'),reference=nativeReference(data,await fs.readFile(out+'/conversion.bin'),{plan:audio.report.plan,ticks:audio.report.ticks});
+const end=reference.advanceToEvent(consumed.readUInt32LE(4));check(end.done&&end.ticks===7200&&end.ticks===consumed.readUInt32LE(0)&&end.sourceHash===consumed.readUInt16LE(8)&&end.gbHash===consumed.readUInt16LE(10),'Original music/SFX consumed sequence');
+for(const name of ['native_underruns','native_max_late','scene_video_owner','ff3_error'])check(/^0+$/.test(r.readouts[name]),'Handoff fault '+name);
+check(r.readouts.handoff_leaves==='8000'&&r.readouts.handoff_pending_rejected==='4000','Complete exchange coverage');
+const report={...r,sourceTicks:end.ticks,scope:'Real GBC ownership API and continuous original-ROM audio with diagnostic callback counters; not a field/battle resource or gameplay roundtrip.'};
+await fs.writeFile(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
