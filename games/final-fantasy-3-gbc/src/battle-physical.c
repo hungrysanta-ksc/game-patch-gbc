@@ -2,8 +2,15 @@
 #pragma bank 15
 #endif
 #include "battle-physical.h"
+#ifdef FF3_SCENE_LAYOUT
+void ff3_native_service(void) NONBANKED;
+#endif
 uint8_t ff3_physical_hits(FF3BattleRng *rng,uint8_t attempts,uint8_t chance) FF3_STATE_BANKED {
- uint8_t hits=0,roll;while(attempts--){ff3_battle_random(rng,1,0,99,&roll);if(roll<chance)hits++;}return hits;
+ uint8_t hits=0,roll;while(attempts--){
+#ifdef FF3_SCENE_LAYOUT
+  if(!(attempts&7))ff3_native_service();
+#endif
+  ff3_battle_random(rng,1,0,99,&roll);if(roll<chance)hits++;}return hits;
 }
 uint8_t ff3_physical_damage(FF3BattleRng *rng,const Ff3Physical *p,uint16_t *damage) FF3_STATE_BANKED {
  uint8_t roll,m;uint16_t n;

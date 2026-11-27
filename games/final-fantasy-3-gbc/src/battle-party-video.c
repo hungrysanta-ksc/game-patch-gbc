@@ -8,6 +8,9 @@
 #include <string.h>
 #include "battle-party-oam.h"
 #include "battle-party-video.h"
+#ifdef FF3_SCENE_LAYOUT
+#include "battle-live-command.h"
+#endif
 #include "battle-entry.h"
 #include "platform.h"
 #include "memory.h"
@@ -184,7 +187,7 @@ static void reset_motion(void){const PartyVideoAsset*a=party_assets+party_profil
 #endif
 #ifdef FF3_SCENE_LAYOUT
  if(scene_mode>=2&&!ff3_live_party_prepare()){party_error=80+live_party_error;return;}
- if(scene_mode==3){party_motion.battle_type=party_state.battle_type=encounter_type;ff3_encounter_names();}
+ if(scene_mode==3){party_motion.battle_type=party_state.battle_type=encounter_type;ff3_encounter_names();if(!ff3_live_command_init()){party_error=90+command_error;return;}}
  if(scene_mode)ff3_scene_song(0x20); /* 2E/9D84: after actual party resources. */
 #endif
  if(!ff3_entry_start(&party_motion)){party_error=2;return;}present();
@@ -224,6 +227,9 @@ static void load(void){const PartyVideoAsset*a;uint8_t page;
  loaded=1;party_work=1;party_load_stage=4;reset_motion();party_request=0;party_load_stage=0;
 }
 static uint8_t party_video_idle(void) NONBANKED {return !party_pending&&!party_work&&!party_request&&!party_step
+#ifdef FF3_SCENE_LAYOUT
+ &&!command_phase&&!command_request
+#endif
 #ifdef FF3_LIVE_UI
  &&!action_request&&!action_enabled&&!message_request&&!live_ui_request
 #endif
@@ -293,6 +299,7 @@ BANKED
 #ifdef FF3_SCENE_LAYOUT
   /* Fixed-profile action resources are not a live-party action bridge. */
   if(scene_mode==2&&(action_request||message_request||live_ui_request)){party_error=85;action_request=message_request=live_ui_request=0;}
+  if(scene_mode==3&&status_stage==2&&!party_request&&!party_step&&(command_request||command_phase==2))ff3_live_command_update();
   /* An outstanding action/transfer completes before ownership can leave. */
   if(scene_mode&&scene_request==2&&party_video_idle()){
    if(ff3_party_video_suspend()){scene_request=0;return;}

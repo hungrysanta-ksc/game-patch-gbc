@@ -3,6 +3,7 @@
 #ifdef FF3_SCENE_LAYOUT
 #include "scene-loop.h"
 #include "battle-live-party.h"
+#include "battle-live-command.h"
 extern uint8_t ff3_game_state[1024];
 #endif
 #include "battle-animation-video.h"
@@ -101,7 +102,7 @@ void ff3_strike_reset(void) BANKED {phase=strike_error=strike_picture=0;strike_p
 uint8_t ff3_strike_video(void) BANKED {uint8_t i,w,s,page,*out;
  if(!phase){
 #ifdef FF3_SCENE_LAYOUT
-  if(scene_mode==3&&animation_state.actor<4){const uint8_t*e=ff3_game_state+512+(uint16_t)animation_state.actor*64;strike_weapons[0]=e[3];strike_weapons[1]=e[5];}
+  if(scene_mode==3&&!command_phase&&animation_state.actor<4){const uint8_t*e=ff3_game_state+512+(uint16_t)animation_state.actor*64;strike_weapons[0]=e[3];strike_weapons[1]=e[5];}
 #endif
   if(strike_critical||animation_state.actor>=4||!animation_state.target_enemy||animation_state.target>=8)return 2;
   for(i=0;i<2;i++){if(strike_weapons[i]>=88)return 2;ff3_party_copy(53,strike_props+strike_weapons[i]*3,kind+i,1);}

@@ -64,6 +64,14 @@ void ff3_live_ui_party_hp(void) BANKED {
   hp[i*15+10]=11;
  }
 }
+void ff3_live_ui_records(const uint8_t*records) BANKED {
+ uint8_t i,k,j,d,seen,*out;uint16_t n,div;
+ for(i=0;i<4;i++)for(k=0;k<2;k++){
+  const uint8_t*c=records+(uint16_t)i*64+3+k*2;n=c[0]|((uint16_t)c[1]<<8);
+  while(n>=10000)n-=10000;out=hp+i*15+6+k*5;seen=0;div=1000;
+  for(j=0;j<4;j++){d=0;while(n>=div){n-=div;d++;}if(d||j==3)seen=1;out[j]=seen?d+1:0;div/=10;}hp[i*15+10]=11;
+ }if(live_ui_ready)render(31);
+}
 #endif
 /* Original entry owns the initial menu resources already. Prepare one row
  * beside each of its first five pictures; do not expose the menu early. */

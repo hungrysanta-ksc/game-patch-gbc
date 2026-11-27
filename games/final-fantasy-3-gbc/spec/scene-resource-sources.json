@@ -54,30 +54,30 @@
     },
     {
       "path": "src/battle-animation-video.c",
-      "sha256": "d85ab5b9cf0d313c260ebfe70b769c0a8296cde8384bc7567090fbda6ea9f8a3",
+      "sha256": "5d26462b1e3bb3028b4e5d58a2cd7b1a69557710d667cab588ed9a7fb3270081",
       "sites": [
         {
-          "line": 19,
+          "line": 22,
           "text": "uint8_t __at(0xd600) animation_source[160];"
         },
         {
-          "line": 20,
+          "line": 23,
           "text": "uint8_t __at(0xd6a0) animation_base[160];"
         },
         {
-          "line": 21,
+          "line": 24,
           "text": "uint8_t __at(0xd740) animation_lines[144];"
         },
         {
-          "line": 22,
+          "line": 25,
           "text": "uint8_t __at(0xd7d0) animation_linework[144];"
         },
         {
-          "line": 28,
+          "line": 31,
           "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
         },
         {
-          "line": 29,
+          "line": 32,
           "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
         }
       ]
@@ -200,6 +200,16 @@
       ]
     },
     {
+      "path": "src/battle-live-command.c",
+      "sha256": "c704f6006ac94cb4b2f718d9583c17c4578b356f168828363a27adef424a6616",
+      "sites": [
+        {
+          "line": 32,
+          "text": "while(n){size=n>64?64:n;if(!ff3_wram_copy(5,offset,b,size,write)){command_error=1;return 0;}offset+=size;b+=size;n-=size;ff3_native_service();}return 1;"
+        }
+      ]
+    },
+    {
       "path": "src/battle-live-party.c",
       "sha256": "de8782ba599402141fdef4842b89c99f9e40585631c1c9964ba9af5784f0793f",
       "sites": [
@@ -211,7 +221,7 @@
     },
     {
       "path": "src/battle-live-ui.c",
-      "sha256": "b80d9c580b0f987e8a3c5fc524dd6b165c330c9c238c6419552d3efefbb1e969",
+      "sha256": "9a669971880a09e57d194de6dc966ec57ec14c3944d5adc7ffdd2401e7e89ce2",
       "sites": []
     },
     {
@@ -252,26 +262,26 @@
     },
     {
       "path": "src/battle-party-video.c",
-      "sha256": "fdb6c48451f77238203f003f3d6f34cb83f5e192b3095b456e23c05d1bd286ed",
+      "sha256": "c319c1e50a55ce27f04f9622862085f9f9c6fe4cd1fddff904d831c715165dab",
       "sites": [
         {
-          "line": 57,
+          "line": 60,
           "text": "uint8_t __at(0xdc00) party_oam0[160];"
         },
         {
-          "line": 58,
+          "line": 61,
           "text": "uint8_t __at(0xdd00) party_oam1[160];"
         },
         {
-          "line": 59,
+          "line": 62,
           "text": "Ff3EntryDisplay __at(0xd000) party_motion;"
         },
         {
-          "line": 60,
+          "line": 63,
           "text": "Ff3PartyOam __at(0xd040) party_state;"
         },
         {
-          "line": 61,
+          "line": 64,
           "text": "uint8_t __at(0xd060) party_source[96];"
         }
       ]
@@ -312,26 +322,26 @@
     },
     {
       "path": "src/battle-strike-video.c",
-      "sha256": "636a9aa58ab01346284cddc36d261de614d107195eaf128750501b466a046840",
+      "sha256": "e28991bbc3ab08e7396771258a4c057aab2998ef1cb6111a2bb49a266124ebf4",
       "sites": [
         {
-          "line": 32,
+          "line": 33,
           "text": "extern uint8_t __at(0xd600) animation_source[160];"
         },
         {
-          "line": 33,
+          "line": 34,
           "text": "extern uint8_t __at(0xd6a0) animation_base[160];"
         },
         {
-          "line": 34,
+          "line": 35,
           "text": "extern uint8_t __at(0xd740) animation_lines[144];"
         },
         {
-          "line": 35,
+          "line": 36,
           "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
         },
         {
-          "line": 36,
+          "line": 37,
           "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
         }
       ]

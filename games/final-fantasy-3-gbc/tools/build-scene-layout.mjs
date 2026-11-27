@@ -1,6 +1,8 @@
 import {encounterScreenAssets} from './encounter-screen-assets.mjs';
 import {checkEncounterAssets} from './field-encounter-source.mjs';
 import {livePartyAssets} from './live-party-source.mjs';
+import {liveCommandAssets} from './live-command-assets.mjs';
+import {liveUiAssets} from './battle-live-ui.mjs';
 import {dungeonEntry} from './dungeon-source.mjs';
 import {makeMapAssets} from './map-assets.mjs';
 import {explorationAssets} from './exploration-assets.mjs';
@@ -36,7 +38,13 @@ const partyResources=livePartyAssets(data);
 await fs.writeFile(gen+'/live-party-assets.h','#include <stdint.h>\n'+Object.keys(partyResources).map(n=>'extern const uint8_t '+n+'[];').join('\n')+'\n');
 for(const bank of [15,78]){const file=gen+'/live-party'+bank+'.c';await fs.writeFile(file,'#pragma bank '+bank+'\n#include <stdint.h>\n'+Object.entries(partyResources).filter(([n])=>(n==='equipment_properties')===(bank===15)).map(([n,b])=>'const uint8_t '+n+'[]={'+[...b]+'};').join('\n'));generated.push(file);}
 generated.push(...await encounterScreenAssets(data,gen,battle,{map:dungeon?181:29,maps:dungeon?[181,111,115,112,22,113]:[29]}));
-for(const name of [...[1,2,3,4,5,6,8].map(i=>'audio-bank'+i),'live-ui','strike53',...Array.from({length:4},(_,i)=>['party','resident','terrain','hit'].map(k=>k+i)).flat(),...mr.banks.map((_,i)=>'magic'+i)])generated.push(battle+'/generated/'+name+'.c');
+generated.push(...await liveCommandAssets(data,gen,JSON.parse(await fs.readFile(out+'/encounter-resources.json')).profiles));
+// Bind current reviewed strings, rather than inheriting the older standalone
+// diagnostic's small message dictionary. Source IDs remain runtime inputs.
+const ui=await liveUiAssets(data,local.text),uiArrays={boxes:ui.boxes,glyphs:ui.glyphs,hp_glyphs:ui.hpGlyphs,advances:ui.advances,seed:ui.seed,rect:ui.rect,palette:ui.palette,message_index:ui.message_index,message_words:ui.message_words,message_types:ui.message_types};
+await fs.writeFile(gen+'/live-ui.c','#pragma bank 43\n#include <stdint.h>\n'+Object.entries(uiArrays).map(([k,b])=>'const uint8_t live_ui_'+k+'[]={'+[...b]+'};').join('\n'));generated.push(gen+'/live-ui.c');
+await fs.writeFile(gen+'/live-ui-assets.h','#define LIVE_UI_GLYPHS '+ui.glyphCount+'\n#define LIVE_MESSAGE_DIGIT 1\n#define LIVE_MESSAGE_SLASH 11\n#define LIVE_MESSAGE_COUNT '+ui.messageCount+'\n'+Object.keys(uiArrays).map(k=>'extern const uint8_t live_ui_'+k+'[];').join('\n'));
+for(const name of [...[1,2,3,4,5,6,8].map(i=>'audio-bank'+i),'strike53',...Array.from({length:4},(_,i)=>['party','resident','terrain','hit'].map(k=>k+i)).flat(),...mr.banks.map((_,i)=>'magic'+i)])generated.push(battle+'/generated/'+name+'.c');
 const flags=['-msm83:gb','-DFF3_SCENE_LAYOUT','-DFF3_SINGLE_ENGINE','-DFF3_BANKED_RUNTIME','-DFF3_TEXT_AUDIO','-DFF3_EXPLORATION','-DFF3_EFFECTS','-DFF3_AUDIO_FAST','-DFF3_LIVE_UI','-DFF3_STATUS_VIDEO','-DFF3_TERRAIN','-DFF3_RESIDENT_BG','-DFF3_COMPOSITION_CACHE','-Dcache_request=party_work','-I'+gen,'-I'+ROOT+'/src'];
 async function compile(args,name){try{const r=await run(compiler,args,{cwd:out,maxBuffer:8e6,timeout:600000});await fs.writeFile(out+'/'+name+'.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(out+'/'+name+'.log',(e.stdout||'')+(e.stderr||''));throw e;}}
 async function config(f,b){await fs.writeFile(gen+'/scene-layout-config.h','#define FF3_SCENE_ARENA '+overlayBase+'u\n#define FF3_FIELD_DATA_BYTES '+f+'u\n#define FF3_BATTLE_DATA_BYTES '+b+'u\n');}
