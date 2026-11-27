@@ -20,6 +20,12 @@
 #endif
 #ifdef FF3_COMPOSITION_CACHE
 extern volatile uint8_t cache_request;
+#ifdef FF3_SCENE_LAYOUT
+/* The battle DATA arena is field state in field mode: never inspect it. */
+#define AUDIO_CACHE_REQUEST (scene_video_owner==FF3_VIDEO_BATTLE&&cache_request)
+#else
+#define AUDIO_CACHE_REQUEST cache_request
+#endif
 #endif
 #ifdef FF3_OPENING_VIDEO
 extern volatile uint8_t scene_phase,scene_pending,transfer_pending,battle_active;
@@ -221,7 +227,11 @@ native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_pl
   * (3F/E1E1..E201), not until a future queue is full. Keep two source ticks
   * ahead before yielding to a due or already-dirty picture. Test before
   * prepare(): testing after it forced one more costly tick at every yield. */
- if(field.ready&&!field.pause&&!field.mode&&
+ if(
+#ifdef FF3_SCENE_LAYOUT
+    scene_video_owner==FF3_VIDEO_FIELD&&
+#endif
+    field.ready&&!field.pause&&!field.mode&&
     (field.render_dirty||(int16_t)(ff3_clock_now()-field.deadline)>=0)&&
     (int16_t)(prepare_due-ff3_clock_now())>136)break;
 #endif
@@ -242,7 +252,7 @@ native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_pl
  lead=(int16_t)(prepare_due-ff3_clock_now());
  /* Unsigned sign-bit guard is exactly the signed positive-lead test.
   * Select the tighter bound once, avoiding two promoted signed compares. */
- if((uint16_t)lead<0x8000u&&(uint16_t)lead>(cache_request?136u:FF3_AUDIO_AHEAD))break;
+ if((uint16_t)lead<0x8000u&&(uint16_t)lead>(AUDIO_CACHE_REQUEST?136u:FF3_AUDIO_AHEAD))break;
 #endif
 #if defined(FF3_COMPOSITION_CACHE) && !defined(FF3_OPENING_VIDEO) && !defined(FF3_EFFECTS)
  /* Same two-tick cooperative yield used by exploration. Do not hold a due
@@ -262,18 +272,26 @@ native_busy=1;if(native_request==255)start(1);else if(native_request&&!native_pl
   * events are still observed independently; no game tick is skipped. */
  if(snapshot_due&&!text_transfer_busy
 #ifdef FF3_COMPOSITION_CACHE
-  &&!cache_request
+  &&!AUDIO_CACHE_REQUEST
 #endif
 #ifdef FF3_EXPLORATION
   /* Diagnostic copies are lower priority than a due movement picture.
    * Require ~4.9ms until its logic deadline; coalesce pending observations
    * under load. This never coalesces music/game ticks or output packets. */
-  &&(!field.ready||field.pause||field.mode||(!field.speed&&(int16_t)(field.deadline-ff3_clock_now())>20))
+  &&(
+#ifdef FF3_SCENE_LAYOUT
+     scene_video_owner!=FF3_VIDEO_FIELD||
+#endif
+     !field.ready||field.pause||field.mode||(!field.speed&&(int16_t)(field.deadline-ff3_clock_now())>20))
 #endif
  ){publish();snapshot_due=0;}
  native_busy=0;}
 void ff3_native_begin(void) NONBANKED {uint8_t i;NR52_REG=128;NR50_REG=0x77;NR51_REG=0xff;NR10_REG=0;NR30_REG=0;for(i=0;i<16;i++)((volatile uint8_t*)0xff30)[i]=ff3_resource_byte(6,4112u+i);NR30_REG=128;silence();set_interrupts(VBL_IFLAG|TIM_IFLAG);native_busy=1;
-#ifdef FF3_EXPLORATION
+#ifdef FF3_SCENE_LAYOUT
+/* Legacy diagnostics choose their startup schedule by active display owner.
+ * Compile-time field support does not make a battle boot a silent field boot. */
+start(scene_video_owner!=FF3_VIDEO_FIELD);
+#elif defined(FF3_EXPLORATION)
 start(0);
 #else
 start(1);

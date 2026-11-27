@@ -62,7 +62,11 @@ void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANK
 void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED {
  ff3_text_palette_range(bg,first,count,data);
 }
-static void refresh(void) __naked {__asm
+static void refresh(void)
+#ifdef FF3_SCENE_LAYOUT
+NONBANKED
+#endif
+__naked {__asm
  .globl .refresh_OAM
  jp .refresh_OAM
  __endasm;
@@ -218,7 +222,11 @@ uint8_t ff3_party_video_suspend(void) NONBANKED {
  while(party_pending){ff3_native_service();__asm halt __endasm;}
  ff3_text_drain();return ff3_scene_video_detach(FF3_VIDEO_BATTLE);
 }
-void main(void){uint8_t i;
+void main(void)
+#ifdef FF3_SCENE_LAYOUT
+BANKED
+#endif
+{uint8_t i;
  ff3_platform_init();ff3_memory_init();cpu_fast();DISPLAY_OFF;
  memset((void*)0xddf0,0xa7,16);
  memset(&party_motion,0,sizeof(party_motion));

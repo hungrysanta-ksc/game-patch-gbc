@@ -21,6 +21,7 @@ class Program {
  }
  NativeLibrary.SetDllImportResolver(typeof(Core).Assembly,(n,a,p)=>n=="MesenCore.dll"?NativeLibrary.Load(Text("dll")):IntPtr.Zero);Directory.CreateDirectory(Text("home"));
  try{Core.InitDll();Core.InitializeEmu(Text("home"),IntPtr.Zero,IntPtr.Zero,true,true,true,true);Audit.ConfigureVideo();Core.SetEmulationConfig(new Core.Speed{speed=0,turbo=0,rewind=100});if(!Core.LoadRom(Text("rom"),IntPtr.Zero))throw new Exception("ROM load");Core.InitializeDebugger();Core.Pause();Wait(()=>Core.IsExecutionStopped()&&Core.IsPaused());
+ if(c.TryGetProperty("sceneLayout",out var combined)&&combined.GetBoolean()){for(int i=0;Num("state_ready")!=0xa5;i++){if(i>500)throw new Exception("Combined boot gate");Step();}Put("state_start",3);}
  // Power-on WRAM can coincidentally contain A5 before the C runtime clears
  // BSS. The display owner writes its guard before publishing party_ready.
  bool earlyReadyProbe=c.TryGetProperty("probeEarlyReady",out var early)&&early.GetBoolean();

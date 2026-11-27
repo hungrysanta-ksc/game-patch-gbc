@@ -4,14 +4,18 @@ import {ROOT,input,hash,check} from './source.mjs';import {fieldFixtures} from '
 import {makeMapAssets} from './map-assets.mjs';import {makeObjectAssets} from './object-assets.mjs';import {addTextAssets} from './korean-text.mjs';import {prepareDialogue} from './dialogue-build.mjs';
 import {npcOriginal as npcMotionOriginal} from './npc-motion-source.mjs';
 import {fieldPixels} from './exploration-pixels.mjs';import {screenshotRgb} from './map-pixels.mjs';import {windowRgb,textPage} from './text-reference.mjs';import {expandDialogue} from './dialogue-reference.mjs';import {npcOriginal} from './dialogue-source.mjs';import {sourceInitialState} from './state-source.mjs';
-const {data,local}=await input(),units=process.argv.includes('--units'),dir=ROOT+'/build/exploration',rom=dir+'/ff3-exploration.gbc',report=JSON.parse(await fs.readFile(dir+'/report.json')),romSha256=hash(await fs.readFile(rom)),coreSha256=hash(await fs.readFile(local.mesenCore));
+const sceneLayout=process.argv.includes('--scene-layout');
+const {data,local}=await input(),units=process.argv.includes('--units'),baseDir=ROOT+'/build/exploration',dir=sceneLayout?ROOT+'/build/scene-layout':baseDir,rom=dir+(sceneLayout?'/ff3-scene-layout.gbc':'/ff3-exploration.gbc'),report=JSON.parse(await fs.readFile(baseDir+'/report.json')),romSha256=hash(await fs.readFile(rom)),coreSha256=hash(await fs.readFile(local.mesenCore));
+if(sceneLayout){report.romSha256=JSON.parse(await fs.readFile(dir+'/report.json')).romSha256;report.audio=JSON.parse(await fs.readFile(dir+'/audio.json'));}
 check(romSha256===report.romSha256&&coreSha256==='1ba99d2c848e007c60cbd7fceca058440758eb44837a93a6724d29d72723c994','Artifact identity');
-const symbols={};for(const m of(await fs.readFile(dir+'/ff3-exploration.noi','utf8')).matchAll(/DEF _(\w+) (0x[0-9a-f]+)/gi))symbols[m[1]]=Number(m[2]);
-const out=ROOT+'/evidence/exploration';await fs.mkdir(out,{recursive:true});const tag=units?'units':'play',output=out+'/'+tag+'.json',configPath=output+'.config.json';let home;
+const symbols={};for(const m of(await fs.readFile(rom.replace('.gbc','.noi'),'utf8')).matchAll(/DEF _(\w+) (0x[0-9a-f]+)/gi))symbols[m[1]]=Number(m[2]);
+const out=ROOT+'/evidence/exploration'+(sceneLayout?'-scene-layout':'');await fs.mkdir(out,{recursive:true});const tag=units?'units':'play',output=out+'/'+tag+'.json',configPath=output+'.config.json';let home;
 if(process.argv.includes('--reuse')){const c=JSON.parse(await fs.readFile(configPath));check(c.romSha256===romSha256,'Stale artifact');home=c.home;}
 else{home=await fs.mkdtemp(ROOT+'/.local/mesen-exploration-'+tag+'-');const auditPath=ROOT+'/tools/text-audio-audit.lua',audit=((await fs.readFile(auditPath,'utf8'))+await memoryAudit()).replaceAll('__IRQ_BUSY__',String(symbols.native_irq_busy)).replaceAll('__NATIVE_CLOCK__',String(symbols.native_clock)).replaceAll('__NATIVE_REQUEST__',String(symbols.native_request))+'\n'+(await fs.readFile(ROOT+'/tools/exploration-audit.lua','utf8')).replaceAll('__FIELD_RENDER_BUSY__',String(symbols.field+64)).replaceAll('__NATIVE_BUSY__',String(symbols.native_busy)).replaceAll('__NATIVE_TICKS__',String(symbols.native_ticks))+'\n'+(await fs.readFile(ROOT+'/tools/npc-motion-audit.lua','utf8')).replaceAll('__FIELD__',String(symbols.field)).replaceAll('__PART1__',String(symbols.object_part1)).replaceAll('__PART2__',String(symbols.object_part2)).replaceAll('__NPC_BUSY__',String(symbols.field+72));
- check(!/__[A-Z][A-Z_]*__/.test(audit),'Unresolved audit symbol');await fs.writeFile(configPath,JSON.stringify({dll:local.mesenCore,home,rom,romSha256,coreSha256,symbols,fixtures:units?fieldFixtures(data):undefined,auditPath,audit,output}));
- try{const r=await promisify(execFile)(local.dotnet||'dotnet',[ROOT+'/tools/VerifyExploration/bin/Release/net8.0/VerifyExploration.dll',configPath],{cwd:ROOT,timeout:1200000,maxBuffer:8e6});await fs.writeFile(output+'.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(output+'.log',(e.stdout||'')+(e.stderr||''));throw e;}}
+ const env={...process.env,APPDATA:ROOT+'/.local/config',DOTNET_CLI_HOME:ROOT+'/.local/dotnet',DOTNET_CLI_TELEMETRY_OPTOUT:'1'};
+ const build=await promisify(execFile)(local.dotnet||'dotnet',['build',ROOT+'/tools/VerifyExploration/VerifyExploration.csproj','-c','Release','--configfile',ROOT+'/tools/Capture/NuGet.Config'],{cwd:ROOT,env,maxBuffer:4e6});await fs.writeFile(output+'.compiler.log',build.stdout+build.stderr);
+ check(!/__[A-Z][A-Z_]*__/.test(audit),'Unresolved audit symbol');await fs.writeFile(configPath,JSON.stringify({dll:local.mesenCore,home,rom,romSha256,coreSha256,symbols,sceneLayout,fixtures:units?fieldFixtures(data):undefined,auditPath,audit,output}));
+ try{const r=await promisify(execFile)(local.dotnet||'dotnet',[ROOT+'/tools/VerifyExploration/bin/Release/net8.0/VerifyExploration.dll',configPath],{cwd:ROOT,env,timeout:1200000,maxBuffer:8e6});await fs.writeFile(output+'.log',r.stdout+r.stderr);}catch(e){await fs.writeFile(output+'.log',(e.stdout||'')+(e.stderr||''));throw e;}}
 const actual=JSON.parse(await fs.readFile(output));check(actual.done&&actual.romSha256===romSha256&&actual.coreSha256===coreSha256,'Run identity/completion');
 let result={romSha256,coreSha256,units:actual.units,frames:actual.frames.length};
 if(units)check(actual.units===fieldFixtures(data).length,'Complete original/animation fixture coverage');
@@ -59,6 +63,11 @@ if(!units){
  gaps.sort((a,b)=>a-b);check(gaps.length>1000,'Sustained movement samples');
  performance.actualCommit={count,maxSeconds:maxUs/1e6,meanSeconds:sumUs/count/1e6,p95UpperSeconds:percentile(.95),histogramMilliseconds:bins};
  performance.movingScroll={movingFrames,changedFrames,maxUnchangedFrames:maxUnchanged,intervals:gaps.length,p95SampledGapSeconds:gaps[Math.ceil(gaps.length*.95)-1],maxSampledGapSeconds:gaps.at(-1)};
+ const scrollGap=[...log.matchAll(/scroll-gap:(\d+),(\d+);([\d=,]+)/g)].at(-1);check(scrollGap,'Actual scroll interval audit');
+ const gapCount=Number(scrollGap[1]),gapMax=Number(scrollGap[2]),gapBins=scrollGap[3].split(',').map(s=>s.split('=').map(Number)).sort((a,b)=>a[0]-b[0]);
+ check(gapCount>1000&&gapBins.reduce((n,b)=>n+b[1],0)===gapCount,'Complete bus scroll gap histogram');
+ let gapCumulative=0;const gapP95=gapBins.find(b=>(gapCumulative+=b[1])>=Math.ceil(gapCount*.95))[0]/1000;
+ performance.movingScroll.actualBus={intervals:gapCount,maxSeconds:gapMax/1e6,p95UpperSeconds:gapP95,histogramMilliseconds:gapBins};
  // A delayed timer ISR must not silently slow the whole soundtrack. Compare
  // its wrapping counter against the emulator master clock after restart.
  const clockFrames=actual.frames.slice(actual.frames.findIndex(f=>Buffer.from(f.consumed,'hex').readUInt32LE(0)>=8));
@@ -76,7 +85,9 @@ if(!units){
  const [producerCalls,producerMaxUs,producerSumUs,producerInvalid]=producer.slice(1).map(Number);check(!producerInvalid&&producerCalls>1000,'Producer observation coverage');
  performance.audioProducer={calls:producerCalls,maxSeconds:producerMaxUs/1e6,totalSeconds:producerSumUs/1e6};
  check(maxUs<=35000&&performance.maxRenderSeconds<=.020,'Movement preparation/commit regression');
- check(maxUnchanged<=3&&gaps.at(-1)<=.055&&performance.movingScroll.p95SampledGapSeconds<=.035,'Moving scroll starvation regression '+JSON.stringify(performance));
+ // Keep the existing sampled bounds and independently enforce the same
+ // 55 ms / 35 ms bounds on actual register commits, including polling gaps.
+ check(maxUnchanged<=3&&gaps.at(-1)<=.055&&performance.movingScroll.p95SampledGapSeconds<=.035&&gapMax<=55000&&gapP95<=.035,'Moving scroll starvation regression '+JSON.stringify(performance));
  check(producerMaxUs<=55000,'Audio producer monopolization regression');
  result={...result,sourceTicks:end.ticks,sourceEvents:end.events,videoWrites:writes,invalidVideoWrites:bad,lcdOff:off,actualApuHash:apuHash,actualApuWrites:apuWrites,preRestartApuWrites,maxWriteLine:maxLy,dmaStarts,badDma,oamDmas,badOam,scrollWrites,badScroll,peakSpritesPerLine:peak,shots:actual.shots.length,pixels:actual.shots.length*160*144,performance,home};
 }

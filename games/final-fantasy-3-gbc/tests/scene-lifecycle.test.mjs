@@ -44,7 +44,7 @@ test('existing field memory report shares claims without weakening its fixed-RAM
  const r=memoryLayout(symbols,{explore:true});
  assert.equal(r.minFixedFreeBytes,256);assert.equal(r.stackFloor,0xdcb0);
  assert.ok(r.storage.find(b=>b.bank===3).claims.some(c=>c.id==='effect-map-backup'));
- assert.equal(r.storage.find(b=>b.bank===7).claims.length,0);
+ assert.deepEqual(r.storage.find(b=>b.bank===7).claims.map(c=>[c.id,c.bytes,c.profiles]),[['field-suspension',4096,['scene-layout']]]);
  assert.match(r.storage.find(b=>b.bank===7).availability,/Not an allocation grant/);
  assert.throws(()=>memoryLayout({...symbols,s__HEAP:0xcfa0},{explore:true}),/256 bytes/);
  assert.throws(()=>memoryLayout({...symbols,_field_oam:0xdd00},{explore:true}),/placement/);

@@ -7,8 +7,13 @@
 uint8_t ff3_resource_byte(uint8_t bank,uint16_t offset) NONBANKED;
 uint8_t ff3_resource_copy(void *dest,uint8_t bank,uint16_t offset,uint16_t count) NONBANKED;
 uint16_t ff3_clock_now(void) NONBANKED;
-void ff3_platform_init(void);
-void ff3_platform_check(void);
+#ifdef FF3_SCENE_LAYOUT
+#define FF3_PLATFORM_BOOT BANKED
+#else
+#define FF3_PLATFORM_BOOT
+#endif
+void ff3_platform_init(void) FF3_PLATFORM_BOOT;
+void ff3_platform_check(void) FF3_PLATFORM_BOOT;
 /* Original persistent-state layout, NES $6000..63FF. Boot diagnostics run
  * 3A/8E76 initialization before name entry, message speed or map entry. */
 extern uint8_t ff3_game_state[1024];

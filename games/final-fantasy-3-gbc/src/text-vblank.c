@@ -42,6 +42,10 @@ static void restore_next(void){uint8_t first=effect_members[restore_block++],ban
 
 extern uint8_t resident_effect_clone_valid;
 static void invalidate_clone(uint8_t bank,uint16_t address,uint16_t count){
+#ifdef FF3_SCENE_LAYOUT
+ /* Field uploads must not write a variable in the inactive battle arena. */
+ if(scene_video_owner!=FF3_VIDEO_BATTLE)return;
+#endif
  if(bank&&address<0x9800u&&(address>=0x9000u||count>0x9000u-address))resident_effect_clone_valid=0;
 }
 #endif
