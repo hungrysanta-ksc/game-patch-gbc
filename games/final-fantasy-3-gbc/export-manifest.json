@@ -2284,8 +2284,8 @@
     },
     {
       "path": "tools/memory-layout.mjs",
-      "bytes": 4298,
-      "sha256": "d487e709f0920149b00532448c4eb58de47d0676c6b1ce0dff6e75d647ee7d5f",
+      "bytes": 4102,
+      "sha256": "6711fc5323be91150677eec8435617b33b7c0e8830e1a7cb62a43b1f32c3dbfd",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2350,8 +2350,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 29506,
-      "sha256": "67a9b5d6abc31e05cdd14e939f077defe2e022711497d81b2771e8b492fb4654",
+      "bytes": 29956,
+      "sha256": "c3275ae486c1908bc201297f3cc4bd81f089f3e4912f2b846b94b28e6dda5d1f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2368,14 +2368,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 12124,
-      "sha256": "6424f2e8ad20b33f1302a63a89a858c5790408e4bf8625f6a8b83c69e2faad99",
+      "bytes": 12298,
+      "sha256": "868a22a28f68ab3e545a38ee17ec88d790689f0c3b89df437e98d84d220010e5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 92454,
-      "sha256": "bf9319af475967a927673bdc7e0d7c6b80c42c07dc5c0eb47480c8d63df3e703",
+      "bytes": 92912,
+      "sha256": "cba62fe5342668cdd08b453064acfb60cdf3654a3ecfdee735d393dff45d2e7e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2386,8 +2386,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 53467,
-      "sha256": "8d343f5fe90e197b5e6f190e9ddaab4109ed445a7f06e2c4153a3b147981e57e",
+      "bytes": 54153,
+      "sha256": "7cac26ef08447abaed4a5918cbc07372fd7f731e2b1306fb71cfa80241fbdaa8",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3208,8 +3208,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 20668,
-      "sha256": "ecf70efdc2f8d9b4f932d3e56d6a44f6f0be22cb0b175cc3457bb5c269131912",
+      "bytes": 20887,
+      "sha256": "357aa0b60086723ce01174f6599006a252c635d7475cce919ec009c5b2e168df",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3876,6 +3876,42 @@
       "path": "docs/field-battle-lifecycle-review.md",
       "bytes": 11085,
       "sha256": "798091de9fc3083726d59ec7b138e448d5322846a53235c19f2673810982df3c",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/field-battle-boundary.mjs",
+      "bytes": 4217,
+      "sha256": "b4c0114f4b1906f6a8bbabd2770cf50aed0bce6ad71de0a7a98ada3d30673f62",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/scene-resource-contract.mjs",
+      "bytes": 9224,
+      "sha256": "fc5c1677da1f111997f65f114f4597290fce7d2073469335058e7c88b998a2c7",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/audit-scene-lifecycle.mjs",
+      "bytes": 1541,
+      "sha256": "3c8d9f5b2f9763015e46031b33b69495e16c2ca2674b01680570ed510ad6a005",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/scene-lifecycle.test.mjs",
+      "bytes": 4152,
+      "sha256": "942dd5f303c02687bab1c44716d99122347a098bebfc3872b4d7ebb1a4727c55",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "spec/scene-resource-sources.json",
+      "bytes": 27262,
+      "sha256": "e5f993d7bd9d0eb9a809e9d9dd8e0965cf93e6bd001da8e57c64ec7f22a9f775",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/scene-resource-contract.md",
+      "bytes": 7399,
+      "sha256": "2aea724e1199c1e91f1a27d4df2088b49467947fb51433dc434911c2a13168a6",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]

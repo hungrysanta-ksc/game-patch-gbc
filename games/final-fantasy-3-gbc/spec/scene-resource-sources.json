@@ -1,0 +1,919 @@
+{
+  "schema": 1,
+  "scope": "Reviewed source owners; regenerate only after reviewing resource lifetime changes. Not a combined linker map.",
+  "sources": [
+    {
+      "path": "src/audio-native.c",
+      "sha256": "d1a7972c4c198380e407db21171eb1be3fc0117a8485da3b764cacf7c904b52b",
+      "sites": [
+        {
+          "line": 131,
+          "text": "if(!ff3_wram_copy(FF3_WRAM_DIAGNOSTICS,offset,&ff3_state,216,1)||"
+        },
+        {
+          "line": 132,
+          "text": "!ff3_wram_copy(FF3_WRAM_DIAGNOSTICS,offset+216,slot+4,12,1)||"
+        },
+        {
+          "line": 133,
+          "text": "!ff3_wram_copy(FF3_WRAM_DIAGNOSTICS,offset+228,(void*)&native_pops,2,1)||"
+        },
+        {
+          "line": 134,
+          "text": "!ff3_wram_copy(FF3_WRAM_DIAGNOSTICS,offset+230,&zero,2,1)){memory_fault=1;ff3_error=27;return;}"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-action-oam-test.c",
+      "sha256": "5e316192d73e440cdb67510f2706b7a8ff857f4102b069d32e83a0ac767b9291",
+      "sites": [
+        {
+          "line": 4,
+          "text": "uint8_t __at(0xd740) animation_lines[144];"
+        },
+        {
+          "line": 5,
+          "text": "uint8_t __at(0xd7d0) animation_linework[144];"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-action-oam.c",
+      "sha256": "0cb1a6612954ce74282a33f05d823eb19023cffc5de586a811d711d27fa1ce5c",
+      "sites": [
+        {
+          "line": 4,
+          "text": "extern uint8_t __at(0xd740) animation_lines[144];"
+        },
+        {
+          "line": 5,
+          "text": "extern uint8_t __at(0xd7d0) animation_linework[144];"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-animation-video.c",
+      "sha256": "d85ab5b9cf0d313c260ebfe70b769c0a8296cde8384bc7567090fbda6ea9f8a3",
+      "sites": [
+        {
+          "line": 19,
+          "text": "uint8_t __at(0xd600) animation_source[160];"
+        },
+        {
+          "line": 20,
+          "text": "uint8_t __at(0xd6a0) animation_base[160];"
+        },
+        {
+          "line": 21,
+          "text": "uint8_t __at(0xd740) animation_lines[144];"
+        },
+        {
+          "line": 22,
+          "text": "uint8_t __at(0xd7d0) animation_linework[144];"
+        },
+        {
+          "line": 28,
+          "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
+        },
+        {
+          "line": 29,
+          "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-atlas.c",
+      "sha256": "27258de57048ba4f9fd2230e6aa915c542c9a33af7e2b70dde803aa9c282e048",
+      "sites": [
+        {
+          "line": 68,
+          "text": "uint16_t __at(0xd800) scene_keys[128];"
+        },
+        {
+          "line": 69,
+          "text": "uint8_t __at(0xda60) scene_input[256];"
+        },
+        {
+          "line": 413,
+          "text": "if(!ff3_wram_copy(6,1600,scene_keys,256,1)){scene_error=3;return;}window_owned=1;"
+        },
+        {
+          "line": 416,
+          "text": "static void close(void){if(!window_owned){scene_error=9;return;}scene_phase=7;ff3_text_close();if(!ff3_wram_copy(6,1600,scene_keys,256,0))scene_error=3;last_frame[1]=255;window_owned=0;}"
+        },
+        {
+          "line": 533,
+          "text": "CRITICAL{add_VBL(transfer_irq);}"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-effect-freeze.c",
+      "sha256": "6dfe53052cd57720e7d0315faa527d108ffd9ffc45e00e591bbb34b3b9453052",
+      "sites": [
+        {
+          "line": 23,
+          "text": "uint16_t __at(0xd200) effect_pixels[64];"
+        },
+        {
+          "line": 24,
+          "text": "uint8_t __at(0xd280) effect_glyph[16];"
+        },
+        {
+          "line": 25,
+          "text": "uint8_t __at(0xd290) effect_encoded[16];"
+        },
+        {
+          "line": 26,
+          "text": "uint16_t __at(0xd2a0) effect_keys[112];"
+        },
+        {
+          "line": 29,
+          "text": "uint8_t __at(0xd380) effect_members[320];"
+        },
+        {
+          "line": 30,
+          "text": "uint8_t __at(0xd870) effect_palettes[128];"
+        },
+        {
+          "line": 31,
+          "text": "extern uint8_t __at(0xd6a0) animation_base[160];"
+        },
+        {
+          "line": 32,
+          "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
+        },
+        {
+          "line": 33,
+          "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
+        },
+        {
+          "line": 185,
+          "text": "static uint8_t store(uint16_t at,void*p,uint16_t n,uint8_t write){if(!ff3_wram_copy(3,at,p,n,write)){effect_freeze_error=1;return 0;}return 1;}"
+        },
+        {
+          "line": 193,
+          "text": "static uint8_t cache_copy(uint16_t at,void*p,uint16_t n,uint8_t write){if(!ff3_wram_copy(4,at,p,n,write)){effect_freeze_error=10;return 0;}return 1;}"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-hit-video.c",
+      "sha256": "eb9d96c45ae8f1961466dbab81554174de6039c5926c0aae0a2732bb4b4b6200",
+      "sites": [
+        {
+          "line": 19,
+          "text": "extern uint8_t __at(0xd600) animation_source[160];"
+        },
+        {
+          "line": 20,
+          "text": "extern uint8_t __at(0xd6a0) animation_base[160];"
+        },
+        {
+          "line": 21,
+          "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
+        },
+        {
+          "line": 22,
+          "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-item-flow.inc",
+      "sha256": "6a9239c19e722fdc49c703bd0e3917c1fc78f80c8a221fc3a324550b7607995b",
+      "sites": [
+        {
+          "line": 57,
+          "text": "if(!ff3_wram_copy(5,0x400u+at,scene_input,64,0)){scene_error=18;return;}"
+        },
+        {
+          "line": 59,
+          "text": "if(!ff3_wram_copy(5,0x400u+at,scene_input,64,1))scene_error=18;"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-live-ui.c",
+      "sha256": "ba648b85c3ea1b3f53819cc6e3ced9de028400d98b590783761c659b70b39bd2",
+      "sites": []
+    },
+    {
+      "path": "src/battle-magic-video.c",
+      "sha256": "35049b99119cbf3c17928b3316ff34f9a12613102ea26d532208b82b6364bc03",
+      "sites": [
+        {
+          "line": 26,
+          "text": "extern uint8_t __at(0xd600) animation_source[160];"
+        },
+        {
+          "line": 27,
+          "text": "extern uint8_t __at(0xd6a0) animation_base[160];"
+        },
+        {
+          "line": 28,
+          "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
+        },
+        {
+          "line": 29,
+          "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
+        },
+        {
+          "line": 58,
+          "text": "for(at=0;at<256;at+=128){read_vram(0,0x84a0+at,text_staging,128);if(!ff3_wram_copy(4,1152+at,text_staging,128,1))return 0;}"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-opening-video.inc",
+      "sha256": "450a1fa06cd738cbc49ae72633f856168845fe790e66ff9e9672b43042fe635e",
+      "sites": [
+        {
+          "line": 4,
+          "text": "Ff3Opening __at(0xd000) opening_state;"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-party-video.c",
+      "sha256": "7998e690e78b77695950ab05a78c2d7bd4bdad3fb9a45f812972067cc0af0ca7",
+      "sites": [
+        {
+          "line": 51,
+          "text": "uint8_t __at(0xdc00) party_oam0[160];"
+        },
+        {
+          "line": 52,
+          "text": "uint8_t __at(0xdd00) party_oam1[160];"
+        },
+        {
+          "line": 53,
+          "text": "Ff3EntryDisplay __at(0xd000) party_motion;"
+        },
+        {
+          "line": 54,
+          "text": "Ff3PartyOam __at(0xd040) party_state;"
+        },
+        {
+          "line": 55,
+          "text": "uint8_t __at(0xd060) party_source[96];"
+        },
+        {
+          "line": 208,
+          "text": "add_VBL(publish);ff3_text_video_init();text_idle=ff3_native_service;LCDC_REG=0x93;ff3_native_begin();"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-resident-bg.c",
+      "sha256": "2d08de0004d02fac6abd08bec03503c322a4e9b254866521cf8d74c425888c70",
+      "sites": [
+        {
+          "line": 24,
+          "text": "Ff3BattleWorkspace __at(0xd200) battle_workspace;"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-script-video.c",
+      "sha256": "0de598ceac461f48de0c3f969bf0e46a927b4202fb4bf6529a323eda32a93bd7",
+      "sites": [
+        {
+          "line": 23,
+          "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
+        },
+        {
+          "line": 24,
+          "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-stone.c",
+      "sha256": "fcc7cf97c60aa5cde143882ea7673c5253bf372700f6748a41cbe445c3f455ff",
+      "sites": [
+        {
+          "line": 16,
+          "text": "uint8_t __at(0xd600) stone_patterns[768];"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-strike-video.c",
+      "sha256": "325acea478fc7e01e73a4fbed0d314e8352e4ffd5a0347c18ccfc7ab6ba275b4",
+      "sites": [
+        {
+          "line": 27,
+          "text": "extern uint8_t __at(0xd600) animation_source[160];"
+        },
+        {
+          "line": 28,
+          "text": "extern uint8_t __at(0xd6a0) animation_base[160];"
+        },
+        {
+          "line": 29,
+          "text": "extern uint8_t __at(0xd740) animation_lines[144];"
+        },
+        {
+          "line": 30,
+          "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
+        },
+        {
+          "line": 31,
+          "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-terrain.c",
+      "sha256": "392fda4fb21833260f0206ed5a6042d4581b196b541484f27120a38d1d5671fa",
+      "sites": [
+        {
+          "line": 11,
+          "text": "uint8_t __at(0xd0c0) terrain_masked[64];"
+        },
+        {
+          "line": 12,
+          "text": "uint8_t __at(0xd100) terrain_source[256];"
+        },
+        {
+          "line": 13,
+          "text": "uint8_t __at(0xd500) terrain_pixels[160];"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-workspace.h",
+      "sha256": "77acaebcbb1f15e010ff9bc029aae7a77f66f6cb9197990b10a901de657b4013",
+      "sites": [
+        {
+          "line": 21,
+          "text": "extern Ff3BattleWorkspace __at(0xd200) battle_workspace;"
+        }
+      ]
+    },
+    {
+      "path": "src/composition-cache-video.c",
+      "sha256": "79c2f045e5a1ef2745b2d6c831490c97319cd182d895699165c4353595f65e73",
+      "sites": [
+        {
+          "line": 4,
+          "text": "uint8_t __at(0xda50) cache_palette[80];"
+        },
+        {
+          "line": 5,
+          "text": "uint8_t __at(0xdb00) cache_oam0[160];"
+        },
+        {
+          "line": 6,
+          "text": "uint8_t __at(0xdc00) cache_oam1[160];"
+        },
+        {
+          "line": 42,
+          "text": "void ff3_cache_video_init(void) NONBANKED {CRITICAL{add_VBL(publish_irq);}}"
+        }
+      ]
+    },
+    {
+      "path": "src/composition-cache.c",
+      "sha256": "f0a1e13d72933c042aa8605c5363c9a86e824542ecf9b5bc6a66c04c9b010a70",
+      "sites": [
+        {
+          "line": 11,
+          "text": "uint16_t __at(0xd000) cache_keys[128];"
+        },
+        {
+          "line": 12,
+          "text": "uint8_t __at(0xd100) cache_pins[128];"
+        },
+        {
+          "line": 13,
+          "text": "uint16_t __at(0xd180) cache_previous[360];"
+        },
+        {
+          "line": 14,
+          "text": "uint8_t __at(0xd450) cache_slots[360];"
+        },
+        {
+          "line": 15,
+          "text": "uint8_t __at(0xd5b8) cache_attrs[360];"
+        },
+        {
+          "line": 16,
+          "text": "uint8_t __at(0xd720) cache_masks[128];"
+        },
+        {
+          "line": 17,
+          "text": "uint8_t __at(0xd800) cache_input[FF3_CELL_INPUT_MAX];"
+        },
+        {
+          "line": 18,
+          "text": "uint16_t __at(0xdba0) cache_objkeys0[40];"
+        },
+        {
+          "line": 19,
+          "text": "uint16_t __at(0xdca0) cache_objkeys1[40];"
+        },
+        {
+          "line": 44,
+          "text": "if(!ff3_wram_copy(storage(slot),offset(slot),text_staging,48,1)){cache_error=3;return 0;}"
+        },
+        {
+          "line": 66,
+          "text": "for(n=0;n<batch;n++){slot=object_slots[first+n];p=object_planes[first+n];if(!ff3_wram_copy(storage(slot),offset(slot)+16+(uint16_t)p*16,text_staging+(uint16_t)n*16,16,0)){cache_error=3;return;}ff3_native_service();}"
+        }
+      ]
+    },
+    {
+      "path": "src/composition-cache.h",
+      "sha256": "ac21a936eae7f7c175602dad30094efd33d35de9a66247ece4bf7677bdf81770",
+      "sites": [
+        {
+          "line": 7,
+          "text": "extern uint8_t __at(0xda50) cache_palette[80];"
+        },
+        {
+          "line": 8,
+          "text": "extern uint8_t __at(0xdb00) cache_oam0[160];"
+        },
+        {
+          "line": 9,
+          "text": "extern uint8_t __at(0xdc00) cache_oam1[160];"
+        }
+      ]
+    },
+    {
+      "path": "src/composition-input-probe.c",
+      "sha256": "953072fbc35023a99721e75e827f0990f7f089c62065346abdcf4a4539f84c15",
+      "sites": [
+        {
+          "line": 11,
+          "text": "FF3CompositionInput __at(0xd800) input_before;"
+        },
+        {
+          "line": 12,
+          "text": "FF3CompositionInput __at(0xda50) input_after;"
+        }
+      ]
+    },
+    {
+      "path": "src/composition-kernel-probe.c",
+      "sha256": "96e6c3c491949a35e66fa741d0a18be02989a8359d90e240f6a96537b766bb02",
+      "sites": [
+        {
+          "line": 10,
+          "text": "uint8_t __at(0xd800) kernel_input[FF3_CELL_INPUT_MAX];"
+        }
+      ]
+    },
+    {
+      "path": "src/composition-window-probe.c",
+      "sha256": "aa200f3c9145cee78842e979a7e07c9b2970125612e50e5af83a752727c6cc2e",
+      "sites": [
+        {
+          "line": 20,
+          "text": "memset((void*)0xda60,0,256);ff3_wram_copy(5,0x400,(void*)0xda60,256,1);"
+        }
+      ]
+    },
+    {
+      "path": "src/composition-window-video.c",
+      "sha256": "a7f6d6a4b75e4a6789482bb26d4f1d33eec2c848eea6936792347b21b21887bd",
+      "sites": [
+        {
+          "line": 12,
+          "text": "uint8_t __at(0xdc00) scene_oam0[160];"
+        },
+        {
+          "line": 13,
+          "text": "uint8_t __at(0xdd00) scene_oam1[160];"
+        },
+        {
+          "line": 170,
+          "text": "void ff3_scene_video_init(void) NONBANKED {CRITICAL{add_VBL(publish_irq);}"
+        }
+      ]
+    },
+    {
+      "path": "src/composition-window.c",
+      "sha256": "a0618aadc92614674d55405144fbece59899603e73f481027bd4ecb837c615f6",
+      "sites": [
+        {
+          "line": 15,
+          "text": "uint16_t __at(0xd800) scene_keys[128];"
+        },
+        {
+          "line": 16,
+          "text": "uint8_t __at(0xda60) scene_input[256];"
+        },
+        {
+          "line": 17,
+          "text": "uint16_t __at(0xdca0) scene_objkeys0[40];"
+        },
+        {
+          "line": 18,
+          "text": "uint16_t __at(0xdda0) scene_objkeys1[40];"
+        },
+        {
+          "line": 30,
+          "text": "static void copy(uint16_t offset,void *p,uint16_t n,uint8_t write){if(!ff3_wram_copy(6,offset,p,n,write))scene_error=3;}"
+        },
+        {
+          "line": 44,
+          "text": "if(!ff3_wram_copy(storage(slot),offset(slot),text_staging,80,1)){scene_error=3;return 0;}"
+        },
+        {
+          "line": 64,
+          "text": "for(n=0;n<batch;n++){slot=object_slots[first+n];p=object_planes[first+n];if(!ff3_wram_copy(storage(slot),offset(slot)+16+(uint16_t)p*16,text_staging+(uint16_t)n*16,16,0)){scene_error=3;return;}ff3_native_service();}"
+        }
+      ]
+    },
+    {
+      "path": "src/composition-window.h",
+      "sha256": "03d2b5c4edd65a19e42fdd85f4372190dd2a6998961fa8eff6678e9a50a83502",
+      "sites": [
+        {
+          "line": 5,
+          "text": "extern uint8_t __at(0xdc00) scene_oam0[160];"
+        },
+        {
+          "line": 6,
+          "text": "extern uint8_t __at(0xdd00) scene_oam1[160];"
+        }
+      ]
+    },
+    {
+      "path": "src/dialogue-viewer.c",
+      "sha256": "5c20dd0a3409edcf5ed74745f09d35f1281968b09960714c92fb64e74292e863",
+      "sites": [
+        {
+          "line": 24,
+          "text": "cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);memset((void*)0xd7f0,0xa7,16);memset((void*)0xdb60,0xa7,16);"
+        }
+      ]
+    },
+    {
+      "path": "src/exploration-video.c",
+      "sha256": "aa4993300fa5454c0898ad8943edd9a4a8605ef77f897cf233b1a950a6335630",
+      "sites": [
+        {
+          "line": 6,
+          "text": "uint8_t __at(0xdc00) field_oam[160];"
+        },
+        {
+          "line": 7,
+          "text": "uint8_t __at(0xdbc0) field_staging[64];"
+        },
+        {
+          "line": 146,
+          "text": "void ff3_field_video_init(void) NONBANKED {CRITICAL{add_VBL(publish_irq);}}"
+        }
+      ]
+    },
+    {
+      "path": "src/exploration-viewer.c",
+      "sha256": "f32e6c5bef5ee2f67da117eec5ea783f33d3cdef98c10cdb0ef379c7ea0c58b4",
+      "sites": [
+        {
+          "line": 22,
+          "text": "cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);"
+        }
+      ]
+    },
+    {
+      "path": "src/exploration.c",
+      "sha256": "02090936e937b34d7752c90bfaf11315d64206669c7c2de7639666439f500c27",
+      "sites": [
+        {
+          "line": 7,
+          "text": "volatile FF3Exploration __at(0xdb70) field;"
+        }
+      ]
+    },
+    {
+      "path": "src/exploration.h",
+      "sha256": "ec983c95723f534f335e9dfa21f9b16ca7348010a2b677c8d68e78bca8e52aab",
+      "sites": [
+        {
+          "line": 22,
+          "text": "extern volatile FF3Exploration __at(0xdb70) field;"
+        },
+        {
+          "line": 23,
+          "text": "extern uint8_t __at(0xdc00) field_oam[160];"
+        },
+        {
+          "line": 24,
+          "text": "extern uint8_t __at(0xdbc0) field_staging[64];"
+        }
+      ]
+    },
+    {
+      "path": "src/field-objects.c",
+      "sha256": "b316debb69721c76161a034c9e44550de11170eb248779c8edb550774c8676bf",
+      "sites": []
+    },
+    {
+      "path": "src/field-scene.c",
+      "sha256": "9028cc7bedec0e9601d7d167225430490034b8c1bf496fabc05fa25249e86e9a",
+      "sites": [
+        {
+          "line": 8,
+          "text": "FF3FieldEvent __at (0xd000) field_event;"
+        }
+      ]
+    },
+    {
+      "path": "src/field-scene.h",
+      "sha256": "89e42abd2d63839fc304d0d813e304c317e13c9aeb1b6a36fb71e502037715d8",
+      "sites": [
+        {
+          "line": 4,
+          "text": "extern FF3FieldEvent __at (0xd000) field_event;"
+        }
+      ]
+    },
+    {
+      "path": "src/game-state-test.c",
+      "sha256": "70c6a0258d47187e2505209f56fcd7a210e7abeacef2dd1c4e83fdedf3d3472c",
+      "sites": [
+        {
+          "line": 51,
+          "text": "void main(void){uint8_t ram_bank;cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;DISABLE_RAM;SWITCH_ROM(bank);state_ready=0xa5;"
+        }
+      ]
+    },
+    {
+      "path": "src/game-state.c",
+      "sha256": "1a356fdc503722c169f6a0a7dcb46e3caa5ce3962376a1d42a7d69f7dab00c21",
+      "sites": []
+    },
+    {
+      "path": "src/map-display.c",
+      "sha256": "101a5709f19392db7c06939e23e371ce2254882bd21e73f147d9557ec8a361df",
+      "sites": [
+        {
+          "line": 6,
+          "text": "FF3MapWorkspace __at(0xd000) map_workspace;"
+        }
+      ]
+    },
+    {
+      "path": "src/map-display.h",
+      "sha256": "0ecbf55ed6ef638e404b7b59deffb9147d3284ea09db675ed0eeb4df359f333c",
+      "sites": [
+        {
+          "line": 9,
+          "text": "extern FF3MapWorkspace __at(0xd000) map_workspace;"
+        }
+      ]
+    },
+    {
+      "path": "src/map-viewer.c",
+      "sha256": "3f08fe78b585f51a240c17b8021cf0381df28e2a79b9e24df440699483ba9893",
+      "sites": [
+        {
+          "line": 16,
+          "text": "cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);memset((void*)0xd7f0,0xa7,16);negative();map_ready=0xa5;map_request=1;"
+        }
+      ]
+    },
+    {
+      "path": "src/memory-probe.c",
+      "sha256": "a1d1779fc2998e0fb9c1b1fe1914322abdd374bf61bb6ee37d3b5d21ddffb764",
+      "sites": [
+        {
+          "line": 18,
+          "text": "result(ff3_wram_copy(bank,offset,b,32,1));memset(b,0,32);"
+        },
+        {
+          "line": 19,
+          "text": "result(ff3_wram_copy(bank,offset,b,32,0));"
+        },
+        {
+          "line": 25,
+          "text": "result(ff3_wram_copy(bank,4096-n,b,n,1));memset(b,0,32);"
+        },
+        {
+          "line": 26,
+          "text": "result(ff3_wram_copy(bank,4096-n,b,n,0));"
+        },
+        {
+          "line": 31,
+          "text": "result(!ff3_wram_copy(0,0,b,1,1));result(!ff3_wram_copy(1,0,b,1,1));"
+        },
+        {
+          "line": 32,
+          "text": "result(!ff3_wram_copy(8,0,b,1,1));result(!ff3_wram_copy(255,0,b,1,1));"
+        },
+        {
+          "line": 33,
+          "text": "result(!ff3_wram_copy(3,4096,b,1,1));result(!ff3_wram_copy(3,4097,b,0,1));"
+        },
+        {
+          "line": 34,
+          "text": "result(!ff3_wram_copy(3,4095,b,2,1));result(!ff3_wram_copy(3,0,b,65535,1));"
+        },
+        {
+          "line": 35,
+          "text": "result(!ff3_wram_copy(3,0,(void*)0xbfff,1,1));result(!ff3_wram_copy(3,0,(void*)0xdfff,2,0));"
+        },
+        {
+          "line": 36,
+          "text": "result(!ff3_wram_copy(3,0,b,1,2));memory_busy=1;result(!ff3_wram_copy(3,0,b,1,1));memory_busy=0;"
+        },
+        {
+          "line": 39,
+          "text": "result(ff3_wram_copy(6,0,b,16,1));result(IE_REG==bank);"
+        },
+        {
+          "line": 42,
+          "text": "CRITICAL{result(ff3_wram_copy(6,0,b,16,1));result(ff3_wram_copy(6,0,b,16,0));}"
+        },
+        {
+          "line": 46,
+          "text": "result(ff3_wram_copy(6,0x301,ff3_game_state,259,1));"
+        },
+        {
+          "line": 48,
+          "text": "result(ff3_wram_copy(6,0x301,ff3_game_state,259,0));"
+        },
+        {
+          "line": 56,
+          "text": "result(ff3_wram_copy(bank,offset,source+offset,n,1));"
+        },
+        {
+          "line": 57,
+          "text": "result(ff3_wram_copy(bank,offset,b,n,0));result(!memcmp(b,source+offset,n));"
+        },
+        {
+          "line": 61,
+          "text": "result((SVBK_REG&7)==1&&CURRENT_BANK==saved&&!memory_busy&&!memory_fault);"
+        }
+      ]
+    },
+    {
+      "path": "src/memory.c",
+      "sha256": "3b58b7c584aadfdd5527c87e0066f7d1cf8f7dad4ac8c9e20d558d4f5664a6b1",
+      "sites": [
+        {
+          "line": 75,
+          "text": "ldh (_SVBK_REG),a"
+        },
+        {
+          "line": 85,
+          "text": "ldh (_SVBK_REG),a"
+        },
+        {
+          "line": 94,
+          "text": "ldh (_SVBK_REG),a"
+        },
+        {
+          "line": 100,
+          "text": "uint8_t ff3_wram_copy(uint8_t bank,uint16_t offset,void *buffer,uint16_t count,uint8_t write) NONBANKED {"
+        },
+        {
+          "line": 102,
+          "text": "if(memory_busy||(SVBK_REG&7)!=1||bank<2||bank>7||write>1||offset>4096||count>4096-offset||address<0xc000||address>0xe000||count>0xe000u-address)return 0;"
+        }
+      ]
+    },
+    {
+      "path": "src/memory.h",
+      "sha256": "0d255ea2105d88fed9db2ac2798cfc84f7f47ac48105dc537012f4a72887d2d5",
+      "sites": [
+        {
+          "line": 20,
+          "text": "uint8_t ff3_wram_copy(uint8_t bank,uint16_t offset,void *buffer,uint16_t count,uint8_t write) NONBANKED;"
+        }
+      ]
+    },
+    {
+      "path": "src/npc-composition-probe.c",
+      "sha256": "9e7c58b334d86d1a4fbe3ffbbfdc0e0e38fec14f3ceda2dfa8e597a76d7f61d8",
+      "sites": [
+        {
+          "line": 15,
+          "text": "void main(void){uint8_t previous=0,k;cpu_fast();NR52_REG=0;SVBK_REG=1;DISPLAY_OFF;LCDC_REG=0x13;render_page=0;show();"
+        }
+      ]
+    },
+    {
+      "path": "src/object-viewer.c",
+      "sha256": "9b0358c90d785d525801433037e7d5d435e7665e2163fadc3481be0f716a2dfa",
+      "sites": [
+        {
+          "line": 10,
+          "text": "cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);memset((void*)0xd7f0,0xa7,16);"
+        }
+      ]
+    },
+    {
+      "path": "src/platform.c",
+      "sha256": "d82413ca6de8aa901a06078f5aa253dba2a019183297490acd0ee53830eea264",
+      "sites": [
+        {
+          "line": 26,
+          "text": "SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);platform_error=0;platform_checks=0;"
+        },
+        {
+          "line": 32,
+          "text": "if((SVBK_REG&7)!=1)platform_error=2;"
+        }
+      ]
+    },
+    {
+      "path": "src/render-budget-probe.c",
+      "sha256": "834c908501a56beab779f5fa6fb7fe77001abf739f5dba66e512152efe212992",
+      "sites": [
+        {
+          "line": 17,
+          "text": "void main(void){uint8_t previous=0,k;cpu_fast();NR52_REG=0;SVBK_REG=1;DISPLAY_OFF;LCDC_REG=0x07;render_page=0;show();while(1){wait_vbl_done();k=joypad();if((k&J_A)&&!(previous&J_A)){render_page^=1;render_request=1;}previous=k;if(render_request){if(render_page>1)render_page=0;show();}}}"
+        }
+      ]
+    },
+    {
+      "path": "src/text-vblank.c",
+      "sha256": "36c22c5194ffe0e14d5b7170156058686d47b4474c770abd2632ecef58b4775a",
+      "sites": [
+        {
+          "line": 7,
+          "text": "uint8_t __at(0xd950) text_staging[256];"
+        },
+        {
+          "line": 13,
+          "text": "extern uint8_t __at(0xd380) effect_members[320];"
+        },
+        {
+          "line": 14,
+          "text": "extern uint8_t __at(0xd870) effect_palettes[128];"
+        },
+        {
+          "line": 81,
+          "text": "ldh (_SVBK_REG),a"
+        },
+        {
+          "line": 85,
+          "text": "ldh (_SVBK_REG),a"
+        },
+        {
+          "line": 158,
+          "text": "void ff3_text_video_init(void) NONBANKED {CRITICAL{add_VBL(video_irq);}}"
+        },
+        {
+          "line": 199,
+          "text": "if(pending||!(KEY1_REG&128)||(SVBK_REG&7)!=1||cells>80){text_transfer_fault=1;return 0;}"
+        },
+        {
+          "line": 206,
+          "text": "if(pending||!(KEY1_REG&128)||(SVBK_REG&7)!=1||page>1||pairs>1){text_transfer_fault=1;return 0;}"
+        }
+      ]
+    },
+    {
+      "path": "src/text-vblank.h",
+      "sha256": "3606a856a13a27c24a81fd226f086e6426fbff7641009e09d6d00d6c6e1802ed",
+      "sites": [
+        {
+          "line": 11,
+          "text": "extern uint8_t __at(0xd950) text_staging[256];"
+        }
+      ]
+    },
+    {
+      "path": "src/text-viewer.c",
+      "sha256": "a0be14907dda7a64fddfa4c16c858b2911392fdd1df0710e3d11b5309e94b8a3",
+      "sites": [
+        {
+          "line": 12,
+          "text": "cpu_fast();NR52_REG=0;SVBK_REG=1;rROMB1=0;SWITCH_ROM(1);memset((void*)0xd7f0,0xa7,16);memset((void*)0xdb60,0xa7,16);"
+        }
+      ]
+    },
+    {
+      "path": "src/text-window.c",
+      "sha256": "f3a93820d8cb92b8c620412089c8c98458fb463c1109d91daf64befae6a1762f",
+      "sites": [
+        {
+          "line": 10,
+          "text": "uint16_t __at(0xd800) text_cells[160];"
+        },
+        {
+          "line": 19,
+          "text": "uint8_t __at(0xda60) text_lookup[256];"
+        }
+      ]
+    },
+    {
+      "path": "src/text-window.h",
+      "sha256": "ac4a08340275b751d0fe1632d40aef0b46202a845b1bc00bbf596dd81b58106e",
+      "sites": [
+        {
+          "line": 16,
+          "text": "extern uint16_t __at(0xd800) text_cells[160];"
+        }
+      ]
+    }
+  ]
+}

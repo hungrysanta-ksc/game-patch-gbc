@@ -1,4 +1,5 @@
 import {check} from './source.mjs';
+import {diagnosticStorage} from './scene-resource-contract.mjs';
 // Half-open CPU ranges in WRAM bank 1. Fixed bank 0 contains GameState,
 // audio queue/engine/IRQ state and linker-owned statics; storage is banked.
 export function memoryLayout(symbols,{explore}){
@@ -23,12 +24,9 @@ export function memoryLayout(symbols,{explore}){
  for(const name of ['ff3_wram_copy','ff3_wram_transfer','ff3_memory_init'])check(symbols['_'+name]<0x4000,'Mapped transfer must stay in fixed ROM '+name);
  check(symbols._native_snapshot===undefined&&symbols._native_snapshot_bank<0x4000,'Snapshots relocated to storage');
  return {fixedBegin:0xc000,fixedEnd,fixedFreeBytes:0xd000-fixedEnd,minFixedFreeBytes:256,stackFloor,stackBytes:0xe000-stackFloor,regions,
-  storage:[{bank:2,begin:0,end:464,owner:'Two immutable audio diagnostic snapshots; no IRQ readers'},
-   {bank:3,begin:0,end:4096,owner:'Reserved for field suspension; probe only, no gameplay mode switch yet'},
-   {bank:4,begin:0,end:4096,owner:'Unallocated; probe verifies persistent-state copy here'},
-   {bank:5,begin:0,end:4096,owner:'Reserved for future battle state; RNG requires 259 bytes, not allocated yet'},
-   {bank:6,begin:0,end:4096,owner:'Unallocated'}, {bank:7,begin:0,end:4096,owner:'Unallocated'}],
-  contract:'SVBK=1 for code/stack/IRQ/DMA. Other banks accessed by <=16-byte IE-masked leaf copies. GameState/audio remain live across future modes; gameplay mode dispatch pending.'};
+  scope:'Exploration/text diagnostic placement only; fixed RAM and stack checks are not a combined scene link.',
+  storage:diagnosticStorage(),
+  contract:'SVBK=1 for code/stack/IRQ/DMA. This diagnostic uses <=16-byte IE-masked leaf copies for storage. Other diagnostics have additional bounded VBlank readers. No bank is granted for field suspension; combined GameState/audio/video ownership and gameplay mode dispatch remain pending.'};
 }
 export function checkTransferCode(rom,symbols){
  const a=symbols._ff3_wram_transfer,z=symbols._ff3_wram_copy,b=rom.subarray(a,z);
