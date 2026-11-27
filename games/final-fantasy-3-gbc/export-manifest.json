@@ -70,8 +70,8 @@
     },
     {
       "path": "tools/scene-roundtrip-audit.lua",
-      "bytes": 2821,
-      "sha256": "eadee4148d10b75763bc1a58040a285788554a7d9698200e8812cfc56e73aa38",
+      "bytes": 2911,
+      "sha256": "3f1a58a18b5bf0e1934d4c19035eab130fc3d3a4c6561c97d50613bbc7c7a917",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -130,14 +130,14 @@
     },
     {
       "path": "tools/build-scene-layout.mjs",
-      "bytes": 8564,
-      "sha256": "42aa4e5e490cb2c8da6555b8c4cee7a0882c389b8ec75f890c56e5ffb871379b",
+      "bytes": 9757,
+      "sha256": "b3826d320723053059357954248003501dcd392352aedd66484ae1854a8a3b6b",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/verify-scene-layout.mjs",
-      "bytes": 3245,
-      "sha256": "6a111ee87d71152e989b248824bafba0dfb504329d078245512f540f9d98173c",
+      "bytes": 3360,
+      "sha256": "4d03893fce957e65ede53c7bbc95565988f5eb2a9cac4b95c644fba94eeade47",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -754,8 +754,8 @@
     },
     {
       "path": "tools/battle-terrain.mjs",
-      "bytes": 3546,
-      "sha256": "0cc23bc8e5bb1d6c4ba0a9888e2825ff07a3e3d9e14cadf9c12be398578d9ce6",
+      "bytes": 3567,
+      "sha256": "f4c55f237df00dfbbff2aa50f36f2888cb6ba9ac7ecf9eac8b785417ca97d105",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -844,8 +844,8 @@
     },
     {
       "path": "tools/battle-party-oam-source.mjs",
-      "bytes": 6889,
-      "sha256": "8d7721d716275fbc31895c8e32abbd9b07021d5399c26729bbe0787022a96b90",
+      "bytes": 6905,
+      "sha256": "c0947b631e430fac5d16084eb682e62185a7d709b936c5f32dcc20df9cad319a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2518,14 +2518,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 13571,
-      "sha256": "7594f9f1c064724145acfef36def98acf4dff9069185d6c4dc101804dd3ec411",
+      "bytes": 13717,
+      "sha256": "73b08b4ceff9e0b804a5509b81fffb6720663afd526463716e85cf016d140ceb",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 97039,
-      "sha256": "0b004dd2baf11f977067ca17017fb54fdd1212717e584fd0dce5f7b260d32b60",
+      "bytes": 97365,
+      "sha256": "34608ca5e87bd4b2a858a6c308e92f24d8dad13494d1c6a997928648f10536a4",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2536,8 +2536,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 56802,
-      "sha256": "082d7e1e748fdaf2a500cd8b7a97028ff508aa4fd6a8297d4282d824567e8674",
+      "bytes": 56926,
+      "sha256": "3aed2fcd3c16e05b78d5a9ce5d62ac698da1cc5658617eb38a2ffebd1c093864",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3076,14 +3076,14 @@
     },
     {
       "path": "src/exploration-viewer.c",
-      "bytes": 7239,
-      "sha256": "630a7c6fa537321c9c26d573ec7190c738edf160fd0d8e5ed6c5c2433f383709",
+      "bytes": 7285,
+      "sha256": "2d345da0f8481d865b87bdfcae6887a7be55603090c408773b9cb11a9ccecfc7",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "tools/exploration-assets.mjs",
-      "bytes": 2204,
-      "sha256": "e4efbff2c84ed14989d24c796ea15a6191194ce417ffe4f601983692f8499c71",
+      "bytes": 2357,
+      "sha256": "6ad222d41f3673314f94f0f32618c2439ea3fe378409dfd74edf49020b96767c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3358,8 +3358,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 22444,
-      "sha256": "8f2f7def9ed45748254bded3844450a9e0455c49b2923c3e957734dbcd720dc6",
+      "bytes": 22673,
+      "sha256": "6558971e3929c0ac706a0f304bfddaca94e00588ac150b01ef5243200b4352f1",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4036,8 +4036,8 @@
     },
     {
       "path": "tools/scene-resource-contract.mjs",
-      "bytes": 11876,
-      "sha256": "cd2f321b27bbd3a1b380dd026f0bef102e5118c4c42ddd21f0f7d0e6b3c4ce5e",
+      "bytes": 12000,
+      "sha256": "1a852b24030bc6f53a377f47505623e1000ef5f8713ad3d6d3b00aa7002510d0",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4055,7 +4055,7 @@
     {
       "path": "spec/scene-resource-sources.json",
       "bytes": 29433,
-      "sha256": "91f521deb7f9422ea9a5720dbd1217c13f700e4fec8156ae3d7a19d586f95599",
+      "sha256": "039493a53a5ebc20f4054577d35b5867a230690cb1b2c1d9d97599f307e32e6f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4120,8 +4120,8 @@
     },
     {
       "path": "src/battle-encounter.c",
-      "bytes": 2736,
-      "sha256": "661d5ad43298d2626c6d1fa3bb15a26930638413145d694f37a0457400804602",
+      "bytes": 2758,
+      "sha256": "c28c7710f65921b6b1584ca2afa8cec435b8c964c15aac9ba45ca8b3db049608",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4132,8 +4132,8 @@
     },
     {
       "path": "tools/encounter-screen-assets.mjs",
-      "bytes": 7306,
-      "sha256": "21a8cd28840a54c8accbfbeadf736665f91aef921d22817ceb86de517ecc19e3",
+      "bytes": 7387,
+      "sha256": "cc6051fecfecf9144160f94d78962a5984adadf36001d814bbb882ae131d976f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4212,6 +4212,48 @@
       "path": "docs/play-seed.md",
       "bytes": 6963,
       "sha256": "000c3d439cbe5aaac0104d0713d950ddd194a39f1f6a52352346be41c66331ac",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/dungeon-source.mjs",
+      "bytes": 815,
+      "sha256": "aa7971967c9d153d12bfbe93cb44b8467e2c44c481b83c53eb8e0aa3c4d4cb48",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/dungeon-audit.lua",
+      "bytes": 764,
+      "sha256": "1d39e7388d3a1d418ac6f389eaf0c423504bff5bf8b468092a6b3beb81635f22",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-dungeon.mjs",
+      "bytes": 9586,
+      "sha256": "24d256c2fca76f3322b67502bff3f2c53b20ff400fffcfe8a7774d68f4a68acb",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyDungeon/Program.cs",
+      "bytes": 6947,
+      "sha256": "fcbdeb8869df027ec0c8a56062b0c602192d4bf8297fa23525ce86994079aae1",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/VerifyDungeon/VerifyDungeon.csproj",
+      "bytes": 360,
+      "sha256": "89000de092190d57561213ce3ab33a2dc94558430d7868666feb645691d0a0ad",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/dungeon.test.mjs",
+      "bytes": 1659,
+      "sha256": "a8b584a17e53bb4a54c4edfd98a7ec4930f2c999b469db196d84a9b1d9cca1d3",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/first-dungeon-encounters.md",
+      "bytes": 6559,
+      "sha256": "389d3bc0abefad88d4fa026682655bf5738054416d13890a805ef66c25b28d2e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     }
   ]
