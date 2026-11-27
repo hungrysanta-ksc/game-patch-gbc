@@ -11,6 +11,10 @@
 uint8_t effect_signed,effect_freeze_error;
 volatile uint8_t effect_freeze_stage;
 static uint8_t old_page,new_page,cells,retained,mixed;
+/* Only changed 16-byte map blocks are borrowed. Keep the actual inactive
+ * bytes; entry/flash/terrain may leave the two resident pages different. */
+static uint8_t map_dirty[9];
+volatile uint16_t effect_map_saved,effect_map_written;
 uint16_t __at(0xd200) effect_pixels[64];
 uint8_t __at(0xd280) effect_glyph[16];
 uint8_t __at(0xd290) effect_encoded[16];
@@ -169,9 +173,41 @@ static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/3
  memset(effect_encoded,0,16);
  for(i=0;i<64;i++){if(!(i&7))ff3_native_service();c=effect_pixels[i];for(j=0;color(p*4+j)!=c;j++);mask=128>>(i&7);if(j&1)effect_encoded[(i>>3)*2]|=mask;if(j&2)effect_encoded[(i>>3)*2+1]|=mask;}
  encoded:if(!store(2816+(uint16_t)tile*16,effect_encoded,16,1))return 0;
- a=p;return store(1536+key,&tile,1,1)&&store(2112+key,&a,1,1);
+ /* Geometry occupies bits 0..9; retain the palette beside its cell key.
+  * The composed patterns and the source maps keep separate lifetimes. */
+ effect_keys[tile]=key|((uint16_t)p<<10);return 1;
 }
-uint8_t ff3_effect_freeze(void) BANKED {uint8_t bank,i;uint16_t at,size,j;effect_freeze_error=0;if(effect_signed)return 1;
+static uint8_t prepare_map(void){uint8_t bank,i,j,first,last,block;uint16_t at,size,key;uint8_t *prior=(uint8_t*)effect_pixels;
+ memset(map_dirty,0,sizeof(map_dirty));effect_map_saved=effect_map_written=0;
+ /* Composition no longer needs pixels/membership scratch. Compare the live
+  * source page plus its overlay against the real destination in 128B slices.
+  * No full map work copy, full-page backup, or guessed restoration. */
+ for(bank=0;bank<2;bank++)for(at=0;at<576;at+=128){
+  size=576-at;if(size>128)size=128;
+  read_vram(bank,(old_page?0x9c00:0x9800)+at,text_staging,size);
+  read_vram(bank,(new_page?0x9c00:0x9800)+at,prior,size);
+  if(bank)for(i=0;i<size;i++)if((text_staging[i]&7)>=4){effect_freeze_error=8;return 0;}
+  for(i=0;i<cells;i++){key=effect_keys[i]&1023;if(key>=at&&key<at+size)text_staging[key-at]=bank?effect_keys[i]>>10:i;}
+  /* A VBlank handoff costs more than copying a short unchanged gap. Merge
+   * the changed blocks inside this bounded slice; save those gaps too so
+   * restoration still returns the exact inactive bytes. */
+  first=255;last=0;for(i=0;i<size;i+=16)if(memcmp(prior+i,text_staging+i,16)){if(first==255)first=i;last=i+16;}
+  if(first==255)continue;
+  for(i=first;i<last;i+=16){block=bank*36+(at+i)/16;map_dirty[block>>3]|=1<<(block&7);}
+  j=last-first;if(!store((uint16_t)bank*576+at+first,prior+first,j,1))return 0;
+  effect_map_saved+=j;ff3_text_copy(bank,(new_page?0x9c00:0x9800)+at+first,text_staging+first,j);effect_map_written+=j;ff3_native_service();
+ }
+ return 1;
+}
+static uint8_t restore_map(void){uint8_t bank,i,first,block;uint16_t size;
+ for(bank=0;bank<2;bank++)for(i=0;i<36;){block=bank*36+i;if(!(map_dirty[block>>3]&(1<<(block&7)))){i++;continue;}first=i;
+  do{i++;block=bank*36+i;}while(i<36&&i-first<8&&(map_dirty[block>>3]&(1<<(block&7))));size=(uint16_t)(i-first)*16;
+  if(!store((uint16_t)bank*576+(uint16_t)first*16,text_staging,size,0))return 0;
+  ff3_text_copy(bank,(new_page?0x9c00:0x9800)+(uint16_t)first*16,text_staging,size);effect_map_written+=size;ff3_native_service();
+ }
+ return 1;
+}
+uint8_t ff3_effect_freeze(void) BANKED {uint8_t i;uint16_t at,size;effect_freeze_error=0;if(effect_signed)return 1;
  effect_freeze_stage=1;
  old_page=resident_page;new_page=old_page^1;if(resident_scroll){effect_freeze_error=5;return 0;}
  ff3_native_service();if(!store(1152,animation_base,160,1))return 0;ff3_native_service();
@@ -180,23 +216,20 @@ uint8_t ff3_effect_freeze(void) BANKED {uint8_t bank,i;uint16_t at,size,j;effect
  /* OBJ color zero is transparent, not its stored RGB value. The borrowed
   * BG palette must encode the field's actual transparent backdrop. */
  for(i=0;i<3;i++){effect_palettes[32+i*8]=effect_palettes[0];effect_palettes[33+i*8]=effect_palettes[1];}
- effect_freeze_stage=3;
- /* Save the actual inactive map, not a guessed copy of the active map. */
- for(bank=0;bank<2;bank++)for(at=0;at<576;at+=256){size=576-at;if(size>256)size=256;read_vram(bank,(new_page?0x9c00:0x9800)+at,text_staging,size);if(!store((uint16_t)bank*576+at,text_staging,size,1))return 0;read_vram(bank,(old_page?0x9c00:0x9800)+at,text_staging,size);if(bank)for(j=0;j<size;j++){if(!(j&31))ff3_native_service();if((text_staging[j]&7)>=4){effect_freeze_error=8;return 0;}}if(!store(1536+(uint16_t)bank*576+at,text_staging,size,1))return 0;}
  effect_freeze_stage=4;for(i=0;i<cells;i++){if(!compose(effect_keys[i],i))return 0;ff3_native_service();}effect_freeze_stage=5;
  /* At most eight retained original objects beside 32 damage glyphs. The
  * two lower party feet remain OBJ so all live UI rows stay independently writable. */
  retained=0;for(i=8;i<40;i++)if((i>=32||keep(animation_base+i*4))&&animation_base[i*4]){if(retained==8){effect_freeze_error=6;return 0;}memmove(animation_base+retained*4,animation_base+i*4,4);retained++;}
  memmove(animation_base+128,animation_base,retained*4);memset(animation_base,0,128);memset(animation_base+128+retained*4,0,(8-retained)*4);
- effect_freeze_stage=6;mirror(1,0x8000,0x9000,2048);mirror(0,0x8700,0x9700,256);effect_freeze_stage=7;
+ effect_freeze_stage=6;if(!ff3_resident_effect_copy(0x9000,2048)){effect_freeze_error=9;return 0;}mirror(0,0x8700,0x9700,256);effect_freeze_stage=7;
  for(at=0;at<(uint16_t)cells*16;at+=128){size=(uint16_t)cells*16-at;if(size>128)size=128;if(!store(2816+at,text_staging,size,0))return 0;ff3_text_copy(0,0x9000+at,text_staging,size);ff3_native_service();}
  memcpy(text_staging,effect_palettes+32,32);ff3_text_palette_range(1,4,4,text_staging);
- for(bank=0;bank<2;bank++)for(at=0;at<576;at+=256){size=576-at;if(size>256)size=256;if(!store(1536+(uint16_t)bank*576+at,text_staging,size,0))return 0;ff3_text_copy(bank,(new_page?0x9c00:0x9800)+at,text_staging,size);ff3_native_service();}
+ effect_freeze_stage=3;if(!prepare_map())return 0;
  resident_page=new_page;effect_signed=1;effect_freeze_stage=8;return 1;
 }
-uint8_t ff3_effect_release(void) BANKED {uint8_t bank,page;uint16_t at,size;if(!effect_signed)return 0;
+uint8_t ff3_effect_release(void) BANKED {uint8_t page;if(!effect_signed)return 0;
  if(!store(1152,animation_base,160,0))return 0;page=party_page^1;if(page)memcpy(party_oam1,animation_base,160);else memcpy(party_oam0,animation_base,160);
  resident_page=old_page;effect_signed=0;next_page=page;party_pending=1;while(party_pending){ff3_native_service();__asm halt __endasm;}
- for(bank=0;bank<2;bank++)for(at=0;at<576;at+=256){size=576-at;if(size>256)size=256;if(!store((uint16_t)bank*576+at,text_staging,size,0))return 0;ff3_text_copy(bank,(new_page?0x9c00:0x9800)+at,text_staging,size);ff3_native_service();}
+ if(!restore_map())return 0;
  if(!store(1312,text_staging,32,0))return 0;ff3_text_palette_range(1,4,4,text_staging);return 1;
 }

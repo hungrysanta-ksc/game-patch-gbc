@@ -6,6 +6,7 @@
 #include "battle-animation-video.h"
 #include "battle-party-oam.h"
 #include "battle-effect-freeze.h"
+#include "battle-resident-bg.h"
 #include "battle-workspace.h"
 #include "text-vblank.h"
 #include "memory.h"
@@ -30,8 +31,8 @@ void ff3_native_service(void) NONBANKED;
 #define base (battle_workspace.map+576)
 #define glyph (battle_workspace.map+608)
 #define pairs (battle_workspace.map+608)
-/* WRAM 3 belongs to freeze/release; WRAM 4 [0,1152) holds borrowed VRAM 1,
- * [1152,1408) holds the temporary retained-OBJ pairs in VRAM 0.
+/* WRAM 3 belongs to freeze/release; WRAM 4 [1152,1408) holds temporary
+ * retained-OBJ pairs in VRAM 0. VRAM 1's borrowed prefix has a ROM owner.
  * No mapped pointers escape ff3_wram_copy, and no other action owner runs. */
 #define read_vram ff3_effect_read
 static uint8_t reverse_bits(uint8_t v){v=((v&85)<<1)|((v>>1)&85);v=((v&51)<<2)|((v>>2)&51);return(v<<4)|(v>>4);}
@@ -42,7 +43,6 @@ static uint8_t borrow(void){uint16_t at;uint8_t i,ok,*q;
  for(i=0;i<8;i++){ok=0;while(!ok){while(STAT_REG&3);CRITICAL{if(!(STAT_REG&3)){OCPS_REG=24+i;old_palette[i]=OCPD_REG;ok=1;}}}}
  if(!ff3_effect_freeze())return 0;
  /* The signed BG clone now protects background pixels during OBJ borrowing. */
- for(at=0;at<pool_bytes;at+=128){uint16_t size=pool_bytes-at;if(size>128)size=128;read_vram(1,0x8000+at,text_staging,size);if(!ff3_wram_copy(4,at,text_staging,size,1))return 0;ff3_native_service();}
  for(at=0;at<256;at+=128){read_vram(0,0x84a0+at,text_staging,128);if(!ff3_wram_copy(4,1152+at,text_staging,128,1))return 0;}
  retained=0;memset(base,0,32);
  for(i=32;i<40;i++){q=animation_base+i*4;if(!q[0])continue;
@@ -53,7 +53,7 @@ static uint8_t borrow(void){uint16_t at;uint8_t i,ok,*q;
  ff3_text_rom_copy(1,0x8000,bank,patterns,pool_bytes);
  return 1;
 }
-static uint8_t release(void){uint16_t at;for(at=0;at<pool_bytes;at+=128){uint16_t size=pool_bytes-at;if(size>128)size=128;if(!ff3_wram_copy(4,at,text_staging,size,0))return 0;ff3_text_copy(1,0x8000+at,text_staging,size);ff3_native_service();}
+static uint8_t release(void){uint16_t at;if(!ff3_resident_effect_copy(0x8000,pool_bytes))return 0;
  magic_tall=0;memcpy(text_staging,old_palette,8);ff3_text_palette_range(0,3,1,text_staging);if(!ff3_effect_release())return 0;
  for(at=0;at<256;at+=128){if(!ff3_wram_copy(4,1152+at,text_staging,128,0))return 0;ff3_text_copy(0,0x84a0+at,text_staging,128);}
  return 1;

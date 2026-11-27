@@ -35,6 +35,21 @@ void ff3_resident_load(uint8_t profile) NONBANKED {uint8_t saved=CURRENT_BANK,ba
  cached[0]=cached[1]=255;resident_page=0;resident_fixed=0;
 }
 void ff3_resident_fix(void) NONBANKED {resident_fixed=1;cached[0]=cached[1]=255;}
+#ifdef FF3_EFFECTS
+#if defined(FF3_STONE) || defined(FF3_BOSS)
+#error Mutable enemy patterns require a new effect resource ownership contract
+#endif
+/* The effects build reserves tiles 0..127 for immutable resident graphics.
+ * Terrain begins at/above 128; boss/stone writers are excluded by the build.
+ * Magic borrows this prefix only while the signed clone is visible, and must
+ * restore it before releasing ownership. Use the canonical ROM, not a second
+ * VRAM->WRAM archive of the same data. Original B589/B175 keep BG resident. */
+uint8_t ff3_resident_effect_copy(uint16_t address,uint16_t count) NONBANKED {
+ const ResidentBgAsset*a=resident_bg_assets+active_profile;
+ if(!resident_fixed||(address!=0x8000&&address!=0x9000)||!count||(count&15)||count>2048||a->bytes<2048)return 0;
+ ff3_text_rom_copy(1,address,a->bank,a->patterns,count);return 1;
+}
+#endif
 #ifdef FF3_STONE
 void ff3_terrain_base_cell(uint8_t x,uint8_t y,uint8_t*out) NONBANKED;
 void ff3_terrain_base_row(uint8_t page,uint8_t row,uint8_t*out) NONBANKED;
