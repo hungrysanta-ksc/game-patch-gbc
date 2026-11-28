@@ -3,15 +3,51 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "src/battle-dense-oam.c",
+      "bytes": 5296,
+      "sha256": "345120a84abeb11e00c176a20ba1de6658b296fb12f4426c2c0eb40becd3d24a",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "src/battle-dense-oam.h",
+      "bytes": 386,
+      "sha256": "74c6666df20123f606110f2f5ce55513628ad18f9d839947ea839d9137e1b267",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/battle-dense-oam-audit.mjs",
+      "bytes": 1711,
+      "sha256": "a6d3523e2da68b3f1aabcfc797d7acdb31b7e15d81687c689d130f0e07869dd9",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/verify-stone-dense.mjs",
+      "bytes": 12983,
+      "sha256": "a6be9552bb96578c3a8acc79e932478255d3340e557db4e10d4096082f102283",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/battle-dense-oam.test.mjs",
+      "bytes": 921,
+      "sha256": "1209f3c7af724832f8c278cd72d5dd3c048c70508a1a970e48f0c8410d49a6f7",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/battle-stone-dense.md",
+      "bytes": 9203,
+      "sha256": "b62f3ce6f513eac5f9a357ac05944a798683c2fe944ad7fbcef880ca2606c26d",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "src/battle-live-stone.c",
-      "bytes": 4695,
-      "sha256": "53d183b0d2d9306f0904ee8f45a3463ad256fe7f92083b7049bf1df1a5cf0a13",
+      "bytes": 7772,
+      "sha256": "df782a5e4a4cac806345bd65ee6084b583af9a05478408533ac9bb5a969ee388",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-live-stone.h",
-      "bytes": 447,
-      "sha256": "5a20ab375a37f6558878b30b81f51e5a0a725bae70a96a4809ce1e50de010c41",
+      "bytes": 493,
+      "sha256": "8571353e85f22775c87762176453159de445901ad3c73261688fec4e22204ee4",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -64,14 +100,14 @@
     },
     {
       "path": "src/battle-cell-pool.c",
-      "bytes": 3532,
-      "sha256": "920e57f9cc6e4b7093d172bdc9c78859995209beb9c710b986942bb333884952",
+      "bytes": 3941,
+      "sha256": "c9baca50e88e17996f8f88da529195f8b2ffb6ef2159abc0fc0a11c0319bad77",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "src/battle-cell-pool.h",
-      "bytes": 1933,
-      "sha256": "2b268dbbe65b50181d1856a834d02190b619dafb884e1276e4fdeb07fda2585a",
+      "bytes": 1993,
+      "sha256": "9357b599774324a72a1b23c199954cab1ab7d154a034646a22b7011af2e56e15",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -172,8 +208,8 @@
     },
     {
       "path": "src/battle-live-party.c",
-      "bytes": 5237,
-      "sha256": "03aa4fe217ecafefd711a59b2e87cd533997630069464439e5f662f27ec77c3c",
+      "bytes": 5112,
+      "sha256": "76123731aef9cd3e7caeb380a33d735b1cdd26c6182d811c585f284595b1529a",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -292,8 +328,8 @@
     },
     {
       "path": "tools/scene-link-layout.mjs",
-      "bytes": 4304,
-      "sha256": "c6775a4858200f82f7564bda29e9aee10fdce5b354b29246c4114fc5e17bd022",
+      "bytes": 4323,
+      "sha256": "9b912030781aa76f39f4d5199ba776017f6299c10cbc7b022fc9646b06caaa94",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -370,8 +406,8 @@
     },
     {
       "path": "src/battle-hit-video.c",
-      "bytes": 6784,
-      "sha256": "eda74005dcda411aa2d6408071115ec5f428b29a3601f6f57b6e9439b8c01994",
+      "bytes": 6816,
+      "sha256": "da3266bb92c8b4d6cbd1c534f4ea13fc1188a39b6b2ae7c4c99fee1bc1966d09",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -916,8 +952,8 @@
     },
     {
       "path": "src/battle-terrain.c",
-      "bytes": 5494,
-      "sha256": "39fa27f3be7a583e73588f95b8b81168b205bca420edb39babf8f2f093457236",
+      "bytes": 5633,
+      "sha256": "aaee62022222ed2bb2446358c1b94e722cb69324df5fed98bda7985588b850ba",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -1006,8 +1042,8 @@
     },
     {
       "path": "src/battle-party-video.c",
-      "bytes": 13453,
-      "sha256": "006e7ecff92854cc0979eecb0f9766472339ae0647458d60141208350804ca6b",
+      "bytes": 13592,
+      "sha256": "bcd4e30a3f5334c9b8bc955c9f3a7aa623510cd58b3b541238324ee4efda5dbe",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2686,14 +2722,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 14983,
-      "sha256": "03c1f5ba95a183d96c77db25e013bb3e4fe6122bdaad8223484c26fb99e0f9a8",
+      "bytes": 15078,
+      "sha256": "a4174c6e379028eab7409d97807212d00d186c670fd643a1371947c45afd92f5",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 102279,
-      "sha256": "0d2ca3bd6c3b3b61df1b3c013bbdeed6ab43f53a7cf54e6c55d3ae268e195bcf",
+      "bytes": 102513,
+      "sha256": "c7180a7ba86016be76f2007214b16174b89fe43e72e31e0f7806ad3a8daed3fa",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2704,8 +2740,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 60455,
-      "sha256": "d93d0b4abf69229cdd394da86716a86a1ee3ed83b29ce696ab1d96b8b1f448a0",
+      "bytes": 60904,
+      "sha256": "769bee253ac99b2033afbbbc4836268dcca5c7d1580338fcf5213c1783d99a18",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3526,8 +3562,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 24443,
-      "sha256": "9e968edf3bc976815a8fad284a930f6db52bac6ed41e3888dec17089a5ee9302",
+      "bytes": 24624,
+      "sha256": "ad56746ced76fa6f5f3ad8cc22aed9abe3a54214c746ffed3f76f98a26fc5521",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3928,8 +3964,8 @@
     },
     {
       "path": "src/battle-animation-video.c",
-      "bytes": 7956,
-      "sha256": "67399a69f28e05d6cdecf335ca5f028ea737f98e4e3d3896913df2c63095ddb5",
+      "bytes": 8830,
+      "sha256": "b91a5f4f412c1357f29ae374f2205620a12414c3980c258fc5cb7b5f8581a3c7",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3940,8 +3976,8 @@
     },
     {
       "path": "src/battle-effect-freeze.c",
-      "bytes": 22611,
-      "sha256": "58a15dc41b94de76f1eb6db939025d6f404a7c2ded75bf6c2fde7e50c4b6fbcc",
+      "bytes": 22970,
+      "sha256": "30dd24781dca70edccb9064fc9d3f573c26cb1b3432b3100ad526d6f096ca8c2",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4156,8 +4192,8 @@
     },
     {
       "path": "tools/battle-freeze-membership-audit.mjs",
-      "bytes": 8074,
-      "sha256": "05efc5ba639c15415a0b893f0a558cb8ac4d3cd0dbaca38d93f369731b311034",
+      "bytes": 8093,
+      "sha256": "730c87b1efaf8785cd4ff86f925a8d20411fd4110a3dd0c6a76994dc88114c6e",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4204,8 +4240,8 @@
     },
     {
       "path": "tools/scene-resource-contract.mjs",
-      "bytes": 13848,
-      "sha256": "3d9152ccdcf859fae8391ec35748312548380df745abab2b76ef08026e807bb1",
+      "bytes": 14162,
+      "sha256": "f1b79644935371d2f163c1eabed4661a1d24963a86edb872944267698e4aab82",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4222,8 +4258,8 @@
     },
     {
       "path": "spec/scene-resource-sources.json",
-      "bytes": 33252,
-      "sha256": "025397744feb6496e33b2ca0c3b2db33491883da5e18417f55460b82735114fc",
+      "bytes": 34823,
+      "sha256": "963040703c9823d3c588b53c521b902e88c89494e35449f4159f42e2bd294f3c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4402,8 +4438,8 @@
     },
     {
       "path": "tools/VerifyDungeon/Program.cs",
-      "bytes": 15400,
-      "sha256": "3c3d7ced020b2379d14cc07ead119ef86c3da12ffdd2675bbf6c4d05c7bb3182",
+      "bytes": 19365,
+      "sha256": "4d3bce418be9d6d53c3ada783ed7f81928be90905b7d3bf59327160c837b439f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4564,8 +4600,8 @@
     },
     {
       "path": "src/battle-death-video.c",
-      "bytes": 8679,
-      "sha256": "1c2ed5d9f9d089b233ca02a883b5987a523b9e845e382560a71c570ae6e52258",
+      "bytes": 8723,
+      "sha256": "c71e37f77a0f97b34d7aaaa6c242149e9b528666bdd9e0c0bf1cd9b57e52a3bc",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

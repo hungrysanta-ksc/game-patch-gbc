@@ -91,7 +91,7 @@ uint8_t ff3_enemy_build(uint8_t page,uint8_t flash,const Ff3Death*d,uint8_t mask
   for(j=0;j<16;j++)if(residual[j*4]==32+cell[1]*8&&residual[j*4+1]==8+cell[0]*8){id=pattern(b,residual[j*4+2]);if(id)residual[j*4+2]=id;else residual[j*4]=0;break;}
   if(death_video_error)return 0;ff3_native_service();
  }
- if(!ff3_live_stone_map(map)){death_video_error=8;return 0;}
+ if(!ff3_live_stone_map(map,residual,page)){death_video_error=8;return 0;}
  if(!ff3_cell_pool_finish()){death_video_error=1;return 0;}address=page?0x9c40:0x9840;
  for(at=0;at<704;at+=176){memcpy(text_staging,map+at,176);ff3_text_copy(at>=352,address+at%352,text_staging,176);ff3_native_service();}
  if(!flash&&!d){if(n>8){death_video_error=4;return 0;}if(!ff3_wram_copy(6,(uint16_t)page*64,residual,64,1)){death_video_error=5;return 0;}}
@@ -118,7 +118,7 @@ uint8_t ff3_death_video(uint8_t owner) BANKED {uint8_t page,bg,*out;
   active=0;ff3_resident_retain();party_work=0;return 1;
  }
  if(death->wait==2&&changed()){bg=resident_page^1;if(!ff3_enemy_build(bg,0,death,animation_state.mask))goto fault;
-  page=party_page^1;out=page?party_oam1:party_oam0;memcpy(out,animation_base,160);memset(out,0,32);memcpy(out+128,residual,32);resident_page=bg;ff3_terrain_prepare(bg);death_video_picture=death->frame;publish(page);
+  page=party_page^1;out=page?party_oam1:party_oam0;memcpy(out,animation_base,160);memset(out,0,32);memcpy(out+128,residual,32);resident_page=bg;ff3_live_stone_objects(out,1);ff3_terrain_prepare(bg);death_video_picture=death->frame;publish(page);
  }else {death_video_picture=death->frame;
   /* BB31 removes temporary numeral objects even before the stencil reaches
    * an enemy. Reusing the unchanged BG must not reuse those old objects. */

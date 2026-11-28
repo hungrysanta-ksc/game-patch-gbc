@@ -46,7 +46,7 @@ static uint8_t party_picture(uint8_t damaging,uint8_t covered){uint8_t i,j,*q,*d
   d[0]=q[1]?y+16:0;d[1]=x+8;d[2]=q[1];d[3]=(q[2]&3)|((q[2]&64)>>1)|((q[2]&128)>>1);
  }
 #ifdef FF3_SCENE_LAYOUT
- ff3_live_stone_objects(out+32);
+ ff3_live_stone_objects(out,1);
 #endif
  if(!ff3_action_oam_finish(out,8,24,0))return 0;publish(page);return 1;
 }
@@ -85,6 +85,7 @@ uint8_t ff3_hit_video(uint8_t owner) BANKED {uint8_t i,page,*out,body,damaging;u
    ff3_party_copy(a->bank,a->objects+(uint16_t)enemy*64,animation_source,64);
    memcpy(out,animation_source,32);memcpy(out+128,animation_source+32,32);ff3_party_copy(a->bank,a->attributes+(uint16_t)enemy*64,animation_source,64);resident_page=flash_page;}
   else{ff3_party_copy(a->bank,a->normal,animation_source,64);resident_page=old_page;}
+  ff3_live_stone_objects(out,1);
   /* The whole page must fit, including residual colors and all four actors. */
   if(!ff3_action_oam_begin(out,0,40)||!ff3_action_oam_finish(out,0,40,0)){hit_error=2;goto fault;}
   ff3_terrain_prepare(resident_page);publish(page);frame++;goto pending;

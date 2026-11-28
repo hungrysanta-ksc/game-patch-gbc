@@ -14,6 +14,8 @@
 #include "battle-live-command.h"
 #include "battle-death-video.h"
 #include "battle-live-party.h"
+#include "battle-live-stone.h"
+#include "battle-dense-oam.h"
 #endif
 Ff3Animation animation_state;
 volatile uint8_t animation_video_error,animation_video_owner;
@@ -26,8 +28,12 @@ uint8_t __at(0xd6a0) animation_base[160];
 uint8_t __at(0xd740) animation_lines[144];
 uint8_t __at(0xd7d0) animation_linework[144];
 static uint8_t active,number_active,resources,anchors[16];
-static uint8_t number_template[160],group_first[8],group_size[8];
-static int16_t group_adjust[8];
+/* Freeze composition ends before the first numeral commit. These bytes
+ * remain owned by the numeral until its 32 original waits finish. */
+uint8_t __at(0xd200) number_template[160];
+uint8_t __at(0xd2a0) group_first[8];
+uint8_t __at(0xd2a8) group_size[8];
+int16_t __at(0xd2b0) group_adjust[8];
 extern volatile uint8_t party_profile,party_page,party_pending,party_work;
 extern uint8_t next_page;
 extern uint8_t __at(0xdc00) party_oam0[160];
@@ -35,9 +41,19 @@ extern uint8_t __at(0xdd00) party_oam1[160];
 extern Ff3PartyOam party_state;
 void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANKED;
 void ff3_native_service(void) NONBANKED;
-static void lines(void){uint8_t i,j,y;memset(animation_lines,0,144);
- for(i=8;i<40;i++)if(animation_base[i*4])for(j=0;j<8;j++){y=animation_base[i*4]-16+j;if(y<144)animation_lines[y]++;}}
-static void capture(void){if(party_page)memcpy(animation_base,party_oam1,160);else memcpy(animation_base,party_oam0,160);memset(animation_base,0,32);lines();}
+static void lines(void){uint8_t i,j,y;
+#ifdef FF3_SCENE_LAYOUT
+ if(dense_state)return;
+#endif
+ memset(animation_lines,0,144);
+ for(i=0;i<40;i++)if(animation_base[i*4])for(j=0;j<8;j++){y=animation_base[i*4]-16+j;if(y<144)animation_lines[y]++;}}
+static void capture(void){uint8_t i;if(party_page)memcpy(animation_base,party_oam1,160);else memcpy(animation_base,party_oam0,160);
+ for(i=0;i<8;i++){
+#ifdef FF3_SCENE_LAYOUT
+ if(stone_live&&(animation_base[i*4+3]&16))continue;
+#endif
+ memset(animation_base+i*4,0,4);}
+ lines();}
 /* Publish all nonblank source numeral glyphs. Capacity failure is explicit,
  * before changing the visible page; dense fallback is a separate owner. */
 static uint8_t present(uint8_t commit){uint8_t i,j,target=0,count=0,page=party_page^1,*out=page?party_oam1:party_oam0,*p,x,y,t;int16_t dx,dy,left,right;uint8_t slot;
@@ -45,6 +61,11 @@ static uint8_t present(uint8_t commit){uint8_t i,j,target=0,count=0,page=party_p
   for(i=0;i<numbers.count/4;i++)if(group_size[i]){dy=(int16_t)animation_source[i*16]+group_adjust[i];if(dy<0)dy=0;if(dy>136)dy=136;y=dy;
    p=out+group_first[i]*4;for(j=0;j<group_size[i];j++,p+=4)p[0]=y+16;
    for(j=0;j<8;j++){animation_linework[y+j]+=group_size[i];if(animation_linework[y+j]>10)return 0;}
+   /* Raster-retained objects keep drawing while this source group is
+    * prepared. Yield between groups, not after all eight targets. */
+#ifdef FF3_SCENE_LAYOUT
+   if(dense_state)ff3_native_service();
+#endif
   }goto publish;
  }
  memcpy(out,animation_base,160);memcpy(animation_linework,animation_lines,144);
@@ -66,6 +87,9 @@ static uint8_t present(uint8_t commit){uint8_t i,j,target=0,count=0,page=party_p
    out[count*4]=y;out[count*4+1]=x+8;out[count*4+2]=223+t-0x56;out[count*4+3]=3;count++;
   }
   group_size[i]=count-group_first[i];
+#ifdef FF3_SCENE_LAYOUT
+  if(dense_state)ff3_native_service();
+#endif
  }
  for(i=0;i<count;i++)for(j=0;j<8;j++){y=out[i*4]-16+j;if(++animation_linework[y]>10)return 0;}
  if(!commit)return 1;
@@ -73,9 +97,16 @@ static uint8_t present(uint8_t commit){uint8_t i,j,target=0,count=0,page=party_p
  publish:
  next_page=page;party_pending=1;while(party_pending){ff3_native_service();__asm halt __endasm;}animation_video_frames++;if(animation_video_probe)animation_video_gate=1;return 1;
 }
-void ff3_animation_video_reset(void) BANKED {active=number_active=resources=0;animation_video_error=animation_video_owner=animation_video_gate=0;animation_video_frames=0;ff3_strike_reset();ff3_hit_reset();ff3_magic_reset();}
+void ff3_animation_video_reset(void) BANKED {
+#ifdef FF3_SCENE_LAYOUT
+ dense_state=dense_count=dense_error=0;
+#endif
+ active=number_active=resources=0;animation_video_error=animation_video_owner=animation_video_gate=0;animation_video_frames=0;ff3_strike_reset();ff3_hit_reset();ff3_magic_reset();}
 uint8_t ff3_animation_video(uint8_t op,uint8_t effect,uint8_t result) BANKED {(void)result;
  if(animation_video_error)return 3;
+#ifdef FF3_SCENE_LAYOUT
+ if(dense_error){animation_video_error=9;return 3;}
+#endif
  if(animation_video_gate)return 0;
  /* 13/14 own status commit before death. Never replace it by effect 22. */
  if(op!=11&&op!=12){

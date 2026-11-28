@@ -29,4 +29,5 @@ uint8_t ff3_cell_paint(uint8_t*glyph,const uint8_t*source,const uint8_t*mask) BA
 uint8_t ff3_cell_mask_local(uint8_t*glyph,const uint8_t*erase);
 uint8_t ff3_cell_paint_local(uint8_t*glyph,const uint8_t*source,const uint8_t*mask);
 uint8_t ff3_cell_pool_tile_local(const uint8_t*glyph);
+uint8_t ff3_cell_pool_read_local(uint8_t id,uint8_t*glyph);
 #endif

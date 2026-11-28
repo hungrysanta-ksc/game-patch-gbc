@@ -31,7 +31,6 @@ extern volatile uint8_t party_error;
 uint8_t ff3_live_party_refresh(const uint8_t*status) BANKED {
  uint8_t i,error,work[8];
  if(!live_party_ready||status_stage!=2||status_tail.phase!=FF3_TAIL_DONE||effect_signed)return 0;
- for(i=0;i<4;i++)if((status[i*2]&200)==72){live_party_error=2;return 0;}
  /* 9E80 copies normalized status, B5B8 retains graphic-kind and position
   * caches. The source refresh never replays entry or recounts enemies. */
  for(i=0;i<4;i++){status_tail.motion.status[i]=status[i*2];status_tail.status2[i]=status[i*2+1];}
@@ -57,12 +56,11 @@ uint8_t ff3_live_party_prepare(void) BANKED {
  uint8_t i,j,s,flags,icon,variant,job,*c,*e;uint16_t cur,max;
  live_party_ready=live_party_error=0;
  /* B72B tests (status & C0) == 40: death wins over simultaneous stone.
-  * Forward-confused stone still requires the mixed enemy-cell owner.
+  * Forward-confused stone uses the same page-owned mixed cell pool.
   * Validate the whole party before mutating canonical derived stats. */
  for(i=0;i<4;i++){
   c=ff3_game_state+256+(uint16_t)i*64;e=ff3_game_state+512+(uint16_t)i*64;
   if(c[0]>=22){live_party_error=1;return 0;}
-  if((c[2]&208)==80){live_party_error=2;return 0;}
   for(j=0;j<3;j++)if(e[j]>=0x98){live_party_error=3;return 0;}
   if(e[3]>=0x62||e[5]>=0x62){live_party_error=3;return 0;}
  }
