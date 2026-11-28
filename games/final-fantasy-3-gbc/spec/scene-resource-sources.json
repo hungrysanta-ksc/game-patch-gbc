@@ -110,7 +110,7 @@
     },
     {
       "path": "src/battle-cell-pool-test.c",
-      "sha256": "16315420a9cffa310db56d4d5c196c70aa4e699e98f79897312115ae9ef2949b",
+      "sha256": "c34ea4d4006dfdca7389ab98998a3956ac042517fc4eb946181c88c0c2f0284b",
       "sites": [
         {
           "line": 14,
@@ -118,20 +118,20 @@
         },
         {
           "line": 28,
-          "text": "void main(void){uint8_t i,j,r,n,unique,id;const uint8_t*p,*start;cpu_fast();SVBK_REG=1;ff3_memory_init();state_ready=0xa5;while(!state_start)wait_vbl_done();"
+          "text": "void main(void){uint8_t i,j,r,n,unique,id,old,v,owned;const uint8_t*p,*start;cpu_fast();SVBK_REG=1;ff3_memory_init();state_ready=0xa5;while(!state_start)wait_vbl_done();"
         }
       ]
     },
     {
       "path": "src/battle-cell-pool.c",
-      "sha256": "f361ce36052547fa665d3d2b6d35634e98dbfbed1b68307e3c9bdc52a10e1bb9",
+      "sha256": "920e57f9cc6e4b7093d172bdc9c78859995209beb9c710b986942bb333884952",
       "sites": [
         {
-          "line": 39,
+          "line": 47,
           "text": "if(!ff3_wram_copy(6,FF3_CELL_POOL_STORAGE+(uint16_t)i*16,comparison,16,0)){cell_pool_error=3;return 0;}"
         },
         {
-          "line": 44,
+          "line": 52,
           "text": "if(limit&128){if(!ff3_wram_copy(6,FF3_CELL_POOL_STORAGE+(uint16_t)used*16,(void*)g,16,1)){cell_pool_error=3;return 0;}signatures[used]=sig;}"
         }
       ]

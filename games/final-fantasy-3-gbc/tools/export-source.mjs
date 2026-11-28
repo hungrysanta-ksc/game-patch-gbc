@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'tools/battle-stone-surface.mjs','tests/battle-stone-surface.test.mjs','docs/battle-stone-surface.md',
  'tools/battle-cell-call-profile.mjs','docs/battle-cell-call-cost.md',
  'src/battle-cell-pool.c','src/battle-cell-pool.h','src/battle-cell-pool-test.c','tools/build-battle-cell-pool.mjs','tools/battle-cell-pool-source.mjs','docs/battle-current-cell-pool.md',
  'tools/battle-stone-contract.mjs','tools/audit-stone-ownership.mjs','tests/battle-stone-contract.test.mjs','docs/battle-stone-ownership.md',

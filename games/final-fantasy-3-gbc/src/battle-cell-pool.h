@@ -19,9 +19,14 @@ uint8_t ff3_cell_pool_tile(const uint8_t*glyph) BANKED;
 uint8_t ff3_cell_pool_finish(void) BANKED;
 /* 0: unchanged; 1: became blank; 2: partial new glyph. */
 uint8_t ff3_cell_mask(uint8_t*glyph,const uint8_t*erase) BANKED;
+/* Same-palette replacement, including selected zero-color pixels. The
+ * caller owns palette compatibility, source footprint and page lifetime.
+ * Returns the same unchanged/blank/partial classification as mask(). */
+uint8_t ff3_cell_paint(uint8_t*glyph,const uint8_t*source,const uint8_t*mask) BANKED;
 /* Private hot path: caller MUST reside in bank 124. Ordinary CALL, not
  * NONBANKED (which would consume fixed ROM). Build checks linked banks.
  * Other banks, including the native probe, use the BANKED wrappers above. */
 uint8_t ff3_cell_mask_local(uint8_t*glyph,const uint8_t*erase);
+uint8_t ff3_cell_paint_local(uint8_t*glyph,const uint8_t*source,const uint8_t*mask);
 uint8_t ff3_cell_pool_tile_local(const uint8_t*glyph);
 #endif

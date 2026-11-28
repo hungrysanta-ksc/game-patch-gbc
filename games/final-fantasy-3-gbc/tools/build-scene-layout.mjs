@@ -5,6 +5,7 @@ import {checkEncounterAssets} from './field-encounter-source.mjs';
 import {livePartyAssets} from './live-party-source.mjs';
 import {liveCommandAssets} from './live-command-assets.mjs';
 import {liveUiAssets} from './battle-live-ui.mjs';
+import {stoneSurfaces,stoneSurfaceContract} from './battle-stone-surface.mjs';
 import {dungeonEntry} from './dungeon-source.mjs';
 import {makeMapAssets} from './map-assets.mjs';
 import {explorationAssets} from './exploration-assets.mjs';
@@ -46,6 +47,15 @@ generated.push(...await liveCommandAssets(data,gen,JSON.parse(await fs.readFile(
 // Bind current reviewed strings, rather than inheriting the older standalone
 // diagnostic's small message dictionary. Source IDs remain runtime inputs.
 const ui=await liveUiAssets(data,local.text),uiArrays={boxes:ui.boxes,glyphs:ui.glyphs,hp_glyphs:ui.hpGlyphs,advances:ui.advances,seed:ui.seed,rect:ui.rect,palette:ui.palette,message_index:ui.message_index,message_words:ui.message_words,message_types:ui.message_types};
+// This gate verifies the actual generated UI, not a historical palette ID.
+// It does not remove the live party's pure-stone unsupported-consumer guard.
+const stoneSurface=stoneSurfaceContract(stoneSurfaces(data),ui);
+for(const p of JSON.parse(await fs.readFile(out+'/encounter-resources.json')).profiles){
+ const source=await fs.readFile(gen+'/encounter'+p.profile+'.c','utf8');
+ const palette=Buffer.from(source.match(new RegExp('encounter_palette'+p.profile+'\\[\\]=\\{([0-9,]+)\\}'))[1].split(',').map(Number));
+ check(palette.subarray(24,32).equals(ui.palette),'Actual encounter stone/UI palette '+p.profile);
+}
+await fs.writeFile(out+'/stone-surface.json',JSON.stringify({...stoneSurface,nativePureStoneSupported:false},null,2));
 await fs.writeFile(gen+'/live-ui.c','#pragma bank 43\n#include <stdint.h>\n'+Object.entries(uiArrays).map(([k,b])=>'const uint8_t live_ui_'+k+'[]={'+[...b]+'};').join('\n'));generated.push(gen+'/live-ui.c');
 await fs.writeFile(gen+'/live-ui-assets.h','#define LIVE_UI_GLYPHS '+ui.glyphCount+'\n#define LIVE_MESSAGE_DIGIT 1\n#define LIVE_MESSAGE_SLASH 11\n#define LIVE_MESSAGE_COUNT '+ui.messageCount+'\n'+Object.keys(uiArrays).map(k=>'extern const uint8_t live_ui_'+k+'[];').join('\n'));
 for(const name of [...[1,2,3,4,5,6,8].map(i=>'audio-bank'+i),'strike53',...Array.from({length:4},(_,i)=>['party','resident','terrain','hit'].map(k=>k+i)).flat(),...mr.banks.map((_,i)=>'magic'+i)])generated.push(battle+'/generated/'+name+'.c');
@@ -70,7 +80,7 @@ for(const [bank,data]of relocated.banks)check(bytes.subarray(bank*16384,(bank+1)
 checkEncounterAssets(bytes,s,data);
 // Direct cell calls are safe only while their display owner and kernels
 // share the selected code bank. Never silently relocate just one side.
-for(const name of ['ff3_enemy_build','ff3_cell_mask_local','ff3_cell_pool_tile_local'])check((s['_'+name]>>>16)===124,'Same-bank cell kernel '+name);
+for(const name of ['ff3_enemy_build','ff3_cell_mask_local','ff3_cell_paint_local','ff3_cell_pool_tile_local'])check((s['_'+name]>>>16)===124,'Same-bank cell kernel '+name);
 for(const [name,address]of Object.entries(s))if(/^_encounter_patterns\d+$/.test(name))check((address&15)===0,'DMA-aligned encounter patterns '+name);
 // Every generated battle/audio array remains intact at its linked symbol.
 let arrays=0;for(const file of generated.filter(p=>!p.startsWith(gen+'/field-'))){const source=await fs.readFile(file,'utf8');for(const m of source.matchAll(/const uint8_t (\w+)\[\]=\{([0-9,]*)\}/g)){const data=Buffer.from(m[2].split(',').filter(Boolean).map(Number)),at=s['_'+m[1]],offset=(at>>>16)*16384+(at&0x3fff);check(Number.isInteger(at)&&bytes.subarray(offset,offset+data.length).equals(data),'Linked original asset '+m[1]);arrays++;}}
