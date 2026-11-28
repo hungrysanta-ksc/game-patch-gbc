@@ -90,7 +90,7 @@ if(openingMode){
  const rows=scene.battle.opening;check(rows.every(r=>r.requests.length<=64),'Opening request slots');
  for(const [key,name]of [['kind','opening_kinds'],['value','opening_values']])await fs.appendFile(gen+'/scene-assets.c','const uint8_t '+name+'[]={'+rows.flatMap(r=>Array.from({length:64},(_,i)=>r.requests[i]?.[key]??255))+'};\n');
  await fs.writeFile(gen+'/opening-seeds.c','#pragma bank 16\n#include <stdint.h>\nconst uint8_t opening_seeds[]={'+[...Buffer.concat(rows.map(r=>Buffer.from(r.state,'hex')))]+'};\n');
- inputs.push(gen+'/opening-seeds.c',...['battle-party','battle-context','battle-opening'].map(n=>ROOT+'/src/'+n+'.c'));
+ inputs.push(gen+'/opening-seeds.c',...['battle-party','battle-context','battle-ailment','battle-opening'].map(n=>ROOT+'/src/'+n+'.c'));
 }
 if(selectionMode)inputs.push(ROOT+'/src/battle-select.c');if(partyMode)inputs.push(ROOT+'/src/battle-party.c',ROOT+'/src/inventory.c');
 if(partyMode){const {rowPositions}=await import('./battle-row-source.mjs');await fs.writeFile(gen+'/row-properties.c','#pragma bank 15\n#include <stdint.h>\nconst uint8_t row_positions[]={'+[...rowPositions(data).bytes]+'};\n');inputs.push(gen+'/row-properties.c',ROOT+'/src/battle-row.c');}

@@ -4,6 +4,8 @@
 #pragma bank 79
 #include <string.h>
 #include "battle-live-party.h"
+#include "battle-ailment.h"
+#include "battle-context.h"
 #include "battle-encounter.h"
 #include "scene-loop.h"
 #include "battle-equipment.h"
@@ -53,7 +55,7 @@ uint8_t ff3_live_party_refresh(const uint8_t*status) BANKED {
 }
 #define record battle_workspace.map
 uint8_t ff3_live_party_prepare(void) BANKED {
- uint8_t i,j,s,flags,icon,variant,job,*c,*e;uint16_t cur,max;
+ uint8_t i,j,s,variant,job,*c,*e;uint16_t cur,max;Ff3StatusView view;
  live_party_ready=live_party_error=0;
  /* B72B tests (status & C0) == 40: death wins over simultaneous stone.
   * Forward-confused stone uses the same page-owned mixed cell pool.
@@ -66,15 +68,13 @@ uint8_t ff3_live_party_prepare(void) BANKED {
  }
  for(i=0;i<4;i++){
   c=ff3_game_state+256+(uint16_t)i*64;e=ff3_game_state+512+(uint16_t)i*64;job=c[0];
-  memset(record,0,64);record[0]=c[1];record[1]=c[2];memcpy(record+3,c+12,4);record[15]=c[16];
-  for(j=0;j<8;j++)record[7+j]=c[48+j*2];
+  ff3_ailment_enter(record,c);
   ff3_party_copy(78,live_party_modifiers+(uint16_t)job*5,record+40,5);record[53]=record[44];record[44]=i;
   cur=c[12]|((uint16_t)c[13]<<8);max=c[14]|((uint16_t)c[15]<<8);
   if(!(record[1]&128)){if(cur<=(max>>2))record[1]|=1;else record[1]&=254;}
-  s=record[1];party_motion.status[i]=(s&192)|((s&63)>>3);status_tail.status2[i]=(s&7)<<5;
-  flags=((s&7)|((s&16)>>1))<<1;icon=255;
-  if(!(s&192)&&flags){icon=0;while(!(flags&128)){flags<<=1;icon++;}}
-  status_state.status[i]=icon;status_state.targets[i]=0;
+  memcpy(view.raw,record+1,2);ff3_status_view(&view);
+  party_motion.status[i]=view.normalized[0];status_tail.status2[i]=view.normalized[1];
+  status_state.status[i]=view.icon;status_state.targets[i]=0;
   party_motion.rows[i]=(e[15]&1)^(scene_mode==3&&encounter_type==0x88);status_tail.jobs[i]=job;
   ff3_party_copy(78,live_party_palettes+(job?4+job:i),party_state.palette+i,1);
   /* 34/88A4 toggles the battle's equipment copy, not the field save owner. */
@@ -89,8 +89,12 @@ uint8_t ff3_live_party_prepare(void) BANKED {
  ff3_live_ui_party_hp();live_party_ready=1;return 1;
 }
 void ff3_live_party_command(void) BANKED {
- uint8_t i;
+ uint8_t i,raw[2];
  for(i=0;i<4;i++){
+  /* Selection/restoration boundary: derive icons from canonical records,
+   * not stale entry icons or the lossy normalized rendering bytes. */
+  if(!ff3_wram_copy(5,(uint16_t)i*64+1,raw,2,0)){live_party_error=4;return;}
+  status_state.status[i]=ff3_status_icon(raw[0],raw[1]);
   status_state.x[i]=party_motion.x[i];status_state.y[i]=party_motion.y[i];
   if(status_state.status[i]<8){ff3_text_rom_copy(0,0x8490+(uint16_t)i*64,78,live_party_icons+(uint16_t)status_state.status[i]*64,64);ff3_native_service();}
  }

@@ -49,17 +49,6 @@ void ff3_entry_rules(FF3BattleRng *rng,Ff3Entry *s) FF3_STATE_BANKED {
  if(random(rng,a)<(b>>2)){for(i=0;i<4;i++){s->equipment_rows[i]^=1;s->battle_rows[i]^=1;}s->formation=s->first=0x88;}
  else s->formation=s->first=0x80;
 }
-/* 34/9D1D + 2F/B607,B5F2,B651. Graphics is a required asset kind, not a
- * substitute drawing. Stone uses the existing background rendering path. */
-void ff3_status_view(Ff3StatusView *s) FF3_STATE_BANKED {
- uint8_t a=s->raw[0],b=s->raw[1],n,small;
- s->normalized[0]=(a&0xc0)|((b&0xe0)>>2)|((a&0x3f)>>3);s->normalized[1]=(a&7)<<5;
- s->icon=255;if(!(a&0xc0)){n=((a&7)|((a&16)>>1))<<1;n|=b&0xe0;if(b&6)n|=1;if(n){s->icon=0;while(!(n&128)){n<<=1;s->icon++;}}}
- a=s->normalized[0];b=s->normalized[1];small=a&5;
- s->pose=(a&128)?(small?16:9):(a&64)?0:((a&0x32)||b)?(small?12:3):small?11:2;
- if((a&8)&&!(b&1))s->pose|=128;
- s->graphics=small?((a&4)?2:3):(a&128)?1:0;s->stone=(a&0xc0)==0x40;
-}
 /* 35/A487..A50A. Keep the original underflow and equality behavior: an
  * exact-zero result does not set dead here; final death processing is later. */
 void ff3_cannon_prepare(FF3BattleRng *rng,Ff3Cannon *s) FF3_STATE_BANKED {
