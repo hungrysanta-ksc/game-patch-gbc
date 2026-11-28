@@ -10,6 +10,7 @@
 #include "battle-party-video.h"
 #ifdef FF3_SCENE_LAYOUT
 #include "battle-live-command.h"
+#include "battle-defeat-video.h"
 #endif
 #include "battle-entry.h"
 #include "platform.h"
@@ -176,6 +177,9 @@ static void present(void){uint8_t i;uint16_t begin=ff3_clock_now(),elapsed;uint8
  elapsed=ff3_clock_now()-begin;if(elapsed>party_max_prepare)party_max_prepare=elapsed;party_prepared++;party_work=0;party_pending=1;
  while(party_pending){ff3_native_service();__asm halt __endasm;}
 }
+#ifdef FF3_SCENE_LAYOUT
+void ff3_party_refresh_present(void) BANKED {present();}
+#endif
 static void reset_motion(void){const PartyVideoAsset*a=party_assets+party_profile;
 #ifdef FF3_TERRAIN
  ff3_terrain_reset();
@@ -300,6 +304,7 @@ BANKED
   /* Fixed-profile action resources are not a live-party action bridge. */
   if(scene_mode==2&&(action_request||message_request||live_ui_request)){party_error=85;action_request=message_request=live_ui_request=0;}
   if(scene_mode==3&&status_stage==2&&!party_request&&!party_step&&(command_request||command_phase==2))ff3_live_command_update();
+  if(scene_mode==3&&command_phase==3&&!action_request&&!action_enabled){ff3_defeat_video();if(defeat_error)party_error=100+defeat_error;}
   /* An outstanding action/transfer completes before ownership can leave. */
   if(scene_mode&&scene_request==2&&party_video_idle()){
    if(ff3_party_video_suspend()){scene_request=0;return;}

@@ -30,3 +30,9 @@ uint8_t ff3_scene_field_restore(void) BANKED {
  if(!copy(0xd000,FF3_FIELD_DATA_BYTES,3072,0)||!copy(FF3_SCENE_ARENA,0,FF3_FIELD_DATA_BYTES,0))return 0;
  saved_field=0;scene_arena_owner=FF3_VIDEO_FIELD;return 1;
 }
+/* C058's carry branch never returns to the suspended field. The restart
+ * menu may still own the displayed battle page while it replaces VRAM. */
+uint8_t ff3_scene_field_discard(void) BANKED {
+ if(scene_arena_owner!=FF3_VIDEO_BATTLE||!saved_field||scene_arena_fault||!ff3_text_transfer_idle())return 0;
+ saved_field=0;return 1;
+}
