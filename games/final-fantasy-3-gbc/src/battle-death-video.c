@@ -7,6 +7,7 @@
 #include "battle-live-command.h"
 #include "battle-terrain.h"
 #include "battle-workspace.h"
+#include "battle-cell-pool.h"
 #include "text-vblank.h"
 #include "memory.h"
 #include "platform.h"
@@ -17,7 +18,7 @@ uint8_t resident_dead,death_video_error;
 volatile uint8_t death_video_picture;
 volatile uint16_t death_prepare_max,death_preparations;
 volatile uint32_t death_prepare_ticks;
-static uint8_t active,tile_base,tile_used,tile_batch,tile_limit;
+static uint8_t active;
 /* After command/status commit, before another animation owner. Persistent
  * removed mask is in battle DATA; settled residual OAM is WRAM6[0,128).
  * Both COW pools live above immutable patterns AND both terrain pages. */
@@ -37,13 +38,10 @@ extern uint8_t next_page;
 void ff3_native_service(void) NONBANKED;
 void ff3_party_copy(uint8_t bank,const void*src,void*dst,uint16_t n) NONBANKED;
 void ff3_resident_fix(void) NONBANKED;
-static void flush(void){if(tile_batch){ff3_text_copy(1,0x8000u+(uint16_t)(tile_base+tile_used-tile_batch)*16,text_staging,(uint16_t)tile_batch*16);tile_batch=0;ff3_native_service();}}
-static uint8_t pattern(const ResidentBgAsset*a,uint8_t id){uint8_t y,changed=0,bits=0,v;
+static uint8_t pattern(const ResidentBgAsset*a,uint8_t id){uint8_t kind;
  if(!id)return 0;ff3_party_copy(a->bank,a->patterns+(uint16_t)id*16,glyph,16);
- for(y=0;y<8;y++){v=glyph[y*2]|glyph[y*2+1];changed|=v&erase[y];glyph[y*2]&=~erase[y];glyph[y*2+1]&=~erase[y];bits|=glyph[y*2]|glyph[y*2+1];}
- if(!changed)return id;if(!bits)return 0;
- if(tile_used>=tile_limit){death_video_error=1;return 0;}
- memcpy(text_staging+(uint16_t)tile_batch*16,glyph,16);id=tile_base+tile_used++;tile_batch++;if(tile_batch==16)flush();return id;
+ kind=ff3_cell_mask(glyph,erase);if(!kind)return id;if(kind==1)return 0;
+ id=ff3_cell_pool_tile(glyph);if(cell_pool_error)death_video_error=1;return id;
 }
 /* Like the existing terrain stamp kernel: stay in fixed ROM while selecting
  * the immutable lookup bank once, rather than switching for every byte. */
@@ -72,7 +70,12 @@ uint8_t ff3_enemy_build(uint8_t page,uint8_t flash,const Ff3Death*d,uint8_t mask
  const DeathAsset*a;const ResidentBgAsset*b;const HitFlashAsset*h;uint8_t i,j,bits,id,n=0,affected;uint16_t at,address,begin=ff3_clock_now(),elapsed;
  if(party_profile<4||party_profile>=DEATH_PROFILES+4||page>1||flash>8||resident_scroll||effect_signed){death_video_error=2;return 0;}
  a=death_assets+party_profile-4;b=resident_bg_assets+party_profile;h=hit_flash_assets+party_profile;
- tile_base=a->pool+page*a->half;tile_limit=a->half;tile_used=tile_batch=0;memset(residual,0,64);affected=resident_dead|(d?mask:0);
+ affected=resident_dead|(d?mask:0);
+ /* Original dead_mask also contains absent slots. Count only owners with
+  * actual cell dots, without altering the source death/removal mask. */
+ i=affected&a->present;
+ if(!ff3_cell_pool_begin(a->pool+page*a->half,a->half,(i&(i-1))!=0)){death_video_error=1;return 0;}
+ memset(residual,0,64);
  /* Reuse the spatial base in bulk. Visit only cells owned by removed or
   * wiping slots; unrelated actors need no glyph or mask work. */
  if(flash){for(at=0;at<704;at+=176){ff3_party_copy(h->bank,h->maps+(uint16_t)(flash-1)*704+at,map+at,176);ff3_native_service();}ff3_party_copy(h->bank,h->objects+(uint16_t)(flash-1)*64,residual,64);}
@@ -87,13 +90,13 @@ uint8_t ff3_enemy_build(uint8_t page,uint8_t flash,const Ff3Death*d,uint8_t mask
   for(j=0;j<16;j++)if(residual[j*4]==32+cell[1]*8&&residual[j*4+1]==8+cell[0]*8){id=pattern(b,residual[j*4+2]);if(id)residual[j*4+2]=id;else residual[j*4]=0;break;}
   if(death_video_error)return 0;ff3_native_service();
  }
- flush();address=page?0x9c40:0x9840;
+ if(!ff3_cell_pool_finish()){death_video_error=1;return 0;}address=page?0x9c40:0x9840;
  for(at=0;at<704;at+=176){memcpy(text_staging,map+at,176);ff3_text_copy(at>=352,address+at%352,text_staging,176);ff3_native_service();}
  if(!flash&&!d){if(n>8){death_video_error=4;return 0;}if(!ff3_wram_copy(6,(uint16_t)page*64,residual,64,1)){death_video_error=5;return 0;}}
  elapsed=ff3_clock_now()-begin;death_prepare_ticks+=elapsed;if(elapsed>death_prepare_max)death_prepare_max=elapsed;death_preparations++;return 1;
 }
 void ff3_enemy_saved(uint8_t page,uint8_t*out) BANKED {if(!ff3_wram_copy(6,(uint16_t)page*64,out,64,0))death_video_error=5;}
-void ff3_death_video_reset(void) BANKED {active=resident_dead=death_video_error=0;death_video_picture=255;death_prepare_max=death_preparations=0;death_prepare_ticks=0;}
+void ff3_death_video_reset(void) BANKED {active=resident_dead=death_video_error=0;death_video_picture=255;death_prepare_max=death_preparations=0;death_prepare_ticks=0;ff3_cell_pool_reset();}
 static void publish(uint8_t page){next_page=page;party_pending=1;while(party_pending){ff3_native_service();__asm halt __endasm;}animation_video_frames++;if(animation_video_probe)animation_video_gate=1;}
 uint8_t ff3_death_video(uint8_t owner) BANKED {uint8_t page,bg,*out;
  if(owner!=10&&owner!=13)return 2;if(death_video_error)return 3;

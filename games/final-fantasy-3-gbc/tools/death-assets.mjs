@@ -10,19 +10,23 @@ export async function deathAssets(rom,gen,profiles){
   const source=await fs.readFile(gen+'/encounter'+p.profile+'.c','utf8'),pattern=Buffer.from(source.match(/encounter_patterns\d+\[\]=\{([0-9,]+)\}/)[1].split(',').map(Number));
   check(pattern.subarray(0,a.base.patterns.length).equals(a.base.patterns),'Death/entry pattern identity');
   const pool=pattern.length/16+20,half=Math.floor((256-pool)/2),capacity=deathCapacity(a,traces[+back]);
+  // Shared native cell directory: bank 6 [192,1056), 54 exact 16B glyphs.
+  // Reject a future resource profile before linking an unsupported allocator.
+  check(pool>=128&&half>0&&half<=54&&pool+half*2<=256,'Shared current-cell pool extent '+p.profile);
   check(Math.max(capacity.peak,capacity.flashBound)<=half,'Double-buffered death pool capacity '+p.profile);
   const bytes=Buffer.concat(cells.map(c=>{const b=Buffer.alloc(40);b.set([c.x,c.y,c.tile,c.attr,c.object?.tile??0,c.object?.attr??12]);c.parts.forEach((p,i)=>{b[6+i*17]=p.owner;b.set(p.sy,7+i*17);b.set(p.bits,15+i*17);});return b;}));
   const bounds=deathBounds(a);
+  const present=cells.reduce((bits,c)=>c.parts.reduce((v,p)=>v|p.owner,bits),0);
   const name='death_cells'+p.profile,size=bytes.length+bounds.length;check(size<=16384,'Death ROM bank capacity');
   if(!banks.length||banks.at(-1).bytes+size>16384)banks.push({bank:172+banks.length,bytes:0,lines:[]});
   const packed=banks.at(-1),bank=packed.bank;check(bank<256,'Death bank range');packed.bytes+=size;
   packed.lines.push('const uint8_t '+name+'[]={'+[...bytes]+'};\nconst uint8_t death_bounds'+p.profile+'[]={'+[...bounds]+'};');
-  decl.push('extern const uint8_t '+name+'[],death_bounds'+p.profile+'[];');rows.push('{'+[name,'death_bounds'+p.profile,bank,cells.length,pool,half,+back]+'}');
+  decl.push('extern const uint8_t '+name+'[],death_bounds'+p.profile+'[];');rows.push('{'+[name,'death_bounds'+p.profile,bank,cells.length,pool,half,+back,present]+'}');
   const stamps=Buffer.concat([deathStamps(false,a.glyphs),deathStamps(true,a.glyphs)]);if(common)check(common.equals(stamps),'Shared source death mask glyphs');else common=stamps;
-  proof.push({profile:p.profile,key:p.key,bank,bytes:size,pool,half,ownershipSha256:a.sha256,...capacity});
+  proof.push({profile:p.profile,key:p.key,bank,bytes:size,pool,half,present,ownershipSha256:a.sha256,...capacity});
  }
  for(const b of banks){const path=gen+'/death-bank'+b.bank+'.c';await fs.writeFile(path,'#pragma bank '+b.bank+'\n#include <stdint.h>\n'+b.lines.join('\n')+'\n');generated.push(path);}
  const path=gen+'/death-stamps.c';await fs.writeFile(path,'#pragma bank 123\n#include <stdint.h>\nconst uint8_t death_stamps[]={'+[...common]+'};\n');generated.push(path);
- await fs.writeFile(gen+'/death-assets.h','#include <stdint.h>\n#define DEATH_PROFILES '+profiles.length+'\nextern const uint8_t death_stamps[];\n'+decl.join('\n')+'\ntypedef struct {const uint8_t*cells,*bounds;uint8_t bank,count,pool,half,back;} DeathAsset;\nstatic const DeathAsset death_assets[]={'+rows.join(',')+'};\n');
+ await fs.writeFile(gen+'/death-assets.h','#include <stdint.h>\n#define DEATH_PROFILES '+profiles.length+'\nextern const uint8_t death_stamps[];\n'+decl.join('\n')+'\ntypedef struct {const uint8_t*cells,*bounds;uint8_t bank,count,pool,half,back,present;} DeathAsset;\nstatic const DeathAsset death_assets[]={'+rows.join(',')+'};\n');
  await fs.writeFile(gen+'/../death-resources.json',JSON.stringify({source:'2F/B33E,BB0A..BDB9; 33/BF1E resource 13; no timed frame assets',profiles:proof},null,2));return generated;
 }

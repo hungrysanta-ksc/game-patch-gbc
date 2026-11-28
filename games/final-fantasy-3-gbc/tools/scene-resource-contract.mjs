@@ -12,6 +12,7 @@ export const storageClaims=[
  claim('live-battle-command',5,1008,1019,['scene-layout'],'src/battle-live-command.c'),
  claim('live-death-credit',5,1020,1024,['scene-layout'],'src/battle-live-command.c'),
  claim('live-enemy-residuals',6,0,192,['scene-layout'],'src/battle-death-video.c'),
+ claim('live-cell-directory',6,192,1056,['scene-layout'],'src/battle-cell-pool.c'),
  claim('audio-snapshots',2,0,464,['common'],'src/audio-native.c'),
  claim('effect-map-backup',3,0,1152,['effects','scene-layout'],'src/battle-effect-freeze.c'),
  claim('effect-oam-backup',3,1152,1312,['effects','scene-layout'],'src/battle-effect-freeze.c'),

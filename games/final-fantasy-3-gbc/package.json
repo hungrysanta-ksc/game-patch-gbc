@@ -174,7 +174,10 @@
     "verify:dungeon-death-auto": "node tools/verify-dungeon.mjs --death-auto",
     "verify:party-defeat": "node tools/verify-party-defeat.mjs",
     "audit:stone-ownership": "node tools/audit-stone-ownership.mjs",
-    "verify:party-defeat-mixed": "node tools/verify-party-defeat.mjs --mixed"
+    "verify:party-defeat-mixed": "node tools/verify-party-defeat.mjs --mixed",
+    "build:cell-pool": "node tools/build-battle-cell-pool.mjs",
+    "verify:cell-pool": "node tools/verify-battle-select.mjs --cell-pool",
+    "verify:cell-pool-negative": "node tools/verify-battle-select.mjs --cell-pool --negative"
   },
   "engines": {
     "node": ">=20"
