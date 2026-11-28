@@ -19,4 +19,9 @@ uint8_t ff3_cell_pool_tile(const uint8_t*glyph) BANKED;
 uint8_t ff3_cell_pool_finish(void) BANKED;
 /* 0: unchanged; 1: became blank; 2: partial new glyph. */
 uint8_t ff3_cell_mask(uint8_t*glyph,const uint8_t*erase) BANKED;
+/* Private hot path: caller MUST reside in bank 124. Ordinary CALL, not
+ * NONBANKED (which would consume fixed ROM). Build checks linked banks.
+ * Other banks, including the native probe, use the BANKED wrappers above. */
+uint8_t ff3_cell_mask_local(uint8_t*glyph,const uint8_t*erase);
+uint8_t ff3_cell_pool_tile_local(const uint8_t*glyph);
 #endif

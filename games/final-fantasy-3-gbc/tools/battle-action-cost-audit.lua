@@ -6,6 +6,28 @@ do
  local previous={}
  local display={}
  local frameRecords={}
+ local costRecords={}
+ local lastTick,maxTickGap,returnTickGap=0,0,0
+ if actionClockAddress then
+  emu.addMemoryCallback(function()
+   local t=emu.getState().masterClock
+   if lastTick~=0 then
+    local gap=t-lastTick;maxTickGap=math.max(maxTickGap,gap)
+    if emu.read(actionClockPhase,mem)==4 then returnTickGap=math.max(returnTickGap,gap) end
+   end
+   lastTick=t
+  end,emu.callbackType.write,actionClockAddress,actionClockAddress,emu.cpuType.gameboy)
+ end
+ -- Long same-boot runs can evict action totals from Mesen's 500-entry log.
+ -- Retain only complete summaries, then emit at the final scene boundary.
+ if actionCostRetain then
+  emu.addEventCallback(function()
+   if emu.read(actionCostRetain,mem)>=3 then
+    emu.log('action-cost-retained:'..table.concat(costRecords,'|'))
+    if actionClockAddress then emu.log(string.format('action-clock:%d,%d,%d',maxTickGap,returnTickGap,emu.getState().clockRate)) end
+   end
+  end,emu.eventType.codeBreak)
+ end
  local oamOwner=nil
  local audioNames={'audio_packet','audio_vm','audio_output','audio_metadata','audio_control','audio_snapshot'}
  local function kind()
@@ -95,7 +117,10 @@ do
      if #stack~=0 then error('Action ended inside audio call') end
      if oamOwner then error('Action ended inside OAM preparation') end
      if actionCostBuffered then emu.log(table.concat(frameRecords,'\n'));frameRecords={} end
-     for k,n in pairs(totals) do emu.log(string.format('action-cost:%s,%d,%d,%d',k,n,t.clockRate,counts[k] or 0)) end
+     for k,n in pairs(totals) do
+      local s=string.format('action-cost:%s,%d,%d,%d',k,n,t.clockRate,counts[k] or 0)
+      if actionCostRetain then costRecords[#costRecords+1]=s else emu.log(s) end
+     end
      active=false
      for _,r in ipairs(refs) do emu.removeMemoryCallback(r[1],emu.callbackType.exec,r[2],r[2],emu.cpuType.gameboy) end
      refs={}

@@ -27,7 +27,14 @@ void ff3_text_copy(uint8_t bank,uint16_t address,const uint8_t*data,uint16_t n) 
 #endif
 void main(void){uint8_t i,j,r,n,unique,id;const uint8_t*p,*start;cpu_fast();SVBK_REG=1;ff3_memory_init();state_ready=0xa5;while(!state_start)wait_vbl_done();
  memset(g,0,16);memset(erase,0,8);g[0]=3;
- EXPECT(ff3_cell_mask(g,erase)==UNCHANGED&&g[0]==3);erase[0]=1;EXPECT(ff3_cell_mask(g,erase)==2&&g[0]==2);erase[0]=2;EXPECT(ff3_cell_mask(g,erase)==1&&!g[0]);state_case++;state_index=0;
+ EXPECT(ff3_cell_mask(g,erase)==UNCHANGED&&g[0]==3);erase[0]=1;EXPECT(ff3_cell_mask(g,erase)==2&&g[0]==2);erase[0]=2;EXPECT(ff3_cell_mask(g,erase)==1&&!g[0]);
+ /* Every bit position, both planes and mask truth values; check every row
+  * and untouched byte, including a zero plane and a surviving other row. */
+ for(i=0;i<8;i++)for(j=0;j<8;j++)for(r=0;r<8;r++){
+  memset(g,0,16);memset(erase,0,8);g[j*2]=(r&1)?1u<<i:0;g[j*2+1]=(r&2)?1u<<i:0;erase[j]=(r&4)?1u<<i:0;
+  n=(r&4)&&(r&3);EXPECT(ff3_cell_mask(g,erase)==(n?1:0));
+  for(id=0;id<16;id++)EXPECT(g[id]==((id==j*2&&(r&1)&&!n)||(id==j*2+1&&(r&2)&&!n)?1u<<i:0));
+ }state_case++;state_index=0;
  ff3_cell_pool_reset();first=0x8a00;EXPECT(ff3_cell_pool_begin(160,3,1));g[0]=1;
  EXPECT(ff3_cell_pool_tile(g)==160);EXPECT(ff3_cell_pool_tile(g)==160&&cell_pool_reused==1);
  /* Same rotate-XOR signature: [1,0,...] and [0,2,0,...]. */
