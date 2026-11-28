@@ -3,6 +3,30 @@
   "scope": "Source-only development package; generated ROM/audio/private inputs excluded",
   "files": [
     {
+      "path": "tools/battle-stone-contract.mjs",
+      "bytes": 3205,
+      "sha256": "1648351af6a17f5c8671296fd97caf9fc195148167d8951771bdd55c3ef53b63",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tools/audit-stone-ownership.mjs",
+      "bytes": 1159,
+      "sha256": "51524a110ea5ef0e1836cb04c692101eed25a50c33bf3182e8e4e5b3a5bf43f5",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "tests/battle-stone-contract.test.mjs",
+      "bytes": 1158,
+      "sha256": "912f4b19f3e8c01877c8510e9966420be4a5c05416ec7dadf7d8e7a118e08249",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
+      "path": "docs/battle-stone-ownership.md",
+      "bytes": 6541,
+      "sha256": "fc72c520fd8e3d0d1f05e0e2cfb4c993c301caf189bb3c666c0898515da607bf",
+      "basis": "Project-authored code, specification or documentation; no extracted assets"
+    },
+    {
       "path": "src/battle-defeat-video.c",
       "bytes": 7694,
       "sha256": "ed91df3f3beba56dcfc16af618b843ad85f026bb5c50b08168e7a63d2b18556c",
@@ -22,8 +46,8 @@
     },
     {
       "path": "tools/VerifyDefeat/Program.cs",
-      "bytes": 11491,
-      "sha256": "a8d92bafc175d8c9bf1587efb5382a92bc41de2cf4d3f60e089badaf5dd8c786",
+      "bytes": 11808,
+      "sha256": "04f83fa4b255b3c4094a38e0351d1f21052037d6d7e40c8d88b0940eabaca510",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -34,8 +58,8 @@
     },
     {
       "path": "tools/verify-party-defeat.mjs",
-      "bytes": 9938,
-      "sha256": "2342cf7ee56f6ca17a0c535cd2366795f63c886208861c5ae2bb3a1b4d110846",
+      "bytes": 11427,
+      "sha256": "24fde52d7103adcbbfc8cd5d336851535a1df559e2b0a049f5d6f0cb8a1e6825",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -52,8 +76,8 @@
     },
     {
       "path": "src/battle-live-party.c",
-      "bytes": 4735,
-      "sha256": "ab4102d908ef9a0684d94b112993a8624d3570a09c19cb19888be26e8830f30f",
+      "bytes": 4807,
+      "sha256": "d8a92142fa74324e862a479bcadf2357d31aa6a0163dbc2af9264d0dccd6be5f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2566,14 +2590,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 14528,
-      "sha256": "f8790c0374f861dc405c57a7a9da814bb7cbfd72d992004c46aad30643e1a1d9",
+      "bytes": 14713,
+      "sha256": "333ae79c358898e6050f7d651c8f766492fbe9e2a54362f209c866faca03e41f",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
       "path": "docs/implementation-roadmap.md",
-      "bytes": 99611,
-      "sha256": "605af41882a4365a188b9715a64e941133ae346ebfe4dd3cceaef68a8279742c",
+      "bytes": 100287,
+      "sha256": "2790d249fd4a17e7dab57e5c444eac4459e491d7360f3ababd2222050a095114",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -2584,8 +2608,8 @@
     },
     {
       "path": "docs/progress.md",
-      "bytes": 58702,
-      "sha256": "b603f6222311460fadcd547cb28728e8d189e4fab97266104c822ed9d2c73539",
+      "bytes": 59135,
+      "sha256": "bec02dc7ffef6e82239111e9444a891471a9f8145bdd30c550680042f93006bb",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -3406,8 +3430,8 @@
     },
     {
       "path": "tools/export-source.mjs",
-      "bytes": 23797,
-      "sha256": "8b71b69ba1c807a8d4c37bafc2ea1612015a7b198b5af0afeace6631f5f3ae23",
+      "bytes": 23939,
+      "sha256": "af8df60a9b03e942138fe4d5287b32f4335b47dd0bca881c9f9e7fed168430bc",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {
@@ -4103,7 +4127,7 @@
     {
       "path": "spec/scene-resource-sources.json",
       "bytes": 32037,
-      "sha256": "be1f22239568fbff9a11a6c51bbc9d5ab176d543a51e5ee3c1f106ec41259d37",
+      "sha256": "454b5ce89691e437dc4120654b68d8a747137975e1e17d213c784573106bcc5c",
       "basis": "Project-authored code, specification or documentation; no extracted assets"
     },
     {

@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';
+import {input,ROOT,hash,check} from './source.mjs';
+import {stoneDispatchAudit,stoneGeometryAudit,deathPoolHeadroom} from './battle-stone-contract.mjs';
+const {data}=await input(),dir=ROOT+'/evidence/stone-ownership';
+const resourcesBytes=await fs.readFile(ROOT+'/build/scene-dungeon/death-resources.json'),resources=JSON.parse(resourcesBytes);
+const built=JSON.parse(await fs.readFile(ROOT+'/build/scene-dungeon/report.json')),gbc=await fs.readFile(ROOT+'/build/scene-dungeon/ff3-scene-layout.gbc');
+check(hash(gbc)===built.romSha256,'Exact current scene artifact');
+const report={romSha256:hash(data),gbcSha256:hash(gbc),deathResourcesSha256:hash(resourcesBytes),dispatch:stoneDispatchAudit(data),geometry:stoneGeometryAudit(data),deathPools:deathPoolHeadroom(resources.profiles),nativePureStoneSupported:false};
+await fs.mkdir(dir,{recursive:true});await fs.writeFile(dir+'/report.json',JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify({dispatch:report.dispatch,footerGlyphs:report.geometry.glyphs.filter(g=>g.footerInk),tightestPools:report.deathPools.slice(0,4),nativePureStoneSupported:false},null,2));
