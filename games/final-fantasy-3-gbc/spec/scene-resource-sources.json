@@ -329,11 +329,15 @@
     },
     {
       "path": "src/battle-live-party.c",
-      "sha256": "76123731aef9cd3e7caeb380a33d735b1cdd26c6182d811c585f284595b1529a",
+      "sha256": "23d5e6012cecea0f54525e2ab0f657fda439546d44639ca827f942c25d61c735",
       "sites": [
         {
           "line": 82,
           "text": "if(!ff3_wram_copy(5,(uint16_t)i*64,record,64,1)){live_party_error=4;return 0;}"
+        },
+        {
+          "line": 96,
+          "text": "if(!ff3_wram_copy(5,(uint16_t)i*64+1,raw,2,0)){live_party_error=4;return;}"
         }
       ]
     },

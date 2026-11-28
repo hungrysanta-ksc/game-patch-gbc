@@ -2,10 +2,11 @@
 #pragma bank 119
 #endif
 #include "battle-command.h"
+#include "battle-context.h"
 #include <string.h>
 static uint8_t slot(uint8_t id){return id<4?id:id-4;}
 static uint8_t name(uint8_t id){return id<4?id:128+id-4;}
-static void display(const Ff3BattleResult*s,uint8_t*out){uint8_t i,a,b;for(i=0;i<4;i++){a=s->records[i][1];b=s->records[i][2];out[i*2]=(a&192)|((b&224)>>2)|((a&63)>>3);out[i*2+1]=(a&7)<<5;}}
+static void display(const Ff3BattleResult*s,uint8_t*out){uint8_t i;for(i=0;i<4;i++)ff3_status_normalize(s->records[i][1],s->records[i][2],out+i*2);}
 uint8_t ff3_command_execute(Ff3BattleResult*s,FF3BattleRng*rng,Ff3Fight*f,Ff3BattleCommand*c) FF3_STATE_BANKED {
  uint8_t a=s->actor,t,i,mask,cmd,*r,*target,v,hits;
  if(a>=12||s->result)return 0;r=s->records[a];cmd=r[46];mask=r[47];

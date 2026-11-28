@@ -2,6 +2,7 @@
 #pragma bank 15
 #endif
 #include "battle-fight.h"
+#include "battle-ailment.h"
 static uint16_t word(const uint8_t *p){return p[0]|((uint16_t)p[1]<<8);}
 static void put(uint8_t *p,uint16_t v){p[0]=(uint8_t)v;p[1]=(uint8_t)(v>>8);}
 static uint8_t random99(FF3BattleRng *r){uint8_t v;ff3_battle_random(r,1,0,99,&v);return v;}
@@ -15,26 +16,6 @@ static uint8_t ranged(const Ff3Fight *s,uint8_t dual,uint8_t hand){uint8_t id;
  if(!(s->equipment[0]|s->equipment[1]))return 0;
  if(dual)id=s->equipment[hand];else{id=s->equipment[0];if(!id||id>=0x57)id=s->equipment[1];}
  return id>=0x3f&&id<0x42;
-}
-/* 31/BBF3..BCD1. Keep priority, partial petrify, message-without-increment,
- * and confusion's command/flag changes. The original target mask is MSB first. */
-static void status(Ff3Fight *s,uint8_t *a,uint8_t *t,uint8_t effect){uint8_t n=0,v=effect,old;
- if(!(effect&1)){
-  if(s->target_status[0]>=effect)goto ineffective;
-  s->target_status[0]|=effect;while(!(v&128)){v<<=1;n++;}if(n>=2)n+=3;
-  s->status_message=n+10;return;
- }
- if((effect&32)&&(s->boss&128))goto ineffective;
- old=s->target_status[1];
- if(effect&6){
-  n=effect&0x7e;if(n+(old&6)<8){s->target_status[1]=old+n;if(a[46]==4)queue(s,0x3c);return;}
-  s->target_status[1]=old&0xf9;s->target_status[0]|=0x40;s->status_message=0x0b;s->messages[s->message_count]=0x28;return;
- }
- if((old&0xe0)>=(effect&0xe0))goto ineffective;
- s->target_status[1]=(effect&0xfe)|(old&7);
- if(s->target_status[1]&32){t[46]=0;t[44]&=0xe7;}
- while(!(v&128)){v<<=1;n++;}s->status_message=n+12;return;
-ineffective:s->target_mask&=(uint8_t)~(128u>>s->target_slot);
 }
 uint8_t ff3_fight_resolved(FF3BattleRng *rng,Ff3Fight *s) FF3_STATE_BANKED {
  uint8_t *a=s->actor,*t=s->target,self,dual,hands,hand,row=0,inverted=0,hit[2]={0,0},stats[18],attack[5];
@@ -79,7 +60,7 @@ uint8_t ff3_fight_resolved(FF3BattleRng *rng,Ff3Fight *s) FF3_STATE_BANKED {
   }else if(!subtract(s,t,damage))death=1;
   if(death){if(death&128)s->actor_status[0]|=128;else s->target_status[0]|=128;continue;}
   if(!(s->boss&128)&&!(a[1]&0x28)&&attack[4]&&!(stats[14]&attack[4])){
-   chance=attack[2]<stats[12]?0:attack[2]-stats[12];if(ff3_physical_hits(rng,hit[hand],chance))status(s,a,t,attack[4]);
+   chance=attack[2]<stats[12]?0:attack[2]-stats[12];if(ff3_physical_hits(rng,hit[hand],chance))ff3_ailment_apply(s,a,t,attack[4]);
   }
  }
  s->actual_hits[0]=hit[0];s->actual_hits[1]=hit[1];s->animation_hits[0]=hit[0];s->animation_hits[1]=hit[1];

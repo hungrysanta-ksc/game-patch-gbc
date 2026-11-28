@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'src/battle-ailment.c','src/battle-ailment.h','src/battle-ailment-test.c','tools/battle-ailment-source.mjs','tools/build-battle-ailment.mjs','tests/battle-ailment.test.mjs','docs/battle-status-lifecycle.md',
  'src/battle-dense-oam.c','src/battle-dense-oam.h','tools/battle-dense-oam-audit.mjs','tools/verify-stone-dense.mjs','tests/battle-dense-oam.test.mjs','docs/battle-stone-dense.md',
  'src/battle-live-stone.c','src/battle-live-stone.h','tools/live-stone-assets.mjs','tools/audit-live-stone.mjs','docs/battle-live-stone.md',
  'tools/battle-stone-surface.mjs','tests/battle-stone-surface.test.mjs','docs/battle-stone-surface.md',

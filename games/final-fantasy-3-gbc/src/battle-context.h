@@ -16,6 +16,8 @@ uint8_t ff3_encounter_seed(const uint8_t *field_dp,uint8_t flags) FF3_STATE_BANK
  * RAM. This is not a fabricated NES DP image or a bit-identical NES seed. */
 uint8_t ff3_play_seed(const volatile uint8_t *field,const uint8_t *audio) FF3_STATE_BANKED;
 void ff3_status_view(Ff3StatusView *s) FF3_STATE_BANKED;
+void ff3_status_normalize(uint8_t a,uint8_t b,uint8_t*out) FF3_STATE_BANKED;
+uint8_t ff3_status_icon(uint8_t a,uint8_t b) FF3_STATE_BANKED;
 void ff3_cannon_prepare(FF3BattleRng *rng,Ff3Cannon *s) FF3_STATE_BANKED;
 /* A300's exhausted marker is an output, not this function's return code.
  * Return 0 only for invalid limits or a nonterminating RNG cycle; rollback RNG. */
