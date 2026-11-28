@@ -8,6 +8,7 @@
 #include "battle-terrain.h"
 #include "battle-workspace.h"
 #include "battle-cell-pool.h"
+#include "battle-live-stone.h"
 #include "text-vblank.h"
 #include "memory.h"
 #include "platform.h"
@@ -74,7 +75,7 @@ uint8_t ff3_enemy_build(uint8_t page,uint8_t flash,const Ff3Death*d,uint8_t mask
  /* Original dead_mask also contains absent slots. Count only owners with
   * actual cell dots, without altering the source death/removal mask. */
  i=affected&a->present;
- if(!ff3_cell_pool_begin(a->pool+page*a->half,a->half,(i&(i-1))!=0)){death_video_error=1;return 0;}
+ if(!ff3_cell_pool_begin(a->pool+page*a->half,a->half,stone_live||(i&(i-1))!=0)){death_video_error=1;return 0;}
  memset(residual,0,64);
  /* Reuse the spatial base in bulk. Visit only cells owned by removed or
   * wiping slots; unrelated actors need no glyph or mask work. */
@@ -90,6 +91,7 @@ uint8_t ff3_enemy_build(uint8_t page,uint8_t flash,const Ff3Death*d,uint8_t mask
   for(j=0;j<16;j++)if(residual[j*4]==32+cell[1]*8&&residual[j*4+1]==8+cell[0]*8){id=pattern(b,residual[j*4+2]);if(id)residual[j*4+2]=id;else residual[j*4]=0;break;}
   if(death_video_error)return 0;ff3_native_service();
  }
+ if(!ff3_live_stone_map(map)){death_video_error=8;return 0;}
  if(!ff3_cell_pool_finish()){death_video_error=1;return 0;}address=page?0x9c40:0x9840;
  for(at=0;at<704;at+=176){memcpy(text_staging,map+at,176);ff3_text_copy(at>=352,address+at%352,text_staging,176);ff3_native_service();}
  if(!flash&&!d){if(n>8){death_video_error=4;return 0;}if(!ff3_wram_copy(6,(uint16_t)page*64,residual,64,1)){death_video_error=5;return 0;}}

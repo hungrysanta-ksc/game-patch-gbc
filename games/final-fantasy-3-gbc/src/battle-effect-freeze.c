@@ -5,6 +5,9 @@
 #include "text-vblank.h"
 #include "memory.h"
 #include "battle-resident-bg.h"
+#ifdef FF3_SCENE_LAYOUT
+#include "battle-live-stone.h"
+#endif
 /* Numeral and settled ordinary-magic owners may lend frozen party pixels to BG. OBJ patterns
  * remain in blocks 0/1. Signed BG addressing lends block 2 without evicting
  * enemy, terrain, party, status or window resources from their original slots. */
@@ -229,7 +232,12 @@ static void cache_glyph(uint16_t key){uint8_t bit=1<<(key&7);uint8_t *p=text_sta
  p[0]=key;p[1]=key>>8;memcpy(p+2,effect_glyph,16);
  cached_glyphs++;if(!(cached_glyphs&3))cache_flush(4);
 }
-static uint8_t keep(const uint8_t*o){uint8_t i=(uint8_t)(o-animation_base)>>2;return o[0]&&o[2]&&(o[0]>=112||o[0]<16||(effect_keep_head&&(o[0]<32||(i-8)%6>=4)));}
+static uint8_t keep(const uint8_t*o){uint8_t i=(uint8_t)(o-animation_base)>>2;return o[0]&&o[2]&&(o[0]>=112||o[0]<16
+#ifdef FF3_SCENE_LAYOUT
+ ||(stone_live&&o[3]==7&&(o[2]==212||o[2]==213))
+ ||(stone_live&&ff3_live_stone_overlap(o[1]-8,o[0]-16))
+#endif
+ ||(effect_keep_head&&(o[0]<32||(i-8)%6>=4)));}
 static uint8_t gather(void){uint8_t i,x,y,xx,yy,j,k,p,*slot;uint16_t key,index;const uint8_t*o;cells=0;
  /* Exact 20 x 13 cell directory. The last four entries borrow seen[] before
   * its glyph-cache lifetime begins; no hash or new RAM reservation. */
@@ -335,7 +343,14 @@ static void overlay_indices(uint8_t flags,int8_t dx,int8_t dy){uint8_t row=dy<0?
 static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/32*8,i,p,v,member,count;int16_t dx,dy;const uint8_t*o,*members=effect_members+(uint16_t)tile*4;
  count=members[3]==254?24:4;
  map_cell(key);
- t=text_staging[144+(key&3)];a=text_staging[148+(key&3)];glyph((a>>3)&1,t);
+ t=text_staging[144+(key&3)];a=text_staging[148+(key&3)];
+#ifdef FF3_SCENE_LAYOUT
+ /* The stone dictionary is immutable during this battle; status changes
+  * invalidate the entire freeze cache. OBJ IDs still use unsigned VRAM. */
+ if(stone_live&&!(a&8)&&t>=64&&t<104)read_vram(0,0x9000+(uint16_t)t*16,effect_glyph,16);
+ else
+#endif
+ glyph((a>>3)&1,t);
  /* The normal field behind a settled party is black. With aligned X and
   * one source palette, native bitplanes can be combined directly. Only
   * the terrain boundary needs the general exact-color cell converter. */
@@ -429,6 +444,10 @@ uint8_t ff3_effect_freeze(void) BANKED {uint8_t i;effect_freeze_error=0;if(effec
  if(!reuse()){
  if(effect_freeze_error)return 0;effect_freeze_cache_valid=0;
  if(!gather())return 0;
+#ifdef FF3_SCENE_LAYOUT
+ /* Signed BG 64..103 belongs to the immutable stone dictionary. */
+ if(stone_live&&cells>64){effect_freeze_error=11;return 0;}
+#endif
  if(!cache_copy(0,animation_base,160,1)||!cache_copy(160,effect_palettes,32,1)||!cache_copy(192,effect_palettes+64,64,1))return 0;
  memcpy(effect_palettes+32,effect_palettes+64,24);mixed=0;
  /* OBJ color zero is transparent, not its stored RGB value. The borrowed

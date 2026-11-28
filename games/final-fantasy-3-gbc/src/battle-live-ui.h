@@ -9,6 +9,7 @@ void ff3_live_ui_reset(void) BANKED;
 #ifdef FF3_SCENE_LAYOUT
 void ff3_live_ui_party_hp(void) BANKED;
 void ff3_live_ui_records(const uint8_t*records) BANKED;
+void ff3_live_ui_stone(void) BANKED;
 #endif
 void ff3_live_ui_prime(void) BANKED;
 void ff3_live_ui_update(void) BANKED;

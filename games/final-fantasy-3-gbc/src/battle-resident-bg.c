@@ -11,6 +11,7 @@
 #include "battle-workspace.h"
 #ifdef FF3_SCENE_LAYOUT
 #include "battle-death-video.h"
+#include "battle-live-stone.h"
 #endif
 #ifdef FF3_EFFECTS
 #include "battle-effect-freeze.h"
@@ -96,7 +97,7 @@ void ff3_resident_prepare(const Ff3EntryDisplay*s,uint8_t page,uint8_t*oam) FF3_
  scroll=(uint16_t)(s->enemy_scroll>>4)*14+((s->enemy_table&1)?224:0);if(scroll>=448)scroll-=448;
  coarse=scroll>>3;
 #ifdef FF3_SCENE_LAYOUT
- if(resident_fixed&&resident_dead){
+ if(resident_fixed&&(resident_dead||stone_live)){
   if(scroll){resident_error=5;return;}
   if(cached[page]!=0){if(!ff3_enemy_build(page,0,0,0)){resident_error=6;return;}cached[page]=0;resident_map_bytes+=704;resident_map_updates++;}
   ff3_enemy_saved(page,oam+96);resident_page=page;resident_scroll=0;return;
