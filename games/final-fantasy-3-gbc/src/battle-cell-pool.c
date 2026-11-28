@@ -43,10 +43,10 @@ uint8_t ff3_cell_pool_tile_local(const uint8_t*g) {uint8_t i,sig=0,id;
  for(i=0;i<16;i++)sig=(sig<<1|sig>>7)^g[i];
  /* A signature is only a filter: collisions always compare all 16 bytes.
   * Unused old directory entries are outside used and cannot be returned. */
- for(i=0;i<used;i++)if(signatures[i]==sig){
+ for(i=0;i<used;i++){if(!(i&7))ff3_native_service();if(signatures[i]==sig){
   if(!ff3_wram_copy(6,FF3_CELL_POOL_STORAGE+(uint16_t)i*16,comparison,16,0)){cell_pool_error=3;return 0;}
   if(!memcmp(g,comparison,16)){cell_pool_reused++;return base+i;}
- }
+ }}
  }
  if(used>=(limit&127)){cell_pool_error=4;return 0;}
  if(limit&128){if(!ff3_wram_copy(6,FF3_CELL_POOL_STORAGE+(uint16_t)used*16,(void*)g,16,1)){cell_pool_error=3;return 0;}signatures[used]=sig;}
@@ -54,4 +54,10 @@ uint8_t ff3_cell_pool_tile_local(const uint8_t*g) {uint8_t i,sig=0,id;
  if(used>cell_pool_peak)cell_pool_peak=used;if(batch==16)flush();return id;
 }
 uint8_t ff3_cell_pool_tile(const uint8_t*g) BANKED {return ff3_cell_pool_tile_local(g);}
+/* Stone follows the death stencil in the same transaction. Read the exact
+ * current glyph even if its upload is still in the pending batch. */
+uint8_t ff3_cell_pool_read_local(uint8_t id,uint8_t*g){
+ if(!active||!(limit&128)||id<base||id>=base+used)return 0;
+ if(!ff3_wram_copy(6,FF3_CELL_POOL_STORAGE+(uint16_t)(id-base)*16,g,16,0)){cell_pool_error=3;return 0;}return 1;
+}
 uint8_t ff3_cell_pool_finish(void) BANKED {if(cell_pool_error||!active){cell_pool_error=5;return 0;}flush();active=0;return 1;}

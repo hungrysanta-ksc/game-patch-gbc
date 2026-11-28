@@ -5,6 +5,9 @@
 #include "text-vblank.h"
 #include "memory.h"
 #include "platform.h"
+#ifdef FF3_SCENE_LAYOUT
+#include "battle-dense-oam.h"
+#endif
 void ff3_native_service(void) NONBANKED;
 volatile uint8_t terrain_fault,terrain_scroll;
 volatile uint16_t terrain_max_step;
@@ -65,7 +68,11 @@ static void apply_batch(void) __naked {__asm
  ret
  __endasm;
 }
-static void raster(void) NONBANKED {SCX_REG=terrain_scroll;}
+static void raster(void) NONBANKED {
+#ifdef FF3_SCENE_LAYOUT
+ if(dense_state>=2){ff3_dense_lcd();return;}
+#endif
+ SCX_REG=terrain_scroll;}
 static uint8_t terrain_registered;
 void ff3_terrain_init(void) NONBANKED {CRITICAL{if(!terrain_registered){add_LCD(raster);add_LCD(nowait_int_handler);terrain_registered=1;}LYC_REG=11;STAT_REG=0x40;IE_REG|=LCD_IFLAG;}}
 void ff3_terrain_shutdown(void) NONBANKED {CRITICAL{if(terrain_registered){IE_REG&=~LCD_IFLAG;STAT_REG=0;IF_REG&=~LCD_IFLAG;remove_LCD(raster);remove_LCD(nowait_int_handler);terrain_registered=0;}}}

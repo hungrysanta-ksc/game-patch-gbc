@@ -7,6 +7,7 @@
 #include "battle-resident-bg.h"
 #ifdef FF3_SCENE_LAYOUT
 #include "battle-live-stone.h"
+#include "battle-dense-oam.h"
 #endif
 /* Numeral and settled ordinary-magic owners may lend frozen party pixels to BG. OBJ patterns
  * remain in blocks 0/1. Signed BG addressing lends block 2 without evicting
@@ -234,7 +235,8 @@ static void cache_glyph(uint16_t key){uint8_t bit=1<<(key&7);uint8_t *p=text_sta
 }
 static uint8_t keep(const uint8_t*o){uint8_t i=(uint8_t)(o-animation_base)>>2;return o[0]&&o[2]&&(o[0]>=112||o[0]<16
 #ifdef FF3_SCENE_LAYOUT
- ||(stone_live&&o[3]==7&&(o[2]==212||o[2]==213))
+ ||(stone_live&&(o[3]&16))
+
  ||(stone_live&&ff3_live_stone_overlap(o[1]-8,o[0]-16))
 #endif
  ||(effect_keep_head&&(o[0]<32||(i-8)%6>=4)));}
@@ -242,7 +244,7 @@ static uint8_t gather(void){uint8_t i,x,y,xx,yy,j,k,p,*slot;uint16_t key,index;c
  /* Exact 20 x 13 cell directory. The last four entries borrow seen[] before
   * its glyph-cache lifetime begins; no hash or new RAM reservation. */
  memset(text_staging,255,256);memset(seen,255,4);
- for(i=8;i<32;i++){ff3_native_service();o=animation_base+i*4;if(!o[0]||!o[2]||keep(o))continue;x=o[1]-8;y=o[0]-16;if(x>152||y>96){effect_freeze_error=2;return 0;}
+ for(i=0;i<32;i++){ff3_native_service();o=animation_base+i*4;if(!o[0]||!o[2]||keep(o))continue;x=o[1]-8;y=o[0]-16;if(x>152||y>96){effect_freeze_error=2;return 0;}
   for(yy=y/8;yy<=(y+7)/8;yy++)for(xx=x/8;xx<=(x+7)/8;xx++){key=(uint16_t)yy*32+xx;index=(uint16_t)yy*20+xx;slot=index<256?text_staging+index:seen+index-256;j=*slot;p=o[3]&7;if(j==255){j=cells;if(cells==80){effect_freeze_error=3;return 0;}*slot=j;effect_keys[cells++]=key|((uint16_t)p<<10);memset(effect_members+(uint16_t)j*4,255,4);}
    /* Cache the aligned/single-palette predicate while gathering the exact
     * immutable members. The original renderer also retains tile/attribute
@@ -341,7 +343,7 @@ static void overlay_indices(uint8_t flags,int8_t dx,int8_t dy){uint8_t row=dy<0?
  }while(--n);
 }
 static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/32*8,i,p,v,member,count;int16_t dx,dy;const uint8_t*o,*members=effect_members+(uint16_t)tile*4;
- count=members[3]==254?24:4;
+ count=members[3]==254?32:4;
  map_cell(key);
  t=text_staging[144+(key&3)];a=text_staging[148+(key&3)];
 #ifdef FF3_SCENE_LAYOUT
@@ -358,7 +360,7 @@ static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/3
  if(!v&&!(effect_keys[tile]&0x8000)&&color((a&7)*4)==color(0)){
   p=(effect_keys[tile]>>10)&7;
   {memset(effect_encoded,0,16);
-   for(i=count;i>0;){i--;member=count==24?8+i:members[i];if(member==255)continue;o=animation_base+member*4;dy=(int16_t)o[0]-16-y;if(count==24&&(!o[0]||!o[2]||keep(o)||o[1]-8!=x||dy<=-8||dy>=8))continue;
+   for(i=count;i>0;){i--;member=count==32?i:members[i];if(member==255)continue;o=animation_base+member*4;dy=(int16_t)o[0]-16-y;if(count==32&&(!o[0]||!o[2]||keep(o)||o[1]-8!=x||dy<=-8||dy>=8))continue;
     glyph((o[3]>>3)&1,o[2]);
     overlay(o[3],(int8_t)dy);ff3_native_service();}
    p+=4;goto encoded;
@@ -366,7 +368,7 @@ static uint8_t compose(uint16_t key,uint8_t tile){uint8_t t,a,x=key%32*8,y=key/3
  }
  background_indices(a);
  /* Reverse traversal retains the original earlier-OBJ priority. */
- for(i=count;i>0;){ff3_native_service();i--;member=count==24?8+i:members[i];if(member==255)continue;o=animation_base+member*4;if(!o[0]||!o[2]||keep(o))continue;dx=(int16_t)o[1]-8-x;dy=(int16_t)o[0]-16-y;if(dx<=-8||dx>=8||dy<=-8||dy>=8)continue;
+ for(i=count;i>0;){ff3_native_service();i--;member=count==32?i:members[i];if(member==255)continue;o=animation_base+member*4;if(!o[0]||!o[2]||keep(o))continue;dx=(int16_t)o[1]-8-x;dy=(int16_t)o[0]-16-y;if(dx<=-8||dx>=8||dy<=-8||dy>=8)continue;
   glyph((o[3]>>3)&1,o[2]);
   overlay_indices(o[3],(int8_t)dx,(int8_t)dy);
  }
@@ -464,15 +466,33 @@ uint8_t ff3_effect_freeze(void) BANKED {uint8_t i;effect_freeze_error=0;if(effec
  * can retain eighteen beside its eighteen cells, including terrain-overlapping
  * heads and all four feet. Without magic, the
  * two lower party feet remain OBJ so all live UI rows stay independently writable. */
- retained=0;for(i=8;i<40;i++)if((i>=32||keep(animation_base+i*4))&&animation_base[i*4]){if(retained==(effect_keep_head?18:8)){effect_freeze_error=6;return 0;}memmove(animation_base+retained*4,animation_base+i*4,4);retained++;}
+ retained=0;for(i=0;i<40;i++)if((i>=32||keep(animation_base+i*4))&&animation_base[i*4]){if(retained==(effect_keep_head?18:
+#ifdef FF3_SCENE_LAYOUT
+32
+#else
+8
+#endif
+)){effect_freeze_error=6;return 0;}memmove(animation_base+retained*4,animation_base+i*4,4);retained++;}
+
+#ifdef FF3_SCENE_LAYOUT
+ if(!effect_keep_head&&retained>8){if(!ff3_dense_begin(animation_base,retained)){effect_freeze_error=12;return 0;}retained=8;goto retained_ready;}
+#endif
  effect_retained=effect_keep_head?retained:8;
  memmove(animation_base+(40-effect_retained)*4,animation_base,retained*4);memset(animation_base,0,(40-effect_retained)*4);memset(animation_base+(40-effect_retained+retained)*4,0,(effect_retained-retained)*4);
+
+#ifdef FF3_SCENE_LAYOUT
+ retained_ready:if(dense_state)effect_retained=8;
+#endif
  effect_freeze_stage=6;if(!ff3_resident_effect_copy(0x9000,2048)){effect_freeze_error=9;return 0;}read_vram(0,0x8700,text_staging,256);effect_freeze_stage=7;
  if(!ff3_text_frozen_patterns(cells))return 0;
  effect_freeze_stage=3;if(!prepare_map())return 0;
  resident_page=new_page;effect_signed=1;effect_freeze_stage=8;return 1;
 }
 uint8_t ff3_effect_release(uint8_t pairs) BANKED {uint8_t page;if(!effect_signed)return 0;
+
+#ifdef FF3_SCENE_LAYOUT
+ ff3_dense_stop();
+#endif
  if(!store(1152,animation_base,160,0))return 0;page=party_page^1;if(page)memcpy(party_oam1,animation_base,160);else memcpy(party_oam0,animation_base,160);
  resident_page=old_page;effect_signed=0;next_page=page;party_pending=1;while(party_pending){ff3_native_service();__asm halt __endasm;}
  if(!restore_map(pairs))return 0;

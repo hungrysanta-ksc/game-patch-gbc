@@ -5,6 +5,7 @@
 #include "battle-encounter.h"
 #include "battle-live-party.h"
 #include "battle-live-stone.h"
+#include "battle-dense-oam.h"
 #endif
 #include <string.h>
 #include "battle-party-oam.h"
@@ -84,6 +85,9 @@ __naked {__asm
 static void publish(void) NONBANKED {uint16_t gap;uint8_t ly=LY_REG;
 #ifdef FF3_TERRAIN
  SCX_REG=0;
+#endif
+#ifdef FF3_SCENE_LAYOUT
+ ff3_dense_vblank(party_pending);
 #endif
  if(!party_pending||ly<144||(STAT_REG&3)!=1)return;
 #if defined(FF3_EFFECTS) && defined(FF3_TERRAIN)
@@ -173,7 +177,7 @@ static void present(void){uint8_t i;uint16_t begin=ff3_clock_now(),elapsed;uint8
  if(!ff3_status_video_objects(target)){party_error=35;return;}
 #endif
 #ifdef FF3_SCENE_LAYOUT
- ff3_live_stone_objects(target+(status_stage==2?32:0));
+ ff3_live_stone_objects(target,status_stage==2);if(stone_error){party_error=80+stone_error;return;}
 #endif
 #ifdef FF3_STONE
  if(status_stage){ff3_stone_prepare(resident_page,target);party_work=1;if(stone_error){party_error=40+stone_error;return;}}
