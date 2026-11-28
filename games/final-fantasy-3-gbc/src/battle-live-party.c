@@ -51,12 +51,13 @@ uint8_t ff3_live_party_refresh(const uint8_t*status) BANKED {
 uint8_t ff3_live_party_prepare(void) BANKED {
  uint8_t i,j,s,flags,icon,variant,job,*c,*e;uint16_t cur,max;
  live_party_ready=live_party_error=0;
- /* Validate the entire party before mutating canonical derived stats.
-  * Stone's BG owner is absent in the combined renderer, not a normal pose. */
+ /* B72B tests (status & C0) == 40: death wins over simultaneous stone.
+  * Only an actual stone BG owner is absent in the combined renderer.
+  * Validate the whole party before mutating canonical derived stats. */
  for(i=0;i<4;i++){
   c=ff3_game_state+256+(uint16_t)i*64;e=ff3_game_state+512+(uint16_t)i*64;
   if(c[0]>=22){live_party_error=1;return 0;}
-  if(c[2]&64){live_party_error=2;return 0;}
+  if((c[2]&192)==64){live_party_error=2;return 0;}
   for(j=0;j<3;j++)if(e[j]>=0x98){live_party_error=3;return 0;}
   if(e[3]>=0x62||e[5]>=0x62){live_party_error=3;return 0;}
  }
