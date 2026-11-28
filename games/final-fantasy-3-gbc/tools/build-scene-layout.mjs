@@ -68,6 +68,9 @@ await object(['scene-memory',null]);await object(['scene-layout-probe',null]);s=
 check(!/overflow|Multiple write|undefined global/i.test(await fs.readFile(out+'/link.log','utf8')),'Clean final linker output');const bytes=await fs.readFile(rom);checkGbc(bytes,256,0x1b,3);
 for(const [bank,data]of relocated.banks)check(bytes.subarray(bank*16384,(bank+1)*16384).equals(data),'Linked relocated field bytes '+bank);
 checkEncounterAssets(bytes,s,data);
+// Direct cell calls are safe only while their display owner and kernels
+// share the selected code bank. Never silently relocate just one side.
+for(const name of ['ff3_enemy_build','ff3_cell_mask_local','ff3_cell_pool_tile_local'])check((s['_'+name]>>>16)===124,'Same-bank cell kernel '+name);
 for(const [name,address]of Object.entries(s))if(/^_encounter_patterns\d+$/.test(name))check((address&15)===0,'DMA-aligned encounter patterns '+name);
 // Every generated battle/audio array remains intact at its linked symbol.
 let arrays=0;for(const file of generated.filter(p=>!p.startsWith(gen+'/field-'))){const source=await fs.readFile(file,'utf8');for(const m of source.matchAll(/const uint8_t (\w+)\[\]=\{([0-9,]*)\}/g)){const data=Buffer.from(m[2].split(',').filter(Boolean).map(Number)),at=s['_'+m[1]],offset=(at>>>16)*16384+(at&0x3fff);check(Number.isInteger(at)&&bytes.subarray(offset,offset+data.length).equals(data),'Linked original asset '+m[1]);arrays++;}}

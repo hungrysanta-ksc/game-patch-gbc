@@ -110,7 +110,7 @@
     },
     {
       "path": "src/battle-cell-pool-test.c",
-      "sha256": "e3c2696d5b881b29051430f25edf319f801a735b068839938d0903d86354f2ea",
+      "sha256": "16315420a9cffa310db56d4d5c196c70aa4e699e98f79897312115ae9ef2949b",
       "sites": [
         {
           "line": 14,
@@ -124,21 +124,21 @@
     },
     {
       "path": "src/battle-cell-pool.c",
-      "sha256": "6f13372eb56a971440622f5784b352653434a842c6efb8a8ce226ce91b183c85",
+      "sha256": "f361ce36052547fa665d3d2b6d35634e98dbfbed1b68307e3c9bdc52a10e1bb9",
       "sites": [
         {
-          "line": 36,
+          "line": 39,
           "text": "if(!ff3_wram_copy(6,FF3_CELL_POOL_STORAGE+(uint16_t)i*16,comparison,16,0)){cell_pool_error=3;return 0;}"
         },
         {
-          "line": 41,
+          "line": 44,
           "text": "if(limit&128){if(!ff3_wram_copy(6,FF3_CELL_POOL_STORAGE+(uint16_t)used*16,(void*)g,16,1)){cell_pool_error=3;return 0;}signatures[used]=sig;}"
         }
       ]
     },
     {
       "path": "src/battle-death-video.c",
-      "sha256": "707070e43ad75df94435a56d208b2adf40944dcdfea5b513c5a318702d574760",
+      "sha256": "3c23b68aecbaa0f9d84891ad58d11d466c02bcd69e31ac27e8c7e0a062511f64",
       "sites": [
         {
           "line": 33,
@@ -990,7 +990,7 @@
     },
     {
       "path": "src/scene-video.c",
-      "sha256": "0514b55b1749984fb54f51622482f277b2aa270a731ec1c9933ac347f9e9c159",
+      "sha256": "8e75aa1f5acab5e5b9eeaea2361c9eec2b27e525ff97bcb258d754b7db112596",
       "sites": []
     },
     {

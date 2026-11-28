@@ -40,8 +40,8 @@ void ff3_party_copy(uint8_t bank,const void*src,void*dst,uint16_t n) NONBANKED;
 void ff3_resident_fix(void) NONBANKED;
 static uint8_t pattern(const ResidentBgAsset*a,uint8_t id){uint8_t kind;
  if(!id)return 0;ff3_party_copy(a->bank,a->patterns+(uint16_t)id*16,glyph,16);
- kind=ff3_cell_mask(glyph,erase);if(!kind)return id;if(kind==1)return 0;
- id=ff3_cell_pool_tile(glyph);if(cell_pool_error)death_video_error=1;return id;
+ kind=ff3_cell_mask_local(glyph,erase);if(!kind)return id;if(kind==1)return 0;
+ id=ff3_cell_pool_tile_local(glyph);if(cell_pool_error)death_video_error=1;return id;
 }
 /* Like the existing terrain stamp kernel: stay in fixed ROM while selecting
  * the immutable lookup bank once, rather than switching for every byte. */
