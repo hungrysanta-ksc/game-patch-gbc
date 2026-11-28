@@ -1,9 +1,29 @@
 import {check} from './source.mjs';
+// Independent source glyph occupancy; no emulated state/bank writes.
+function stoneKeep(s,occupied){
+ if(!occupied)return 'local function stone_retained(p)return false end';
+ for(const n of ['stone_live','stone_state','status_tail'])check(Number.isInteger(s[n]),'Stone observer symbol '+n);
+ const masks=occupied.map(b=>Array.from({length:12},(_,i)=>b.readUInt16LE(i*2)));
+ return `local stone_masks={${masks.map(m=>'{'+m.join(',')+'}').join(',')}}
+ local function stone_retained(p)
+  if emu.read(${s.stone_live},mem)==0 then return false end
+  local tile=emu.read(p+2,mem);if emu.read(p+3,mem)==7 and (tile==212 or tile==213)then return true end
+  local x=emu.read(p+1,mem)-8;local y=emu.read(p,mem)-16;local back=emu.read(${s.status_tail},mem)==136;local tops={0,4,6,10}
+  for actor=0,3 do local state=emu.read(${s.stone_state}+actor,mem);local kind=state&3
+   if kind~=3 then local sx=((back and 0 or 16)+(state>>2)*2)*8
+    if x+8>sx and x<sx+16 then local bits=stone_masks[back and 2 or 1][actor*3+kind+1]
+     for cell=0,9 do local sy=(tops[actor+1]+cell//2)*8;if (bits&(1<<cell))~=0 and y+8>sy and y<sy+8 then return true end end
+    end
+   end
+  end;return false
+ end`;
+}
 // Observe the actual gathered cell records before their composition lifetime.
 // Independently scan every screen cell against the original settled OAM.
-export function freezeMembershipAudit(s){for(const n of ['effect_freeze_stage','effect_keys','effect_members','animation_base','effect_keep_head'])check(Number.isInteger(s[n]),'Membership symbol '+n);
+export function freezeMembershipAudit(s,occupied){for(const n of ['effect_freeze_stage','effect_keys','effect_members','animation_base','effect_keep_head'])check(Number.isInteger(s[n]),'Membership symbol '+n);
  return `\ndo
  local mem=emu.memType.gameboyDebug;local checks,cells,fallback,tail,bad=0,0,0,0,0
+ ${stoneKeep(s,occupied)}
  local function word(p)return emu.read(p,mem)+emu.read(p+1,mem)*256 end
  emu.addMemoryCallback(function(_,v)
   ${Number.isInteger(s.scene_phase)?'if emu.read('+s.scene_phase+',mem)~=3 then return end;':''}
@@ -11,7 +31,7 @@ export function freezeMembershipAudit(s){for(const n of ['effect_freeze_stage','
   for y=0,12 do for x=0,19 do
    local members={};local pal=nil;local direct=true
    for i=8,31 do local p=${s.animation_base}+i*4;local oy=emu.read(p,mem);local tile=emu.read(p+2,mem)
-    if oy>=16 and oy<112 and tile~=0 and not(emu.read(${s.effect_keep_head},mem)~=0 and (oy<32 or (i-8)%6>=4)) then local ox=emu.read(p+1,mem)-8;oy=oy-16
+    if oy>=16 and oy<112 and tile~=0 and not stone_retained(p) and not(emu.read(${s.effect_keep_head},mem)~=0 and (oy<32 or (i-8)%6>=4)) then local ox=emu.read(p+1,mem)-8;oy=oy-16
      if ox<x*8+8 and ox+8>x*8 and oy<y*8+8 and oy+8>y*8 then
       members[#members+1]=i;local color=emu.read(p+3,mem)&7
       if pal==nil then pal=color end;if color~=pal or color>2 or ox~=x*8 then direct=false end
@@ -33,16 +53,17 @@ end\n`;
 }
 export function freezeMembershipResult(log){const a=[...log.matchAll(/freeze-members:(\d+),(\d+),(\d+),(\d+),(\d+)/g)].at(-1)?.slice(1).map(Number);check(a&&a[0]>0&&a[1]>0&&!a[4],'Every gathered cell/member/palette predicate');return {checks:a[0],cells:a[1],fallbackCells:a[2],directoryTailCells:a[3]};}
 
-export function restoreDmaAudit(s){for(const k of ['ff3_text_wram_dma_begin','ff3_text_wram_dma_end'])check(Number.isInteger(s[k]),'Resident DMA anchor '+k);
+export function restoreDmaAudit(s,occupied){for(const k of ['ff3_text_wram_dma_begin','ff3_text_wram_dma_end'])check(Number.isInteger(s[k]),'Resident DMA anchor '+k);
  return `\ndo
  local mem=emu.memType.gameboyDebug;local active=false;local count,bad,maxTicks,rate=0,0,0,0;local start=0;local sp=0;local regs={}
+ ${stoneKeep(s,occupied)}
  local expected,uploaded,patternChunks,patternBytes,uploads=0,0,0,0,0;local mirror={}
  emu.addMemoryCallback(function(_,v)
   ${Number.isInteger(s.scene_phase)?'if emu.read('+s.scene_phase+',mem)~=3 then return end;':''}
   if v==1 then
    local keys={};expected=0;uploaded=0
    for i=8,31 do local p=${s.animation_base}+i*4;local y=emu.read(p,mem);local tile=emu.read(p+2,mem)
-    if y>=16 and y<112 and tile~=0 and not(emu.read(${s.effect_keep_head},mem)~=0 and (y<32 or (i-8)%6>=4)) then local x=emu.read(p+1,mem)-8;y=y-16
+    if y>=16 and y<112 and tile~=0 and not stone_retained(p) and not(emu.read(${s.effect_keep_head},mem)~=0 and (y<32 or (i-8)%6>=4)) then local x=emu.read(p+1,mem)-8;y=y-16
      for yy=y//8,(y+7)//8 do for xx=x//8,(x+7)//8 do local k=yy*32+xx;if not keys[k]then keys[k]=true;expected=expected+16 end end end
     end
    end

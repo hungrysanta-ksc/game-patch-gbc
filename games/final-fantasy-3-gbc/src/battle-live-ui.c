@@ -5,6 +5,9 @@
 #include "live-ui-assets.h"
 #include "battle-workspace.h"
 #include "text-vblank.h"
+#ifdef FF3_SCENE_LAYOUT
+#include "battle-live-stone.h"
+#endif
 #ifdef FF3_EFFECTS
 #include "battle-effect-freeze.h"
 #endif
@@ -41,10 +44,17 @@ static void render(uint8_t dirty){uint8_t row,l,r[6],yy,x,top,bottom,i;uint16_t 
    else text(words[l-1],lengths[l-1],r[0]+4,r[1]+3,0,row);
    ff3_native_service();
   }
+#ifdef FF3_SCENE_LAYOUT
+  if(!row)ff3_live_stone_footer(rowdata);
+#endif
   dest=0x8700+(uint16_t)row*320;
   live_ui_transfer=1;for(offset=0;offset<320;offset+=160){memcpy(text_staging,rowdata+offset,160);ff3_text_copy(0,dest+offset,text_staging,160);
 #ifdef FF3_EFFECTS
-   if(effect_signed&&!row)ff3_text_copy(0,dest+offset+0x1000,text_staging,offset?96:160);
+   if((effect_signed
+#ifdef FF3_SCENE_LAYOUT
+    ||stone_live
+#endif
+   )&&!row)ff3_text_copy(0,dest+offset+0x1000,text_staging,offset?96:160);
 #endif
    ff3_native_service();}live_ui_transfer=0;live_ui_pattern_bytes+=320;
  }
@@ -52,6 +62,7 @@ static void render(uint8_t dirty){uint8_t row,l,r[6],yy,x,top,bottom,i;uint16_t 
 }
 void ff3_live_ui_reset(void) BANKED {live_ui_ready=live_ui_request=mask=primed=0;memset(lengths,0,5);ff3_party_copy(43,live_ui_seed,hp,60);}
 #ifdef FF3_SCENE_LAYOUT
+void ff3_live_ui_stone(void) BANKED {if(primed)render(1);}
 extern uint8_t ff3_game_state[1024];
 /* 32/95E1: four displayed decimal positions (low four of the original
  * five-digit conversion), blank leading zeroes, visible units zero. */

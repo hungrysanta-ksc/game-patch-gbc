@@ -13,6 +13,7 @@
 #include "hit-assets.h"
 #ifdef FF3_SCENE_LAYOUT
 #include "battle-death-video.h"
+#include "battle-live-stone.h"
 #include "memory.h"
 #endif
 uint8_t hit_cover[2],hit_error;
@@ -44,6 +45,9 @@ static uint8_t party_picture(uint8_t damaging,uint8_t covered){uint8_t i,j,*q,*d
   if(q[1]&&(x<0||x>152||y<0||y>136))return 0;
   d[0]=q[1]?y+16:0;d[1]=x+8;d[2]=q[1];d[3]=(q[2]&3)|((q[2]&64)>>1)|((q[2]&128)>>1);
  }
+#ifdef FF3_SCENE_LAYOUT
+ ff3_live_stone_objects(out+32);
+#endif
  if(!ff3_action_oam_finish(out,8,24,0))return 0;publish(page);return 1;
 }
 uint8_t ff3_hit_video(uint8_t owner) BANKED {uint8_t i,page,*out,body,damaging;uint16_t at,n;const HitFlashAsset*a=hit_flash_assets+party_profile;
@@ -57,7 +61,7 @@ uint8_t ff3_hit_video(uint8_t owner) BANKED {uint8_t i,page,*out,body,damaging;u
    /* Compile palette-bound cells once, then alternate immutable maps for the
     * eight original waits. UI occupies both pages; terrain owns its prefix. */
 #ifdef FF3_SCENE_LAYOUT
-   if(resident_dead){if(!ff3_enemy_build(flash_page,enemy+1,0,0)){hit_error=4;goto fault;}memcpy(animation_source,(void*)0xd740,64);if(!ff3_wram_copy(6,128,animation_source,64,1)){hit_error=4;goto fault;}}
+   if(resident_dead||stone_live){if(!ff3_enemy_build(flash_page,enemy+1,0,0)){hit_error=4;goto fault;}memcpy(animation_source,(void*)0xd740,64);if(!ff3_wram_copy(6,128,animation_source,64,1)){hit_error=4;goto fault;}}
    else
 #endif
    for(at=0;at<704;at+=176){n=at<352?0:1;ff3_party_copy(a->bank,a->maps+(uint16_t)enemy*704+at,text_staging,176);ff3_text_copy(n,(flash_page?0x9c40:0x9840)+at%352,text_staging,176);ff3_native_service();}
@@ -76,7 +80,7 @@ uint8_t ff3_hit_video(uint8_t owner) BANKED {uint8_t i,page,*out,body,damaging;u
   page=party_page^1;out=page?party_oam1:party_oam0;memcpy(out,animation_base,160);memset(animation_source,240,160);
   if(!(frame&1)){
 #ifdef FF3_SCENE_LAYOUT
-   if(resident_dead){if(!ff3_wram_copy(6,128,animation_source,64,0)){hit_error=4;goto fault;}}else
+   if(resident_dead||stone_live){if(!ff3_wram_copy(6,128,animation_source,64,0)){hit_error=4;goto fault;}}else
 #endif
    ff3_party_copy(a->bank,a->objects+(uint16_t)enemy*64,animation_source,64);
    memcpy(out,animation_source,32);memcpy(out+128,animation_source+32,32);ff3_party_copy(a->bank,a->attributes+(uint16_t)enemy*64,animation_source,64);resident_page=flash_page;}

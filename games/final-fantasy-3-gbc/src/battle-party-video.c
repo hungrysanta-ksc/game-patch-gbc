@@ -4,6 +4,7 @@
 #include "scene-loop.h"
 #include "battle-encounter.h"
 #include "battle-live-party.h"
+#include "battle-live-stone.h"
 #endif
 #include <string.h>
 #include "battle-party-oam.h"
@@ -99,7 +100,11 @@ static void publish(void) NONBANKED {uint16_t gap;uint8_t ly=LY_REG;
  if(terrain_fault){party_error=20+terrain_fault;party_pending=0;return;}
  LCDC_REG=(LCDC_REG&0xf7)|(resident_page?8:0);
 #ifdef FF3_EFFECTS
- if(effect_signed)LCDC_REG&=~16;else LCDC_REG|=16;
+ if(effect_signed
+#ifdef FF3_SCENE_LAYOUT
+ ||stone_live
+#endif
+ )LCDC_REG&=~16;else LCDC_REG|=16;
  if(magic_tall)LCDC_REG|=4;else LCDC_REG&=~4;
 #endif
 #else
@@ -166,6 +171,9 @@ static void present(void){uint8_t i;uint16_t begin=ff3_clock_now(),elapsed;uint8
 #endif
 #ifdef FF3_STATUS_VIDEO
  if(!ff3_status_video_objects(target)){party_error=35;return;}
+#endif
+#ifdef FF3_SCENE_LAYOUT
+ ff3_live_stone_objects(target+(status_stage==2?32:0));
 #endif
 #ifdef FF3_STONE
  if(status_stage){ff3_stone_prepare(resident_page,target);party_work=1;if(stone_error){party_error=40+stone_error;return;}}

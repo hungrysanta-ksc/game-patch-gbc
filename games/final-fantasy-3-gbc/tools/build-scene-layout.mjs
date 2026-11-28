@@ -6,6 +6,7 @@ import {livePartyAssets} from './live-party-source.mjs';
 import {liveCommandAssets} from './live-command-assets.mjs';
 import {liveUiAssets} from './battle-live-ui.mjs';
 import {stoneSurfaces,stoneSurfaceContract} from './battle-stone-surface.mjs';
+import {liveStoneAssets} from './live-stone-assets.mjs';
 import {dungeonEntry} from './dungeon-source.mjs';
 import {makeMapAssets} from './map-assets.mjs';
 import {explorationAssets} from './exploration-assets.mjs';
@@ -34,6 +35,7 @@ const counts=array('asset_counts'),offsets=array('asset_offsets'),present=array(
 const original=await fs.readFile(field+'/ff3-exploration.gbc'),banks=new Map();present.forEach((v,i)=>{if(v)banks.set(i,original.subarray(i*16384,(i+1)*16384));});
 const relocated=relocateField(banks,counts,offsets),generated=[];
 generated.push(await restartAssets(data,local.text,gen));
+generated.push(await liveStoneAssets(data,gen));
 for(const [bank,bytes]of relocated.banks){const file=gen+'/field-bank'+bank+'.c';await fs.writeFile(file,'#pragma bank '+bank+'\n#include <stdint.h>\nconst uint8_t field_bank'+bank+'[]={'+[...bytes]+'};\n');generated.push(file);}
 const presentBits=Array.from({length:16},(_,i)=>Array.from({length:8},(_,b)=>+relocated.banks.has(i*8+b)<<b).reduce((a,b)=>a|b,0));
 await fs.writeFile(gen+'/asset-directory.h',directory.replace(/#define ASSET_BANKS \d+u/,'#define ASSET_BANKS 128u').replace(/asset_present\[\]=\{[0-9,]+\}/,'asset_present_bits[]={'+presentBits+'}'));
@@ -48,14 +50,13 @@ generated.push(...await liveCommandAssets(data,gen,JSON.parse(await fs.readFile(
 // diagnostic's small message dictionary. Source IDs remain runtime inputs.
 const ui=await liveUiAssets(data,local.text),uiArrays={boxes:ui.boxes,glyphs:ui.glyphs,hp_glyphs:ui.hpGlyphs,advances:ui.advances,seed:ui.seed,rect:ui.rect,palette:ui.palette,message_index:ui.message_index,message_words:ui.message_words,message_types:ui.message_types};
 // This gate verifies the actual generated UI, not a historical palette ID.
-// It does not remove the live party's pure-stone unsupported-consumer guard.
 const stoneSurface=stoneSurfaceContract(stoneSurfaces(data),ui);
 for(const p of JSON.parse(await fs.readFile(out+'/encounter-resources.json')).profiles){
  const source=await fs.readFile(gen+'/encounter'+p.profile+'.c','utf8');
  const palette=Buffer.from(source.match(new RegExp('encounter_palette'+p.profile+'\\[\\]=\\{([0-9,]+)\\}'))[1].split(',').map(Number));
  check(palette.subarray(24,32).equals(ui.palette),'Actual encounter stone/UI palette '+p.profile);
 }
-await fs.writeFile(out+'/stone-surface.json',JSON.stringify({...stoneSurface,nativePureStoneSupported:false},null,2));
+await fs.writeFile(out+'/stone-surface.json',JSON.stringify({...stoneSurface,nativeStoneColumns:'front/rear; confused mixed enemy cells remain unsupported',signedBank0:[64,104],headObjBank0:[212,214],frozenLimitWithStone:64},null,2));
 await fs.writeFile(gen+'/live-ui.c','#pragma bank 43\n#include <stdint.h>\n'+Object.entries(uiArrays).map(([k,b])=>'const uint8_t live_ui_'+k+'[]={'+[...b]+'};').join('\n'));generated.push(gen+'/live-ui.c');
 await fs.writeFile(gen+'/live-ui-assets.h','#define LIVE_UI_GLYPHS '+ui.glyphCount+'\n#define LIVE_MESSAGE_DIGIT 1\n#define LIVE_MESSAGE_SLASH 11\n#define LIVE_MESSAGE_COUNT '+ui.messageCount+'\n'+Object.keys(uiArrays).map(k=>'extern const uint8_t live_ui_'+k+'[];').join('\n'));
 for(const name of [...[1,2,3,4,5,6,8].map(i=>'audio-bank'+i),'strike53',...Array.from({length:4},(_,i)=>['party','resident','terrain','hit'].map(k=>k+i)).flat(),...mr.banks.map((_,i)=>'magic'+i)])generated.push(battle+'/generated/'+name+'.c');
@@ -81,6 +82,8 @@ checkEncounterAssets(bytes,s,data);
 // Direct cell calls are safe only while their display owner and kernels
 // share the selected code bank. Never silently relocate just one side.
 for(const name of ['ff3_enemy_build','ff3_cell_mask_local','ff3_cell_paint_local','ff3_cell_pool_tile_local'])check((s['_'+name]>>>16)===124,'Same-bank cell kernel '+name);
+check((s._ff3_live_stone_footer>>>16)===124,'Stone footer shares the paint kernel bank');
+for(const name of ['patterns','ids','glyphs'])check((s['_live_stone_'+name]>>>16)===127,'Immutable stone bank '+name);
 for(const [name,address]of Object.entries(s))if(/^_encounter_patterns\d+$/.test(name))check((address&15)===0,'DMA-aligned encounter patterns '+name);
 // Every generated battle/audio array remains intact at its linked symbol.
 let arrays=0;for(const file of generated.filter(p=>!p.startsWith(gen+'/field-'))){const source=await fs.readFile(file,'utf8');for(const m of source.matchAll(/const uint8_t (\w+)\[\]=\{([0-9,]*)\}/g)){const data=Buffer.from(m[2].split(',').filter(Boolean).map(Number)),at=s['_'+m[1]],offset=(at>>>16)*16384+(at&0x3fff);check(Number.isInteger(at)&&bytes.subarray(offset,offset+data.length).equals(data),'Linked original asset '+m[1]);arrays++;}}

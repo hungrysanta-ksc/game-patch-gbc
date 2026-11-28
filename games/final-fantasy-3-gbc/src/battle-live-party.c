@@ -14,6 +14,7 @@
 #include "battle-live-ui.h"
 #include "battle-status-video.h"
 #include "battle-effect-freeze.h"
+#include "battle-live-stone.h"
 #include "memory.h"
 #include "text-vblank.h"
 #include "live-party-assets.h"
@@ -28,15 +29,19 @@ uint8_t live_party_error,live_party_ready;
 void ff3_party_refresh_present(void) BANKED;
 extern volatile uint8_t party_error;
 uint8_t ff3_live_party_refresh(const uint8_t*status) BANKED {
- uint8_t i,error;
+ uint8_t i,error,work[8];
  if(!live_party_ready||status_stage!=2||status_tail.phase!=FF3_TAIL_DONE||effect_signed)return 0;
- for(i=0;i<4;i++)if((status[i*2]&192)==64){live_party_error=2;return 0;}
+ for(i=0;i<4;i++)if((status[i*2]&200)==72){live_party_error=2;return 0;}
  /* 9E80 copies normalized status, B5B8 retains graphic-kind and position
   * caches. The source refresh never replays entry or recounts enemies. */
  for(i=0;i<4;i++){status_tail.motion.status[i]=status[i*2];status_tail.status2[i]=status[i*2+1];}
  effect_freeze_cache_valid=0;
  if(!ff3_entry_tail_refresh(&status_tail))return 0;
  status_stage=1;memcpy(&party_motion,&status_tail.motion,sizeof(party_motion));
+ /* A cache-hit first actor already has a STATUS request. Prepare B72B /
+  * B6C8 before publishing it; advance() acknowledges and moves to actor 1.
+  * HIDE/LOAD/MOVE requests still use their normal preparation boundaries. */
+ if(status_tail.phase==FF3_TAIL_STATUS){if(!ff3_entry_tail_work(&status_tail,work)||!ff3_live_stone_change(status_tail.actor,work)){live_party_error=14;return 0;}}
  /* HIDE/STATUS are publication boundaries; LOAD copies are prepared by
   * advance before the next acknowledgement. Keep the old object hidden
   * while its six original dead-pose patterns replace the resident job. */
@@ -52,12 +57,12 @@ uint8_t ff3_live_party_prepare(void) BANKED {
  uint8_t i,j,s,flags,icon,variant,job,*c,*e;uint16_t cur,max;
  live_party_ready=live_party_error=0;
  /* B72B tests (status & C0) == 40: death wins over simultaneous stone.
-  * Only an actual stone BG owner is absent in the combined renderer.
+  * Forward-confused stone still requires the mixed enemy-cell owner.
   * Validate the whole party before mutating canonical derived stats. */
  for(i=0;i<4;i++){
   c=ff3_game_state+256+(uint16_t)i*64;e=ff3_game_state+512+(uint16_t)i*64;
   if(c[0]>=22){live_party_error=1;return 0;}
-  if((c[2]&192)==64){live_party_error=2;return 0;}
+  if((c[2]&208)==80){live_party_error=2;return 0;}
   for(j=0;j<3;j++)if(e[j]>=0x98){live_party_error=3;return 0;}
   if(e[3]>=0x62||e[5]>=0x62){live_party_error=3;return 0;}
  }

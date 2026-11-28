@@ -11,6 +11,7 @@
 #include "scene-loop.h"
 #include "battle-live-party.h"
 #include "live-party-assets.h"
+#include "battle-live-stone.h"
 #endif
 void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANKED;
 void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED;
@@ -49,6 +50,9 @@ void ff3_status_video_reset(uint8_t profile) BANKED {
  profile_id=FF3_PARTY_SHARED(profile);
 #endif
  status_stage=status_load=0;
+#ifdef FF3_SCENE_LAYOUT
+ ff3_live_stone_reset();
+#endif
  ff3_party_copy(a->bank,a->tail,(uint8_t*)&status_tail,75);
  ff3_party_copy(a->bank,a->status,(uint8_t*)&status_state,35);
  memset(status_source,240,64);
@@ -113,7 +117,7 @@ uint8_t ff3_status_video_advance(void) BANKED {
    78,live_party_patterns+(uint16_t)variant*224+(uint16_t)status_tail.loaded*16,work[4]);
   ff3_native_service();return 0;
  }
- if(status_tail.phase==FF3_TAIL_INNER){if(!ff3_entry_tail_work(&status_tail,work)||work[1]!=3)return 4;return 0;}
+ if(status_tail.phase==FF3_TAIL_INNER||status_tail.phase==FF3_TAIL_STATUS){if(!ff3_entry_tail_work(&status_tail,work)||!ff3_live_stone_change(status_tail.actor,work))return 4;return 0;}
 #endif
 #ifdef FF3_STONE
  if(status_tail.phase==FF3_TAIL_HIDE)return 0;
