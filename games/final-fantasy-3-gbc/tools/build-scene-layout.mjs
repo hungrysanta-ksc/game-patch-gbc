@@ -1,4 +1,5 @@
 import {deathAssets} from './death-assets.mjs';
+import {restartAssets} from './battle-restart-source.mjs';
 import {encounterScreenAssets} from './encounter-screen-assets.mjs';
 import {checkEncounterAssets} from './field-encounter-source.mjs';
 import {livePartyAssets} from './live-party-source.mjs';
@@ -31,6 +32,7 @@ if(dungeon){
 const counts=array('asset_counts'),offsets=array('asset_offsets'),present=array('asset_present');check(counts&&offsets&&present,'Field catalog syntax');
 const original=await fs.readFile(field+'/ff3-exploration.gbc'),banks=new Map();present.forEach((v,i)=>{if(v)banks.set(i,original.subarray(i*16384,(i+1)*16384));});
 const relocated=relocateField(banks,counts,offsets),generated=[];
+generated.push(await restartAssets(data,local.text,gen));
 for(const [bank,bytes]of relocated.banks){const file=gen+'/field-bank'+bank+'.c';await fs.writeFile(file,'#pragma bank '+bank+'\n#include <stdint.h>\nconst uint8_t field_bank'+bank+'[]={'+[...bytes]+'};\n');generated.push(file);}
 const presentBits=Array.from({length:16},(_,i)=>Array.from({length:8},(_,b)=>+relocated.banks.has(i*8+b)<<b).reduce((a,b)=>a|b,0));
 await fs.writeFile(gen+'/asset-directory.h',directory.replace(/#define ASSET_BANKS \d+u/,'#define ASSET_BANKS 128u').replace(/asset_present\[\]=\{[0-9,]+\}/,'asset_present_bits[]={'+presentBits+'}'));

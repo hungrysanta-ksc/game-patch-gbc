@@ -10,6 +10,7 @@
 #ifdef FF3_SCENE_LAYOUT
 #include "scene-loop.h"
 #include "battle-live-party.h"
+#include "live-party-assets.h"
 #endif
 void ff3_party_copy(uint8_t bank,const void*source,void*dest,uint16_t n) NONBANKED;
 void ff3_party_palette(uint8_t bg,uint8_t first,uint8_t count,const uint8_t*data) NONBANKED;
@@ -80,6 +81,11 @@ uint8_t ff3_status_video_advance(void) BANKED {
  if(status_tail.phase==FF3_TAIL_BOSS)return ff3_boss_queue(status_tail.graphic&31,status_tail.chunk,status_tail.shift)?0:5;
 #endif
  if(status_tail.phase==FF3_TAIL_DONE){
+#ifdef FF3_SCENE_LAYOUT
+  /* B3D3 -> B5B8 returns without B304/B52A. Do not reload unrelated
+   * selection graphics or re-enable its status objects during an action. */
+  if(status_tail.chunk&128){status_stage=2;return 0;}
+#endif
   while(at<a->bytes){status_load++;ff3_party_copy(a->bank,a->blocks+at,work,3);dest=0x8000+work[0]+((uint16_t)work[1]<<8);n=work[2];at+=3;
    if(!n||n>64||at+n>a->bytes||dest<0x8000||dest+n>0x9000)return 3;
 #ifdef FF3_SCENE_LAYOUT
@@ -95,6 +101,20 @@ uint8_t ff3_status_video_advance(void) BANKED {
   ff3_party_palette(0,3,1,text_staging);status_load=0;status_stage=2;return 0;
  }
  if(status_tail.phase==FF3_TAIL_CANONICAL)return 0;
+#ifdef FF3_SCENE_LAYOUT
+ if(status_tail.phase==FF3_TAIL_HIDE||status_tail.phase==FF3_TAIL_MOVE)return 0;
+ if(status_tail.phase==FF3_TAIL_LOAD){uint8_t variant= status_tail.jobs[status_tail.actor];
+  if(!ff3_entry_tail_work(&status_tail,work)||work[0]!=2)return 4;
+  if(status_tail.graphics[status_tail.actor]==1)variant+=22;
+  else if(status_tail.graphics[status_tail.actor]>=2)variant=42+status_tail.graphics[status_tail.actor];
+  /* AA00 assets already contain the exact six-tile dead overwrite. B651
+   * still selects/cache-checks it and B5C3 still hides, loads and publishes. */
+  ff3_text_rom_copy(0,0x8010+(uint16_t)status_tail.actor*224+(uint16_t)status_tail.loaded*16,
+   78,live_party_patterns+(uint16_t)variant*224+(uint16_t)status_tail.loaded*16,work[4]);
+  ff3_native_service();return 0;
+ }
+ if(status_tail.phase==FF3_TAIL_INNER){if(!ff3_entry_tail_work(&status_tail,work)||work[1]!=3)return 4;return 0;}
+#endif
 #ifdef FF3_STONE
  if(status_tail.phase==FF3_TAIL_HIDE)return 0;
  if(status_tail.phase==FF3_TAIL_MOVE)return 0;
@@ -133,6 +153,9 @@ uint8_t ff3_status_video_objects(uint8_t*out) BANKED {
   const uint8_t*s=status_source+(i*2+j)*4;x=s[3]-dx;y=s[0]-dy;a=s[2];
   native[n++]=s[0]>=239||!x||x>=168||y<=8||y>=160?0:y;native[n++]=x;native[n++]=s[1];native[n++]=(a&3)|((a&64)>>1)|((a&128)>>1);
  }
+#ifdef FF3_SCENE_LAYOUT
+ {extern volatile uint8_t action_enabled;if(action_enabled)memset(native,0,32);}
+#endif
  // Source priority: icons precede party; retained residuals follow party.
  // Current resident formation has <= 6 objects, leaving eight icon slots.
  for(i=32;i<40;i++)if(out[i*4])return 0;

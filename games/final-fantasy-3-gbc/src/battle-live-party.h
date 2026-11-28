@@ -8,4 +8,5 @@
 extern uint8_t live_party_error,live_party_ready;
 uint8_t ff3_live_party_prepare(void) BANKED;
 void ff3_live_party_command(void) BANKED;
+uint8_t ff3_live_party_refresh(const uint8_t*status) BANKED;
 #endif

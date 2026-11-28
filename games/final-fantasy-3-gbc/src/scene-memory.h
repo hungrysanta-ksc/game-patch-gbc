@@ -8,4 +8,5 @@ extern volatile uint8_t scene_arena_owner,scene_arena_fault;
 uint8_t ff3_scene_field_begin(void) BANKED;
 uint8_t ff3_scene_battle_begin(void) BANKED;
 uint8_t ff3_scene_field_restore(void) BANKED;
+uint8_t ff3_scene_field_discard(void) BANKED;
 #endif

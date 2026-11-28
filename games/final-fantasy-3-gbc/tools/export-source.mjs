@@ -1,6 +1,7 @@
 // Explicit publication allowlist. Never enumerate build/evidence/private inputs.
 import fs from 'node:fs/promises';import{ROOT,hash,check}from'./source.mjs';
 export const files=[
+ 'src/battle-defeat-video.c','src/battle-defeat-video.h','tools/battle-restart-source.mjs','tools/VerifyDefeat/Program.cs','tools/VerifyDefeat/VerifyDefeat.csproj','tools/verify-party-defeat.mjs','tests/battle-defeat.test.mjs','docs/battle-party-defeat.md',
  'src/battle-live-party.c','src/battle-live-party.h','tools/live-party-source.mjs','docs/live-party-entry.md',
  'src/field-encounter.c','tools/field-encounter-source.mjs','docs/field-encounters.md',
  'src/scene-loop.c','src/scene-loop.h','src/field-restore.c','tools/verify-scene-roundtrip.mjs','tools/scene-roundtrip-audit.lua','tools/VerifySceneRoundtrip/Program.cs','tools/VerifySceneRoundtrip/VerifySceneRoundtrip.csproj','docs/scene-roundtrip.md',

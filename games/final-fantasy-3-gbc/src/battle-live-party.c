@@ -12,6 +12,8 @@
 #include "battle-status-oam.h"
 #include "battle-workspace.h"
 #include "battle-live-ui.h"
+#include "battle-status-video.h"
+#include "battle-effect-freeze.h"
 #include "memory.h"
 #include "text-vblank.h"
 #include "live-party-assets.h"
@@ -23,6 +25,28 @@ extern Ff3StatusOam status_state;
 void ff3_party_copy(uint8_t bank,const void*src,void*dst,uint16_t n) NONBANKED;
 void ff3_native_service(void) NONBANKED;
 uint8_t live_party_error,live_party_ready;
+void ff3_party_refresh_present(void) BANKED;
+extern volatile uint8_t party_error;
+uint8_t ff3_live_party_refresh(const uint8_t*status) BANKED {
+ uint8_t i,error;
+ if(!live_party_ready||status_stage!=2||status_tail.phase!=FF3_TAIL_DONE||effect_signed)return 0;
+ for(i=0;i<4;i++)if((status[i*2]&192)==64){live_party_error=2;return 0;}
+ /* 9E80 copies normalized status, B5B8 retains graphic-kind and position
+  * caches. The source refresh never replays entry or recounts enemies. */
+ for(i=0;i<4;i++){status_tail.motion.status[i]=status[i*2];status_tail.status2[i]=status[i*2+1];}
+ effect_freeze_cache_valid=0;
+ if(!ff3_entry_tail_refresh(&status_tail))return 0;
+ status_stage=1;memcpy(&party_motion,&status_tail.motion,sizeof(party_motion));
+ /* HIDE/STATUS are publication boundaries; LOAD copies are prepared by
+  * advance before the next acknowledgement. Keep the old object hidden
+  * while its six original dead-pose patterns replace the resident job. */
+ for(;;){
+  ff3_party_refresh_present();if(party_error)return 0;
+  error=ff3_status_video_advance();if(error){live_party_error=10+error;return 0;}
+  if(status_stage==2)break;
+ }
+ ff3_party_refresh_present();return !party_error;
+}
 #define record battle_workspace.map
 uint8_t ff3_live_party_prepare(void) BANKED {
  uint8_t i,j,s,flags,icon,variant,job,*c,*e;uint16_t cur,max;

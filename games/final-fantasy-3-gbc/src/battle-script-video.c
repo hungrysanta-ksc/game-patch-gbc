@@ -41,6 +41,9 @@ static uint8_t buttons(void){uint8_t gb=joypad(),held=((gb&1)<<7)|((gb&2)<<5)|((
  else {pressed=(~action_previous)&held;if(action_previous&held){if(!--action_repeat){action_repeat=4;pressed=held;}}}
  action_previous=held;return pressed;
 }
+#ifdef FF3_SCENE_LAYOUT
+uint8_t ff3_script_buttons(void) BANKED {return buttons();}
+#endif
 /* 40960000 / 600988 = 68 + 92816/600988. Retain the exact remainder
  * without importing 32-bit division into the permanently mapped ROM bank. */
 static void next_wait(void){deadline+=68;fraction+=92816UL;if(fraction>=600988UL){fraction-=600988UL;deadline++;}}

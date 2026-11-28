@@ -32,6 +32,46 @@ extern uint8_t __at(0xd870) effect_palettes[128];
 
 #endif
 static volatile uint16_t transfer_source,transfer_address,transfer_count;
+/* At most eight palettes (64 bytes), already contiguous and immutable.
+ * The unrolled eight-byte body bounds DI below one 4096-Hz timer period.
+ * Avoid per-palette C descriptor/readiness work inside the short VBlank. */
+static void palette_batch(void) NONBANKED __naked {
+ __asm
+  push bc
+  ld hl,#_transfer_source
+  ld a,(hl+)
+  ld h,(hl)
+  ld l,a
+  ld a,(_transfer_count)
+  ld b,a
+  ld a,(_transfer_bank)
+  or a
+  ld c,#0x69
+  jr nz,91230$
+  ld c,#0x6b
+91230$:
+  ld a,(hl+)
+  ldh (c),a
+  ld a,(hl+)
+  ldh (c),a
+  ld a,(hl+)
+  ldh (c),a
+  ld a,(hl+)
+  ldh (c),a
+  ld a,(hl+)
+  ldh (c),a
+  ld a,(hl+)
+  ldh (c),a
+  ld a,(hl+)
+  ldh (c),a
+  ld a,(hl+)
+  ldh (c),a
+  dec b
+  jr nz,91230$
+  pop bc
+  ret
+ __endasm;
+}
 #ifdef FF3_EFFECTS
 static void restore_next(void){uint8_t first=effect_members[restore_block++],bank;
  if(first==255){transfer_count=0;return;}
@@ -146,17 +186,17 @@ static void pump(void){uint8_t taken=0,i,saved;uint16_t n,limit;
 #ifdef FF3_EFFECTS
 palette_transfer:
 #endif
-  /* One palette per bounded critical section; the timer can run between
-   * palettes. Reuse the transfer descriptor and keep the source in WRAM. */
+  /* One bounded contiguous batch; no source/palette byte is discarded. */
   while(transfer_count&&ready()){
    taken=0;
    CRITICAL{if(ready()){
-    if(transfer_bank){BCPS_REG=0x80|(uint8_t)transfer_address;for(i=0;i<8;i++)BCPD_REG=((const uint8_t*)transfer_source)[i];}
-    else {OCPS_REG=0x80|(uint8_t)transfer_address;for(i=0;i<8;i++)OCPD_REG=((const uint8_t*)transfer_source)[i];}
+    if(transfer_bank)BCPS_REG=0x80|(uint8_t)transfer_address;
+    else OCPS_REG=0x80|(uint8_t)transfer_address;
+    palette_batch();
     measured();taken=1;
    }}
    if(!taken)break;
-   transfer_source+=8;transfer_address+=8;transfer_count--;
+   transfer_count=0;
   }
   if(!transfer_count)pending=0;
  }else{
