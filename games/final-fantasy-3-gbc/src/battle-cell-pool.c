@@ -20,6 +20,14 @@ uint8_t ff3_cell_mask_local(uint8_t*g,const uint8_t*erase) {uint8_t y,bits=0,cha
  return changed?(bits?2:1):0;
 }
 uint8_t ff3_cell_mask(uint8_t*g,const uint8_t*erase) BANKED {return ff3_cell_mask_local(g,erase);}
+/* B6C8 replaces owned map cells, including their black pixels. An explicit
+ * row mask also supports the two-row V6/UI boundary without cutting ink.
+ * This kernel neither assumes transparent zero nor changes palette IDs. */
+uint8_t ff3_cell_paint_local(uint8_t*g,const uint8_t*source,const uint8_t*mask) {uint8_t y,a,b,m,old,changed=0,bits=0;
+ for(y=8;y;y--){m=*mask++;old=g[0];a=(old&~m)|(*source++&m);changed|=old^a;old=g[1];b=(old&~m)|(*source++&m);changed|=old^b;*g++=a;*g++=b;bits|=a|b;}
+ return changed?(bits?2:1):0;
+}
+uint8_t ff3_cell_paint(uint8_t*g,const uint8_t*source,const uint8_t*mask) BANKED {return ff3_cell_paint_local(g,source,mask);}
 static void flush(void){if(!batch)return;
  ff3_text_copy(1,0x8000u+(uint16_t)(base+used-batch)*16,text_staging,(uint16_t)batch*16);batch=0;ff3_native_service();
 }
