@@ -12,6 +12,17 @@ test('slot ownership survives deduplicated identical enemies and mixed 28px boun
  }
 });
 
+test('absent slots in the original death mask are not physical cell owners',async()=>{
+ const {data}=await input();for(const back of [false,true]){
+  const a=deathOwnership(data,{formation:0,counts:[3,0,0,0],back}),cells=deathCells(a);
+  const present=cells.reduce((bits,c)=>c.parts.reduce((v,p)=>v|p.owner,bits),0);
+  const absent=a.types.reduce((v,t,i)=>v|(t===255?128>>i:0),0),victim=128;
+  assert.ok(absent&&((absent|victim)&((absent|victim)-1)));
+  assert.equal((absent|victim)&present,victim);
+  assert.equal(present,224);assert.equal((present&192)&((present&192)-1),128);
+ }
+});
+
 test('all 37 native mask positions match actual original DMA/PPU publications in both directions',async()=>{
  const {data}=await input();for(const formation of [0,3])for(const back of [false,true]){
   const options={formation,back,...(formation===0?{counts:[4,0,0,0]}:{})},a=deathOwnership(data,options),stamps=deathStamps(back,a.glyphs),bounds=deathBounds(a);

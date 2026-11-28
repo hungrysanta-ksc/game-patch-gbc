@@ -109,31 +109,59 @@
       ]
     },
     {
-      "path": "src/battle-death-video.c",
-      "sha256": "26a1cf42ff1ae745e9a8cf4c674a5c8d7ce220f460c5edb90185286d912b3cb4",
+      "path": "src/battle-cell-pool-test.c",
+      "sha256": "e3c2696d5b881b29051430f25edf319f801a735b068839938d0903d86354f2ea",
       "sites": [
         {
-          "line": 32,
+          "line": 14,
+          "text": "uint8_t __at(0xd950) text_staging[256];"
+        },
+        {
+          "line": 28,
+          "text": "void main(void){uint8_t i,j,r,n,unique,id;const uint8_t*p,*start;cpu_fast();SVBK_REG=1;ff3_memory_init();state_ready=0xa5;while(!state_start)wait_vbl_done();"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-cell-pool.c",
+      "sha256": "6f13372eb56a971440622f5784b352653434a842c6efb8a8ce226ce91b183c85",
+      "sites": [
+        {
+          "line": 36,
+          "text": "if(!ff3_wram_copy(6,FF3_CELL_POOL_STORAGE+(uint16_t)i*16,comparison,16,0)){cell_pool_error=3;return 0;}"
+        },
+        {
+          "line": 41,
+          "text": "if(limit&128){if(!ff3_wram_copy(6,FF3_CELL_POOL_STORAGE+(uint16_t)used*16,(void*)g,16,1)){cell_pool_error=3;return 0;}signatures[used]=sig;}"
+        }
+      ]
+    },
+    {
+      "path": "src/battle-death-video.c",
+      "sha256": "707070e43ad75df94435a56d208b2adf40944dcdfea5b513c5a318702d574760",
+      "sites": [
+        {
+          "line": 33,
           "text": "extern uint8_t __at(0xd6a0) animation_base[160];"
         },
         {
-          "line": 33,
+          "line": 34,
           "text": "extern uint8_t __at(0xdc00) party_oam0[160];"
         },
         {
-          "line": 34,
+          "line": 35,
           "text": "extern uint8_t __at(0xdd00) party_oam1[160];"
         },
         {
-          "line": 92,
+          "line": 95,
           "text": "if(!flash&&!d){if(n>8){death_video_error=4;return 0;}if(!ff3_wram_copy(6,(uint16_t)page*64,residual,64,1)){death_video_error=5;return 0;}}"
         },
         {
-          "line": 95,
+          "line": 98,
           "text": "void ff3_enemy_saved(uint8_t page,uint8_t*out) BANKED {if(!ff3_wram_copy(6,(uint16_t)page*64,out,64,0))death_video_error=5;}"
         },
         {
-          "line": 112,
+          "line": 115,
           "text": "if(!ff3_wram_copy(6,(uint16_t)resident_page*64,residual,64,1)){death_video_error=5;goto fault;}"
         }
       ]

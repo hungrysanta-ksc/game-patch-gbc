@@ -55,7 +55,7 @@ class Program {
      }}
     Frame();Frame();Audit.TakeScreenshot();var endCommand=Core.GetTimingInfo(7);
     if(deathMode)Put("animation_video_probe",0);
-    commands.Add(new{preparations=Num("death_preparations",2),prepareTicks=Num("death_prepare_ticks",4),maxPrepareTicks=Num("death_prepare_max",2),actor,credit=Mem(39,0x5000+1020,4),before=records,fightBefore=fight,rngBefore=cursor,after=Mem(39,0x5000,828),fight=Mem(39,0x5000+832,175),call=Mem(39,0x5000+1008,11),rngAfter=Bytes("battle_rng_cursor",4),canonical=party,frames=frames-beginFrame,milliseconds=(endCommand.clock-beginCommand.clock)*1000.0/beginCommand.rate,screen=new{oam=Mem(44,0,160),vram=Mem(43,0,16384),objPalette=Mem(46,0,64),bgPalette=Mem(45,0,64),lcdc=Core.GetMemoryValue(7,0xff40)}});
+    commands.Add(new{cellPool=new{error=Num("cell_pool_error"),written=Num("cell_pool_written",2),reused=Num("cell_pool_reused",2),peak=Num("cell_pool_peak")},preparations=Num("death_preparations",2),prepareTicks=Num("death_prepare_ticks",4),maxPrepareTicks=Num("death_prepare_max",2),actor,credit=Mem(39,0x5000+1020,4),before=records,fightBefore=fight,rngBefore=cursor,after=Mem(39,0x5000,828),fight=Mem(39,0x5000+832,175),call=Mem(39,0x5000+1008,11),rngAfter=Bytes("battle_rng_cursor",4),canonical=party,frames=frames-beginFrame,milliseconds=(endCommand.clock-beginCommand.clock)*1000.0/beginCommand.rate,screen=new{oam=Mem(44,0,160),vram=Mem(43,0,16384),objPalette=Mem(46,0,64),bgPalette=Mem(45,0,64),lcdc=Core.GetMemoryValue(7,0xff40)}});
    }
    if(deathMode&&cycle==0){
     var probe=c.GetProperty("postDeathMagic");Write("animation_state",probe.GetProperty("animation").GetString()!);Write("action_script",probe.GetProperty("script").GetString()!);
